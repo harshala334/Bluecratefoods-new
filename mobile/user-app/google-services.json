@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1069338996291",
+    "project_id": "eatee-bdd54",
+    "storage_bucket": "eatee-bdd54.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069338996291:android:363039f1c3f766cccfeef6",
+        "android_client_info": {
+          "package_name": "com.bluecratefoods.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxqL0LGze1dm88fB8A2sVY4vaj7P_qLKc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

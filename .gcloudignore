@@ -1,0 +1,6 @@
+﻿node_modules/
+.git/
+.env
+dist/
+coverage/
+test/

@@ -1,0 +1,128 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9094:9092"
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: bluecrate
+      POSTGRES_PASSWORD: bluecratepass
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api-gateway:
+    build: ./backend/api-gateway
+    volumes:
+      - ./backend/api-gateway:/app
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+    ports:
+      - "8000:8000"
+    depends_on:
+      - kafka
+      - postgres
+      - redis
+
+  auth-service:
+    build: ./backend/auth-service
+    volumes:
+      - ./backend/auth-service:/app
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=bluecrate
+      - DB_PASS=bluecratepass
+      - DB_PORT=5432
+      - DB_NAME=auth_service_db
+      - KAFKA_BROKERS=kafka:9092
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - kafka
+
+  # Add other services similarly (they're present as directories)
+  user-service:
+    build: ./backend/user-service
+    volumes:
+      - ./backend/user-service:/app
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=bluecrate
+      - DB_PASS=bluecratepass
+      - DB_PORT=5432
+      - DB_NAME=user_service_db
+      - KAFKA_BROKERS=kafka:9092
+    ports:
+      - "8002:8002"
+    depends_on:
+      - postgres
+      - kafka
+
+  order-service:
+    build:
+      context: ./backend/order-service
+      target: builder
+    volumes:
+      - ./backend/order-service:/app
+    command: npm run start
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=bluecrate
+      - DB_PASS=bluecratepass
+      - DB_PORT=5432
+      - DB_NAME=order_service_db
+      - KAFKA_BROKERS=kafka:9092
+    ports:
+      - "8003:8003"
+    depends_on:
+      - postgres
+      - kafka
+
+  store-service:
+    build:
+      context: ./backend/store-service
+      target: builder
+    volumes:
+      - ./backend/store-service:/app
+    command: npm run start
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=bluecrate
+      - DB_PASS=bluecratepass
+      - DB_PORT=5432
+      - DB_NAME=store_service_db
+      - KAFKA_BROKERS=kafka:9092
+    ports:
+      - "8004:8004"
+    depends_on:
+      - postgres
+      - kafka
+
+volumes:
+  pgdata:

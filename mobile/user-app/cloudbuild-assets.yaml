@@ -1,0 +1,11 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [ -d "assets" ]; then
+          gsutil -m cp -r assets/* gs://bluecrate-assets/
+        else
+          echo "No assets directory found"
+        fi

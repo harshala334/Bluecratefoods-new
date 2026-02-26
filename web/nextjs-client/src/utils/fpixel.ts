@@ -1,0 +1,16 @@
+export const FB_PIXEL_ID = '4189725541344177'
+
+declare global {
+    interface Window {
+        fbq: any
+    }
+}
+
+export const pageview = () => {
+    window.fbq('track', 'PageView')
+}
+
+// https://developers.facebook.com/docs/facebook-pixel/advanced/
+export const event = (name: string, options = {}) => {
+    window.fbq('track', name, options)
+}
