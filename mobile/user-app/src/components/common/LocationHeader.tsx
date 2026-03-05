@@ -3,12 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useLocationStore } from '../../stores/locationStore';
+import useCartStore from '../../stores/cartStore';
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
 
 export const LocationHeader = () => {
     const navigation = useNavigation<any>();
     const { location } = useLocationStore();
+    const { totalItems } = useCartStore();
 
     return (
         <View style={styles.wrapper}>
@@ -21,13 +23,6 @@ export const LocationHeader = () => {
                 <Feather name="map-pin" size={14} color={colors.white} />
                 <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">{location}</Text>
                 <Feather name="chevron-down" size={12} color={colors.white} style={{ opacity: 0.8 }} />
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.premiumContainer}
-                onPress={() => navigation.navigate('Subscription')} // Or wherever you want it to go
-                activeOpacity={0.7}
-            >
-                <Feather name="award" size={16} color={colors.white} />
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.iconButton}
@@ -83,6 +78,24 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.15)',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    badge: {
+        position: 'absolute',
+        top: -4,
+        right: -4,
+        backgroundColor: colors.rose[500],
+        borderRadius: 8,
+        minWidth: 16,
+        height: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: colors.primary[500],
+    },
+    badgeText: {
+        color: colors.white,
+        fontSize: 10,
+        fontWeight: '700',
     },
 });
 

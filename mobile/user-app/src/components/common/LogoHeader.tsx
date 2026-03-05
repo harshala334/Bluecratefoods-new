@@ -12,16 +12,12 @@ import { spacing } from '../../constants/spacing';
 export const LogoHeader = () => {
   return (
     <View style={styles.container}>
-      <View style={styles.logoIcon}>
-        <Image
-          source={{ uri: `${CDN_URL}/eatee_logo.jpg` }}
-          style={styles.logoImage}
-          resizeMode="cover"
-        />
-      </View>
-      {/* <View style={styles.textContainer}>
-        <Text style={styles.brandName}>Eatee</Text>
-      </View> */}
+      <Image
+        source={require('../../../assets/images/logo.png')}
+        style={styles.logoImage}
+        resizeMode="contain"
+      />
+      <Text style={styles.brandName}>Blue Crate</Text>
     </View>
   );
 };
@@ -30,23 +26,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-  },
-  logoIcon: {
-    width: 100,
-    height: 40,
-    borderRadius: 25,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 2, // Removed gap completely
   },
   logoImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 12,
-  },
-  textContainer: {
-    justifyContent: 'center',
+    width: 60, // Reduced width to tighten the box
+    height: 35,
+    marginLeft: -15, // Aggressively pull left
+    marginRight: -12, // Aggressively pull text in
   },
   brandName: {
     fontSize: typography.fontSize.lg,

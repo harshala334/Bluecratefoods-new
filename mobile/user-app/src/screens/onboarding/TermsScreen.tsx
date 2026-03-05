@@ -23,7 +23,7 @@ const TermsScreen = ({ navigation }: any) => {
             <View style={styles.content}>
                 <View style={styles.header}>
                     <Ionicons name="document-text-outline" size={80} color={colors.primary[500]} />
-                    <Text style={styles.title}>Accept Eatee's Terms & Review Privacy Notice</Text>
+                    <Text style={styles.title}>Accept Blue Crate's Terms & Review Privacy Notice</Text>
                 </View>
 
                 <View style={styles.body}>

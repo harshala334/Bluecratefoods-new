@@ -1,7 +1,7 @@
-# 🛡️ BlueCrateFoods Mobile App Testing Plan
+# 🛡️ Blue Crate Mobile App Testing Plan
 
 ## 1. Executive Summary
-This document outlines the Quality Assurance (QA) strategy to ensure `BlueCrateFoods` is robust, performant, and bug-free before public release. Accessing the "Industry Standard" reliability required for a consumer-facing food delivery app requires a multi-layered testing approach.
+This document outlines the Quality Assurance (QA) strategy to ensure `Blue Crate` is robust, performant, and bug-free before public release. Accessing the "Industry Standard" reliability required for a consumer-facing food delivery app requires a multi-layered testing approach.
 
 ## 2. Testing Pyramid Strategy
 We will follow the industry-standard "Testing Pyramid": many fast unit tests, fewer integration tests, and a select number of critical user journey tests (E2E).

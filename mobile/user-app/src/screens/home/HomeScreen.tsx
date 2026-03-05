@@ -13,44 +13,53 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   FlatList,
-  ImageBackground
+  ImageBackground,
+  BackHandler
 } from 'react-native';
 import { API_CONFIG, CDN_URL } from '../../constants/config';
 import { colors } from '../../constants/colors';
 import { typography, textStyles } from '../../constants/typography';
 import { spacing, borderRadius, shadow } from '../../constants/spacing';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { recipeService } from '../../services/recipeService';
 import { chatService, Message } from '../../services/chatService';
+import { recipeService } from '../../services/recipeService';
 import { Recipe } from '../../types/recipe';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: windowWidth } = Dimensions.get('window'); // Re-declaring since we removed interface
 
 
 import { useLocationStore } from '../../stores/locationStore';
+import useCartStore from '../../stores/cartStore';
+import useRecipeStore from '../../stores/recipeStore';
 
 /**
  * Home Screen - Landing page with categories
  */
 
 export const HomeScreen = ({ navigation }: any) => {
+  const insets = useSafeAreaInsets();
   const { location } = useLocationStore();
   const isServiceable = location?.toLowerCase().includes('kolkata');
 
+  const { items, addItem, updateQuantityByIngredientId } = useCartStore();
+  const { addSearchTerm, getUnifiedFrequentList, addFrequentItem } = useRecipeStore();
+  const unifiedFrequent = getUnifiedFrequentList();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const [suggestedRecipes, setSuggestedRecipes] = useState<Recipe[]>([]);
+  const [searchResults, setSearchResults] = useState<Recipe[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchingText, setSearchingText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [suggestions, setSuggestions] = useState<Recipe[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // ... (previous state definitions remain the same)
 
   const placeholderTexts = [
-    "Try 'I want something spicy'",
-    "Try 'Show me vegan options'",
-    "Try 'Quick breakfast ideas'",
-    "Try 'Gluten-free snacks'"
+    "Search 'Fresh organic milk'",
+    "Try 'Frozen snacks'",
+    "Search 'Ready to eat meals'",
+    "Try 'Sustainable packaging'"
   ];
   const [placeholderIndex, setPlaceholderIndex] = useState(0); // Keeping for safety if used elsewhere, though we'll use dynamicPlaceholder
   const [dynamicPlaceholder, setDynamicPlaceholder] = useState(placeholderTexts[0]);
@@ -95,50 +104,44 @@ export const HomeScreen = ({ navigation }: any) => {
   useEffect(() => {
     const unsubscribe = chatService.subscribe((messages) => {
       setChatMessages(messages);
-
-      // Sync suggestions from the latest bot message
-      const lastMsg = messages[messages.length - 1];
-      if (lastMsg && lastMsg.sender === 'bot') {
-        if (lastMsg.recipes && lastMsg.recipes.length > 0) {
-          setSuggestedRecipes(lastMsg.recipes);
-        }
-      }
     });
     return unsubscribe;
   }, []);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      if (searchQuery.length > 1 && isSearchFocused) {
-        try {
-          const results = await recipeService.searchRecipes(searchQuery);
-          setSuggestions(results.slice(0, 3)); // Limit to 3 for compact view
-          setShowSuggestions(true);
-        } catch (error) {
-          console.error("Search error:", error);
-        }
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, isSearchFocused]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const scrollViewRef = React.useRef<ScrollView>(null);
   const chatListRef = React.useRef<ScrollView>(null);
 
 
-  const quickOptions = ['Breakfast', 'Healthy', 'Snacks', 'Dessert', 'Spicy', 'Chicken'];
+  const quickOptions = ['Breakfast', 'Healthy', 'Snacks', 'Dessert', 'Spicy', 'Chicken', 'Chinese', 'Italian', 'Mexican'];
 
   const promos = [
     { id: 1, title: '50% OFF on First Order', subtitle: 'Use code: WELCOME50', color: '#FF7043', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80' },
     { id: 2, title: 'New Vegan Collection', subtitle: 'Explore plant-based goodness', color: '#66BB6A', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80' },
     { id: 3, title: 'Chef\'s Special Curry', subtitle: 'Limited time offer', color: '#FFA726', image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&q=80' }
   ];
+
+  const carouselWidth = (windowWidth - 32 - 4) * 0.75;
+
+  // Handle back button press when search is focused
+  useEffect(() => {
+    const backAction = () => {
+      if (isSearchFocused) {
+        handleSearchCancel();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [isSearchFocused]);
 
   // Auto-scroll logic
   useEffect(() => {
@@ -148,7 +151,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({
-          x: nextSlide * windowWidth,
+          x: nextSlide * carouselWidth,
           animated: true,
         });
         setCurrentSlide(nextSlide);
@@ -169,114 +172,388 @@ export const HomeScreen = ({ navigation }: any) => {
 
 
 
-  const categories = [
-    { id: '1min', title: isServiceable ? 'Ready in 1 Min' : 'Cook in 1 Min', subtitle: isServiceable ? 'Quick bites & instant recipes' : 'Super fast recipes', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&q=80', filter: '1min' },
-    { id: '10min', title: isServiceable ? 'Ready in 10 Mins' : 'Cook in 10 Mins', subtitle: 'Fast & easy meals', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', filter: '10min' },
-    { id: '30min', title: isServiceable ? 'Ready in 30 Mins' : 'Cook in 30 Mins', subtitle: 'Gourmet experiences', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80', filter: '30min' },
-    { id: 'ready', title: isServiceable ? 'Ready to Eat' : 'Master Chef Tips', subtitle: isServiceable ? 'Fresh & pre-cooked' : 'Learn pro techniques', image: 'https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=500&q=80', filter: 'ready' },
-    { id: 'offers', title: isServiceable ? 'Special Offers' : 'Featured Recipes', subtitle: isServiceable ? 'Discounts & deals' : 'Editor\'s pick for you', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=500&q=80', filter: 'offers' },
-    { id: 'xp', title: 'XP Boost', subtitle: 'Level up faster', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=500&q=80', filter: 'xp' },
+
+  const trendingHits = [
+    {
+      id: 'hit-1',
+      title: 'Fresh Spinach',
+      image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200&q=80',
+      product: { id: '1', name: 'Fresh Spinach', price: 40, mrp: 50, weight: '250g', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300&q=80' }
+    },
+    {
+      id: 'hit-2',
+      title: 'Carrots',
+      image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=200&q=80',
+      product: { id: '2', name: 'Carrots (Ooty)', price: 65, mrp: 80, weight: '500g', image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=300&q=80' }
+    },
+    {
+      id: 'hit-3',
+      title: 'Avocado',
+      image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=200&q=80',
+      product: { id: '3', name: 'Avocado (Haas)', price: 280, mrp: 350, weight: '1 pc', image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=300&q=80' }
+    },
+    {
+      id: 'hit-4',
+      title: 'Red Onions',
+      image: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=200&q=80',
+      product: { id: '4', name: 'Red Onions', price: 35, mrp: 45, weight: '1kg', image: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=300&q=80' }
+    },
+    {
+      id: 'hit-5',
+      title: 'Eggs',
+      image: 'https://images.unsplash.com/photo-1506084868730-342b1f852e0d?w=200&q=80',
+      product: { id: 'eggs-1', name: 'Organic Eggs', price: 90, mrp: 110, weight: '6 pcs', image: 'https://images.unsplash.com/photo-1506084868730-342b1f852e0d?w=300&q=80' }
+    },
+    {
+      id: 'hit-6',
+      title: 'Salmon',
+      image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=200&q=80',
+      product: { id: 'fish-1', name: 'Fresh Salmon', price: 850, mrp: 1000, weight: '250g', image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300&q=80' }
+    },
   ];
 
-  const BentoCard = ({ item, style }: any) => (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={() => handleCategoryPress(item.filter)}
-      style={[styles.bentoCard, style, { padding: 0, borderStartColor: 'transparent', height: style?.height || 120 }]}
-    >
-      <ImageBackground
-        source={{ uri: item.image }}
-        style={{ flex: 1, justifyContent: 'flex-end' }}
-        imageStyle={{ borderRadius: 12, opacity: 0.6 }}
-      >
-        <View style={{
-          backgroundColor: 'rgba(0,0,0,0.4)',
-          padding: 10,
-          borderRadius: 12,
-          flex: 1,
-          justifyContent: 'flex-end'
-        }}>
-          <Text style={[styles.bentoTitle, { color: colors.white, fontSize: 13, marginBottom: 2 }]} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={{ color: colors.gray[200], fontSize: 10, fontFamily: typography.fontFamily.medium }} numberOfLines={1}>
-            {item.subtitle}
-          </Text>
-        </View>
-      </ImageBackground>
-    </TouchableOpacity>
-  );
+  const categories = [
+    { id: 'frozen', title: 'Ready to cook: Frozen', subtitle: 'Quick frozen delicacies', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&q=80', filter: 'frozen' },
+    { id: '5min', title: 'Ready-to-cook: <5 mins', subtitle: 'Instant satisfaction', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', filter: '5min' },
+    { id: '10min', title: 'Ready-to-cook: <10 mins', subtitle: 'Fast & fresh meals', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80', filter: '10min' },
+    { id: 'veg', title: 'Vegetables', subtitle: 'Farm to your doorstep', image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500&q=80', filter: 'vegetables' },
+    { id: 'meat', title: 'Meat', subtitle: 'Premium cuts & poultry', image: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?w=500&q=80', filter: 'meat' },
+    { id: 'grocery', title: 'Groceries', subtitle: 'Daily kitchen essentials', image: 'https://images.unsplash.com/photo-1506484334402-40ff22e05a6d?w=500&q=80', filter: 'groceries' },
+    { id: 'packaging', title: 'Packaging', subtitle: 'Safe & sustainable', image: 'https://images.unsplash.com/photo-1620455212513-ade425712128?w=500&q=80', filter: 'packaging' },
+  ];
+
 
 
   const bestsellers = [
     {
       id: '1',
-      name: 'Paneer Tikka',
-      image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400&h=300&fit=crop',
-      rating: 4.5,
-      reviews: 20,
+      name: 'Fresh Chicken Curry Cut',
+      image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&h=300&fit=crop',
+      rating: 4.8,
+      reviews: 124,
       xp: 20,
-      difficulty: 'Easy',
+      basePrice: 249,
+      mrp: 299,
+      unit: '500g',
+      badge: 'BESTSELLER',
     },
     {
       id: '2',
-      name: 'Veg Biryani',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21bc4a4f8?w=400&h=300&fit=crop',
-      rating: 4.2,
-      reviews: 15,
-      xp: 25,
-      difficulty: 'Medium',
+      name: 'Atlantic Salmon Fillet',
+      image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop',
+      rating: 4.9,
+      reviews: 86,
+      xp: 35,
+      basePrice: 899,
+      mrp: 1099,
+      unit: '250g',
+      badge: 'PREMIUM',
     },
     {
       id: '3',
-      name: 'Chicken Samosa',
-      image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&h=300&fit=crop',
-      rating: 4.8,
-      reviews: 42,
-      xp: 30,
-      difficulty: 'Easy',
+      name: 'Tender Mutton Chops',
+      image: 'https://images.unsplash.com/photo-1603360946369-39c9f458d7e1?w=400&h=300&fit=crop',
+      rating: 4.7,
+      reviews: 52,
+      xp: 40,
+      basePrice: 549,
+      mrp: 599,
+      unit: '500g',
     },
     {
       id: '4',
-      name: 'Mutton Kebab',
-      image: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&h=300&fit=crop',
+      name: 'Fresh Tiger Prawns',
+      image: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=400&h=300&fit=crop',
       rating: 4.6,
-      reviews: 28,
-      xp: 35,
-      difficulty: 'Hard',
+      reviews: 42,
+      xp: 30,
+      basePrice: 429,
+      mrp: 499,
+      unit: '250g',
+      badge: 'HOT DEAL',
     },
   ];
 
-  const CompactRecipeCard = ({ recipe, onPress }: any) => (
-    <TouchableOpacity style={styles.compactCard} onPress={onPress}>
-      <Image source={{ uri: recipe.image }} style={styles.compactImage} />
-      <View style={styles.compactContent}>
-        <Text style={styles.compactTitle} numberOfLines={1}>{recipe.name}</Text>
-        <View style={styles.compactMeta}>
-          <Ionicons name="star" size={12} color={colors.yellow[500]} />
-          <Text style={styles.compactMetaText}>{recipe.rating || 4.5}</Text>
-          <Text style={styles.compactMetaText}>•</Text>
-          <Text style={styles.compactMetaText}>{recipe.reviews || 10}</Text>
-          <View style={styles.xpBadge}>
-            <View style={styles.xpCoin}>
-              <Text style={styles.xpCoinText}>●</Text>
+  const CompactProductCard = ({ recipe: product, onPress, style }: any) => {
+    const savings = product.mrp ? Math.round(((product.mrp - product.basePrice) / product.mrp) * 100) : 0;
+
+    return (
+      <TouchableOpacity style={[styles.compactCard, style]} onPress={onPress}>
+        <Image source={{ uri: product.image }} style={styles.compactImage} />
+        <View style={styles.compactContent}>
+          <Text style={styles.compactTitle} numberOfLines={1}>{product.name}</Text>
+          <View style={styles.compactMeta}>
+            <Ionicons name="star" size={12} color={colors.yellow[500]} />
+            <Text style={styles.compactMetaText}>{product.rating || 4.5}</Text>
+            <Text style={styles.compactMetaText}>•</Text>
+            <Text style={styles.compactMetaText}>{product.unit || 'per unit'}</Text>
+          </View>
+
+          <View style={styles.compactPriceRow}>
+            <View style={styles.compactPriceStack}>
+              <Text style={styles.compactPrice}>₹{product.basePrice}</Text>
+              {product.mrp && product.mrp > product.basePrice && (
+                <Text style={styles.compactMrp}>₹{product.mrp}</Text>
+              )}
             </View>
-            <Text style={styles.xpText}>{recipe.xp || 20} XP</Text>
+            {savings > 0 && (
+              <View style={styles.compactSavingsBadge}>
+                <Text style={styles.compactSavingsText}>{savings}% OFF</Text>
+              </View>
+            )}
           </View>
         </View>
-        <View style={styles.compactFooter}>
-          <Ionicons name="information-circle-outline" size={12} color={colors.gray[400]} />
-          <Text style={styles.compactFooterText}>{recipe.difficulty || 'Easy'}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const VerticalProductCard = ({ product, onPress, width }: any) => {
+    const savings = product.mrp ? Math.round(((product.mrp - product.basePrice) / product.mrp) * 100) : 0;
+
+    const cartItem = items.find(i => i.ingredient.id === product.id);
+    const quantity = cartItem?.quantity || 0;
+
+    const handleAdd = (e: any) => {
+      e.stopPropagation();
+      const ingredient = {
+        id: product.id,
+        name: product.name,
+        price: product.basePrice || product.price,
+        unit: product.unit || product.weight,
+        image: product.image,
+        category: product.category || 'general'
+      };
+      addItem(ingredient as any, 1);
+      addFrequentItem(product);
+    };
+
+    const handleIncrement = (e: any) => {
+      e.stopPropagation();
+      updateQuantityByIngredientId(product.id, quantity + 1);
+    };
+
+    const handleDecrement = (e: any) => {
+      e.stopPropagation();
+      updateQuantityByIngredientId(product.id, quantity - 1);
+    };
+
+    const handleAddBulk = (e: any, bulkQuantity: string) => {
+      e.stopPropagation();
+      const qty = parseInt(bulkQuantity) || 1;
+      const cartItem = items.find(i => i.ingredient.id === product.id);
+
+      if (!cartItem) {
+        const ingredient = {
+          id: product.id,
+          name: product.name,
+          price: product.basePrice || product.price,
+          unit: product.unit || product.weight,
+          image: product.image,
+          category: product.category || 'general'
+        };
+        addItem(ingredient as any, qty);
+        addFrequentItem(product);
+      } else {
+        updateQuantityByIngredientId(product.id, qty);
+      }
+    };
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={onPress}
+        style={{
+          width: width,
+          backgroundColor: colors.white,
+          borderRadius: 12,
+          overflow: 'hidden',
+          ...shadow.soft,
+          borderWidth: 1,
+          borderColor: colors.gray[100],
+          marginBottom: 12,
+        }}
+      >
+        {/* Product Image Area */}
+        <View style={{ position: 'relative' }}>
+          <Image
+            source={{ uri: product.image }}
+            style={{ width: '100%', height: 110, backgroundColor: colors.gray[100] }}
+            resizeMode="cover"
+          />
+          {product.badge && (
+            <View style={{
+              position: 'absolute',
+              top: 8,
+              left: 0,
+              backgroundColor: colors.primary[600],
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+              borderTopRightRadius: 4,
+              borderBottomRightRadius: 4,
+            }}>
+              <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.white }}>
+                {product.badge}
+              </Text>
+            </View>
+          )}
+          {savings > 0 && (
+            <View style={{
+              position: 'absolute',
+              bottom: 8,
+              right: 8,
+              backgroundColor: colors.accent[500],
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+              borderRadius: 4,
+            }}>
+              <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.white }}>
+                {savings}% OFF
+              </Text>
+            </View>
+          )}
         </View>
-      </View>
-    </TouchableOpacity>
-  );
 
-  const handleChatSubmit = async () => {
-    if (!searchQuery.trim()) return;
+        {/* Content Area */}
+        <View style={{ padding: 6 }}>
+          <Text style={{
+            fontSize: 12,
+            fontFamily: typography.fontFamily.semibold,
+            color: colors.gray[800],
+            marginBottom: 2,
+            height: 32,
+          }} numberOfLines={2}>
+            {product.name}
+          </Text>
 
-    const userText = searchQuery;
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <Text style={{ fontSize: 10, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
+              {product.unit || 'per unit'}
+            </Text>
+          </View>
+
+          {product.bulkTiers && (
+            <View style={{
+              flexDirection: 'column',
+              gap: 4,
+              marginBottom: 8,
+              backgroundColor: colors.gray[50],
+              padding: 4,
+              borderRadius: 6,
+            }}>
+              {product.bulkTiers.map((tier: any, idx: number) => {
+                const qtyNum = parseInt(tier.quantity) || 1;
+                const unitPrice = Math.round(tier.price / qtyNum);
+                return (
+                  <View key={idx} style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingVertical: 1,
+                  }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[600] }}>
+                        {tier.quantity}: <Text style={{ color: colors.primary[600] }}>₹{tier.price}</Text>
+                      </Text>
+                      <Text style={{ fontSize: 7, color: colors.gray[400], fontFamily: typography.fontFamily.medium }}>
+                        ₹{unitPrice} / unit
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: colors.white,
+                        borderWidth: 1,
+                        borderColor: colors.primary[200],
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderRadius: 4,
+                      }}
+                      onPress={(e) => handleAddBulk(e, tier.quantity)}
+                    >
+                      <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>ADD</Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View>
+              <View style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
+                <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
+                  ₹{product.basePrice}
+                </Text>
+                {product.mrp && product.mrp > product.basePrice && (
+                  <Text style={{ fontSize: 10, color: colors.gray[400], textDecorationLine: 'line-through' }}>
+                    ₹{product.mrp}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {quantity > 0 ? (
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: colors.primary[50],
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: colors.primary[100],
+                ...shadow.soft,
+              }}>
+                <TouchableOpacity
+                  onPress={handleDecrement}
+                  style={{ padding: 6, paddingHorizontal: 6 }}
+                >
+                  <Feather name="minus" size={14} color={colors.primary[600]} />
+                </TouchableOpacity>
+                <Text style={{
+                  fontSize: 12,
+                  fontFamily: typography.fontFamily.bold,
+                  color: colors.primary[700],
+                  minWidth: 16,
+                  textAlign: 'center',
+                }}>
+                  {quantity}
+                </Text>
+                <TouchableOpacity
+                  onPress={handleIncrement}
+                  style={{ padding: 6, paddingHorizontal: 6 }}
+                >
+                  <Feather name="plus" size={14} color={colors.primary[600]} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: colors.white,
+                  borderWidth: 1,
+                  borderColor: colors.primary[500],
+                  paddingHorizontal: 12,
+                  paddingVertical: 5,
+                  borderRadius: 6,
+                  ...shadow.soft,
+                }}
+                onPress={handleAdd}
+              >
+                <Text style={{ fontSize: 12, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>
+                  ADD
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const handleChatSubmit = async (text?: string) => {
+    const userText = text || searchQuery;
+    if (!userText.trim()) return;
+
     setSearchQuery('');
+    setIsSearching(true);
+    setSearchingText(userText);
     Keyboard.dismiss();
     setIsSearchFocused(false);
 
@@ -288,69 +565,58 @@ export const HomeScreen = ({ navigation }: any) => {
       timestamp: Date.now(),
     };
     chatService.addMessage(userMsg);
+    addSearchTerm(userText);
 
     generateMascotResponse(userText);
   };
 
   const generateMascotResponse = async (query: string) => {
     setIsTyping(true);
-    // Use the centralized chat logic from ChatService
-    // Simulate a delay for natural feel
-    setTimeout(async () => {
+
+    try {
+      // Fetch results for the dedicated results section
+      try {
+        const results = await recipeService.searchRecipes(query);
+        setSearchResults(results);
+        setIsSearching(false); // Clear feedback as soon as results are here
+      } catch (error) {
+        console.warn("HomeScreen: Failed to fetch search results for section", error);
+        setIsSearching(false);
+      }
+
+      // Use the centralized chat logic from ChatService
       await chatService.generateBotResponse(query);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+      setIsSearching(false); // Safety fallback
+    }
   };
 
-  const handleBrowseRecipes = (term?: string) => {
-    // Navigate to Full Chat Interface
-    // We don't need to pass initialQuery if we are syncing via service
-    // But if term is provided (quick tags), we should probably submit it first?
-    // For now, if term is passed, we treat it as a new chat submission then navigate?
-    // Or just navigate. The user asked for maximize icon to expand.
-    // Let's just navigate.
+  const handleBrowseProducts = () => {
     setIsSearchFocused(false);
-    navigation.navigate('Chat');
+    navigation.navigate('ProductsTab');
   };
 
 
 
   const handleCategoryPress = (filter: string) => {
-    // Navigate to Recipes tab with filter
-    navigation.navigate('RecipesTab', {
-      screen: 'RecipeList',
-      params: { timeFilter: filter },
+    const category = categories.find(c => c.filter === filter || c.id === filter);
+    navigation.navigate('ProductsTab', {
+      screen: 'CategoryDetail',
+      params: {
+        categoryId: category?.id || filter,
+        categoryTitle: category?.title || 'Products',
+      }
     });
   };
 
   const handleSearchPress = (query: string) => {
-    // Navigate to Recipe List with search query (bypassing Chat)
     setIsSearchFocused(false);
     setSearchQuery('');
     Keyboard.dismiss();
 
-    navigation.navigate('Main', {
-      screen: 'RecipesTab',
-      params: {
-        screen: 'RecipeList',
-        params: { initialSearch: query },
-      }
-    });
-  };
-
-  const handleSuggestionPress = (recipe: Recipe) => {
-    setIsSearchFocused(false);
-    setSearchQuery('');
-    Keyboard.dismiss();
-
-    // Navigate to Recipe Detail
-    navigation.navigate('Main', {
-      screen: 'RecipesTab',
-      params: {
-        screen: 'RecipeDetail',
-        params: { recipeId: String(recipe.id) },
-      }
-    });
+    // Use handleChatSubmit to visually show the search in chat
+    handleChatSubmit(query);
   };
 
   const handleSearchFocus = () => {
@@ -362,6 +628,18 @@ export const HomeScreen = ({ navigation }: any) => {
     setSearchQuery('');
     Keyboard.dismiss();
   };
+
+  const TrendingGem = ({ item, onPress }: any) => (
+    <TouchableOpacity
+      style={styles.gemContainer}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <View style={styles.gemCircle}>
+        <Image source={{ uri: item.image }} style={styles.gemImage} resizeMode="cover" />
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <ScrollView
@@ -380,7 +658,7 @@ export const HomeScreen = ({ navigation }: any) => {
               Example: source={{ uri: 'https://res.cloudinary.com/.../cat-cheff.png' }}
               This reduces bundle size. */}
           <Image
-            source={{ uri: `${CDN_URL}/cat-cheff.png` }}
+            source={require('../../../assets/images/kitty_with_cart_cropped.png')}
             style={styles.catImage}
             resizeMode="contain"
           />
@@ -412,7 +690,7 @@ export const HomeScreen = ({ navigation }: any) => {
                       borderRadius: 12,
                       borderBottomRightRadius: item.sender === 'user' ? 2 : 12,
                       borderBottomLeftRadius: item.sender === 'bot' ? 2 : 12,
-                      maxWidth: '85%',
+                      maxWidth: '92%',
                       ...shadow.soft,
                     }}
                   >
@@ -420,29 +698,103 @@ export const HomeScreen = ({ navigation }: any) => {
                       fontSize: typography.fontSize.xs,
                       color: item.sender === 'user' ? colors.white : colors.text.primary,
                       fontFamily: typography.fontFamily.medium,
+                      marginBottom: item.products && item.products.length > 0 ? 8 : 0,
                     }}>
                       {item.text}
                     </Text>
+
+                    {item.products && item.products.length > 0 && (
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        nestedScrollEnabled={true}
+                        style={{ marginTop: 4 }}
+                      >
+                        {item.products.map((product: any) => (
+                          <TouchableOpacity
+                            key={product.id}
+                            style={{
+                              width: 140,
+                              backgroundColor: colors.white,
+                              borderRadius: 8,
+                              padding: 8,
+                              marginRight: 10,
+                              borderWidth: 1,
+                              borderColor: colors.gray[100],
+                              ...shadow.soft,
+                            }}
+                            onPress={() => navigation.navigate('ProductsTab', {
+                              screen: 'ProductDetail',
+                              params: { product }
+                            })}
+                          >
+                            <Image
+                              source={{ uri: product.image }}
+                              style={{ width: '100%', height: 80, borderRadius: 6, marginBottom: 6 }}
+                              resizeMode="cover"
+                            />
+                            <Text style={{
+                              fontSize: 11,
+                              fontFamily: typography.fontFamily.semibold,
+                              color: colors.gray[800],
+                              height: 30,
+                            }} numberOfLines={2}>
+                              {product.name}
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                              <View>
+                                <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
+                                  ₹{product.basePrice || product.price || 99}
+                                </Text>
+                                <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
+                                  ₹{Math.round((product.basePrice || product.price || 99) * 1.2)}
+                                </Text>
+                              </View>
+                              <View style={{
+                                backgroundColor: colors.accent[50],
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 4,
+                              }}>
+                                <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.accent[600] }}>
+                                  20% OFF
+                                </Text>
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )}
                   </View>
                 ))}
               </ScrollView>
             </View>
           </View>
         </View>
-        <View style={{ zIndex: 10 }}>
+        <View style={{ zIndex: 100, position: 'relative' }}>
           <View style={styles.newSearchContainer}>
-            <Feather name="search" size={20} color={colors.gray[400]} style={{ marginRight: 10 }} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={dynamicPlaceholder}
-              placeholderTextColor={colors.gray[400]}
-              value={searchQuery}
-              onChangeText={(text) => {
-                setSearchQuery(text);
-              }}
-              onSubmitEditing={() => handleChatSubmit()}
-              onFocus={handleSearchFocus}
-            />
+            <TouchableOpacity onPress={() => handleChatSubmit()} style={{ marginRight: 10 }}>
+              <Feather name="search" size={20} color={colors.primary[500]} />
+            </TouchableOpacity>
+            {isSearching ? (
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontSize: 13, color: colors.gray[500], fontStyle: 'italic' }}>
+                  Searching for "{searchingText}"...
+                </Text>
+              </View>
+            ) : (
+              <TextInput
+                style={styles.searchInput}
+                placeholder={dynamicPlaceholder}
+                placeholderTextColor={colors.gray[400]}
+                value={searchQuery}
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                }}
+                onSubmitEditing={() => handleChatSubmit()}
+                onFocus={handleSearchFocus}
+              />
+            )}
             {isSearchFocused ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 {/* <TouchableOpacity onPress={() => handleBrowseRecipes()}>
@@ -459,54 +811,50 @@ export const HomeScreen = ({ navigation }: any) => {
             )}
           </View>
 
-          {/* Permanent Suggestions Strip */}
-          <View style={{ marginTop: spacing.xs }}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 2, paddingBottom: 4 }}
-            >
-              {quickOptions.map((tag, index) => (
-                <TouchableOpacity
-                  key={tag}
-                  style={[
-                    styles.quickTag,
-                    {
-                      marginRight: 3,
-                      backgroundColor: colors.white,
+          {/* Search Mode Tags Row - RELATIVE positioning for robust scroll */}
+          {isSearchFocused && (
+            <View style={{ width: '100%', height: 44, marginBottom: spacing.xs, borderBottomWidth: 1, borderBottomColor: colors.gray[100], paddingBottom: spacing.xs }}>
+              <FlatList
+                data={quickOptions}
+                horizontal
+                showsHorizontalScrollIndicator={true}
+                nestedScrollEnabled={true}
+                keyExtractor={(item) => item}
+                keyboardShouldPersistTaps="always"
+                style={{ width: '100%', height: '100%' }}
+                contentContainerStyle={{
+                  paddingHorizontal: spacing.md,
+                  alignItems: 'center',
+                }}
+                renderItem={({ item: tag }) => (
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: colors.gray[50],
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 100,
                       borderWidth: 1,
                       borderColor: colors.gray[200],
-                      elevation: 0,
-                      shadowOpacity: 0
-                    }
-                  ]}
-                  onPress={() => handleSearchPress(tag)}
-                >
-                  <Text style={[styles.quickTagText, { color: colors.gray[700] }]}>{tag}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Search Mode Overlay Content - Only Suggestions/Results */}
-          {isSearchFocused && searchQuery.length > 0 && (
-            <View style={styles.searchOverlay}>
-              <View style={styles.resultsList}>
-                {suggestions.length > 0 && suggestions.map((recipe) => (
-                  <TouchableOpacity
-                    key={recipe.id}
-                    style={[styles.suggestionItem, styles.suggestionBorder]}
-                    onPress={() => handleSuggestionPress(recipe)}
+                      marginRight: 8,
+                    }}
+                    onPress={() => handleSearchPress(tag)}
                   >
-                    <Feather name="search" size={14} color={colors.gray[400]} style={{ marginRight: 8 }} />
-                    <Text style={styles.suggestionText} numberOfLines={1}>{recipe.name}</Text>
+                    <Feather name="search" size={12} color={colors.gray[400]} style={{ marginRight: 6 }} />
+                    <Text style={{ fontSize: 13, color: colors.gray[700], fontFamily: typography.fontFamily.medium }}>{tag}</Text>
                   </TouchableOpacity>
-                ))}
+                )}
+              />
+            </View>
+          )}
+
+          {/* Search Mode Overlay Content - Absolute but below the relative tags row */}
+          {isSearchFocused && searchQuery.length > 0 && (
+            <View style={[styles.searchOverlay, { top: 94 }]}>
+              <View style={[styles.resultsList, { paddingHorizontal: spacing.md }]}>
                 <TouchableOpacity
-                  style={[
-                    styles.suggestionItem,
-                    { borderTopWidth: suggestions.length > 0 ? 0 : 1, borderTopColor: colors.gray[100] }
-                  ]}
+                  style={styles.suggestionItem}
                   onPress={() => handleSearchPress(searchQuery)}
                 >
                   <Feather name="list" size={16} color={colors.primary[500]} style={{ marginRight: 10 }} />
@@ -517,126 +865,210 @@ export const HomeScreen = ({ navigation }: any) => {
               </View>
             </View>
           )}
-
         </View>
+        {/* Active Search Results Section */}
+        {searchResults.length > 0 && (
+          <View style={{ marginTop: spacing.xs, marginBottom: spacing.xs }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4, marginBottom: 2 }}>
+              <Text style={{ ...textStyles.h2, color: colors.text.primary, textAlign: 'left' }}>
+                Search Results
+              </Text>
+              <TouchableOpacity onPress={() => setSearchResults([])}>
+                <Text style={{ fontSize: 13, color: colors.primary[600], fontWeight: '700', fontFamily: typography.fontFamily.semibold }}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 4, paddingHorizontal: 4, alignItems: 'flex-start' }}
+            >
+              {searchResults.map((product) => (
+                <View key={product.id} style={{ marginRight: 8 }}>
+                  <VerticalProductCard
+                    product={product}
+                    width={(windowWidth - 48) / 3}
+                    onPress={() => navigation.navigate('ProductsTab', {
+                      screen: 'ProductDetail',
+                      params: { product }
+                    })}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
 
       </View>
 
-      {/* Promo Carousel */}
-      <View style={styles.promoContainer}>
+      {/* Recommended for You Section - Unified */}
+      <View style={styles.hitsSection}>
+        <View style={styles.hitsHeader}>
+          <Text style={styles.hitsTitle}>Recommended for You</Text>
+          <Ionicons name="sparkles" size={14} color={colors.primary[500]} />
+        </View>
         <ScrollView
-          ref={scrollViewRef}
           horizontal
-          pagingEnabled
           showsHorizontalScrollIndicator={false}
-          style={styles.promoScroll}
-          onScroll={onScroll}
-          scrollEventThrottle={16}
+          contentContainerStyle={styles.hitsScroll}
         >
-          {promos.map((promo) => (
-            <View key={promo.id} style={{ width: windowWidth, paddingHorizontal: 16 }}>
-              <View style={styles.promoCard}>
-                {/* TODO: [CLOUDINARY] Ensure these promo images are served from Cloudinary in production for optimization */}
-                <Image source={{ uri: promo.image }} style={styles.promoImage} />
-                <View style={styles.promoOverlay} />
-                <View style={styles.promoContent}>
-                  <Text style={styles.promoTitle}>{promo.title}</Text>
-                  <Text style={styles.promoSubtitle}>{promo.subtitle}</Text>
-                  <TouchableOpacity
-                    style={styles.promoButton}
-                    onPress={() => navigation.navigate('RecipesTab')}
-                  >
-                    <Text style={styles.promoButtonText}>{isServiceable ? 'Shop Now' : 'View Recipes'}</Text>
-                  </TouchableOpacity>
+          {unifiedFrequent.length > 0 ? (
+            unifiedFrequent.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.gemContainer}
+                onPress={() => item.type === 'search'
+                  ? handleSearchPress(item.title)
+                  : navigation.navigate('ProductsTab', {
+                    screen: 'ProductDetail',
+                    params: { product: item.product }
+                  })
+                }
+              >
+                <View style={[
+                  styles.gemCircle,
+                  item.type === 'search'
+                    ? { backgroundColor: colors.primary[50], borderStyle: 'dashed', borderWidth: 1, borderColor: colors.primary[200] }
+                    : { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }
+                ]}>
+                  {item.type === 'search' ? (
+                    <Feather name="search" size={24} color={colors.primary[400]} />
+                  ) : (
+                    <Image source={{ uri: item.image }} style={{ width: '100%', height: '100%', borderRadius: 100 }} />
+                  )}
                 </View>
+                <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
+                  {item.title}
+                </Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            // Initial placeholders
+            ['Frozen', 'Vegetables', 'Meat', 'Dairy'].map((item) => (
+              <TouchableOpacity
+                key={item}
+                style={styles.gemContainer}
+                onPress={() => handleSearchPress(item)}
+              >
+                <View style={[styles.gemCircle, { backgroundColor: colors.gray[50] }]}>
+                  <Feather name="search" size={24} color={colors.gray[300]} />
+                </View>
+                <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[400], marginTop: 6, width: 70, textAlign: 'center' }}>
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+      </View>
+
+      <View style={styles.bentoSection}>
+        <View style={styles.bentoGrid}>
+          {/* Row 1 & 2: Carousel (3/4) + Frozen (1/4) */}
+          <View style={styles.bentoRow}>
+            <View style={styles.promoWrapper}>
+              <ScrollView
+                ref={scrollViewRef}
+                horizontal
+                pagingEnabled={false}
+                snapToInterval={BENTO_WIDE_WIDTH}
+                snapToAlignment="start"
+                decelerationRate="fast"
+                showsHorizontalScrollIndicator={false}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                style={styles.promoScroll}
+              >
+                {promos.map((promo) => (
+                  <View key={promo.id} style={{ width: carouselWidth, height: 96 }}>
+                    <ImageBackground
+                      source={{ uri: promo.image }}
+                      style={styles.promoCardContent}
+                      imageStyle={{ borderRadius: 12 }}
+                    >
+                      <View style={styles.promoOverlay} />
+                      <View style={styles.promoContent}>
+                        <Text style={styles.promoTitle} numberOfLines={1}>{promo.title}</Text>
+                        <Text style={styles.promoSubtitle} numberOfLines={1}>{promo.subtitle}</Text>
+                        <TouchableOpacity style={styles.promoMiniButton}>
+                          <Text style={styles.promoMiniButtonText}>GO</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </ImageBackground>
+                  </View>
+                ))}
+              </ScrollView>
+              {/* Dots */}
+              <View style={styles.bentoDots}>
+                {promos.map((_, i) => (
+                  <View key={i} style={[styles.bentoDot, currentSlide === i && styles.bentoDotActive]} />
+                ))}
               </View>
             </View>
-          ))}
-        </ScrollView>
 
-        {/* Pagination Dots */}
-        <View style={styles.pagination}>
-          {promos.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                currentSlide === index ? styles.activeDot : styles.inactiveDot
-              ]}
-            />
-          ))}
-        </View>
-      </View >
-
-      {/* Suggested Recipes from Chat */}
-      {suggestedRecipes.length > 0 && (
-        <View style={[styles.section, { backgroundColor: colors.green[50], paddingVertical: spacing.xs }]}>
-          <View style={{ marginBottom: 0 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={[styles.sectionTitle as any, { textAlign: 'left', color: colors.green[800] }]}>Eatee Kitty's Suggestions</Text>
-              <TouchableOpacity onPress={() => setSuggestedRecipes([])}>
-                <Feather name="x-circle" size={24} color={colors.green[700]} />
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.sectionSubtitle, { textAlign: 'left' }]}>Based on your chat</Text>
+            <TouchableOpacity
+              style={styles.bentoVertical}
+              onPress={() => handleCategoryPress('frozen')}
+            >
+              <Image source={{ uri: categories[0].image }} style={styles.bentoImageFull} />
+              <View style={styles.bentoScrim} />
+              <Text style={styles.bentoLabelFloating}>Frozen</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.compactGrid}>
-            {suggestedRecipes.map((recipe) => (
-              <CompactRecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                onPress={() => navigation.navigate('Main', {
-                  screen: 'RecipesTab',
-                  params: {
-                    screen: 'RecipeDetail',
-                    params: { recipeId: String(recipe.id) },
-                  }
-                })}
-              />
+
+          {/* Row 3: <5min (1/2) + <10min (1/2) */}
+          <View style={styles.bentoRow}>
+            <TouchableOpacity
+              style={styles.bentoHalf}
+              onPress={() => handleCategoryPress('5min')}
+            >
+              <Image source={{ uri: categories[1].image }} style={styles.bentoImageFull} />
+              <View style={styles.bentoScrim} />
+              <Text style={styles.bentoLabelFloating}>&lt;5 mins</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.bentoHalf}
+              onPress={() => handleCategoryPress('10min')}
+            >
+              <Image source={{ uri: categories[2].image }} style={styles.bentoImageFull} />
+              <View style={styles.bentoScrim} />
+              <Text style={styles.bentoLabelFloating}>&lt;10 mins</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Row 4: Veg, Meat, Grocery, Packaging (1/4 each) */}
+          <View style={styles.bentoRow}>
+            {categories.slice(3).map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={styles.bentoQuarter}
+                onPress={() => handleCategoryPress(cat.filter)}
+              >
+                <Image source={{ uri: cat.image }} style={styles.bentoImageFull} />
+                <View style={styles.bentoScrim} />
+                <Text style={styles.bentoLabelFloating} numberOfLines={1}>
+                  {cat.title.split(':').pop()?.trim()}
+                </Text>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
-      )}
-
-
-      {/* Categories Section - Mosaic Layout */}
-      < View style={styles.section} >
-        < View style={styles.bentoGrid} >
-          <View style={styles.bentoRow}>
-            {/* Left Column */}
-            <View style={styles.bentoCol}>
-              <BentoCard item={categories[0]} style={{ height: 140 }} />
-              <BentoCard item={categories[5]} style={{ height: 100 }} />
-              <BentoCard item={categories[3]} style={{ height: 100 }} />
-            </View>
-
-            {/* Right Column */}
-            <View style={styles.bentoCol}>
-              <BentoCard item={categories[1]} style={{ height: 100 }} />
-              <BentoCard item={categories[2]} style={{ height: 140 }} />
-              <BentoCard item={categories[4]} style={{ height: 100 }} />
-            </View>
-          </View>
-        </View >
-      </View >
+      </View>
 
       {/* Bestsellers Section */}
-      < View style={[styles.section, { backgroundColor: colors.rose[50] }]} >
-        <Text style={[styles.sectionTitle as any, { color: colors.rose[900] }]}>Top Recommendations</Text>
-        <Text style={[styles.sectionSubtitle, { color: colors.rose[700] }]}>
-          {isServiceable ? 'Restaurant-quality appetizers, ready in minutes at home' : 'Professional recipes for restaurant-quality appetizers at home'}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Best Selling Products</Text>
+        <Text style={styles.sectionSubtitle}>
+          Highly rated picks delivered fresh to your door
         </Text>
         <View style={styles.compactGrid}>
           {bestsellers.map((product) => (
-            <CompactRecipeCard
+            <CompactProductCard
               key={product.id}
               recipe={product}
-              onPress={() => navigation.navigate('Main', {
-                screen: 'RecipesTab',
-                params: {
-                  screen: 'RecipeDetail',
-                  params: { recipeId: String(product.id) },
-                }
+              onPress={() => navigation.navigate('ProductsTab', {
+                screen: 'ProductDetail',
+                params: { product }
               })}
             />
           ))}
@@ -647,6 +1079,11 @@ export const HomeScreen = ({ navigation }: any) => {
   );
 };
 
+const BENTO_PADDING = 16;
+const BENTO_GAP = 8;
+const BENTO_UNIT = (windowWidth - (BENTO_PADDING * 2) - (BENTO_GAP * 3)) / 4;
+const BENTO_WIDE_WIDTH = BENTO_UNIT * 3 + (BENTO_GAP * 2);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -654,12 +1091,13 @@ const styles = StyleSheet.create({
   },
   hero: {
     paddingHorizontal: spacing.md, // 16px
-    paddingTop: spacing.md, // Reduced from lg(20) to md(16)
-    paddingBottom: 12, // Reduced from spacing.md(16)
+    paddingTop: 0, // Removed padding to move the whole mascot row up
+    paddingBottom: 2, // Tighter padding
+    marginTop: -8, // Pull tight against top bar
   },
   heroTitle: {
     ...textStyles.h1,
-    fontSize: typography.fontSize['4xl'],
+    fontSize: typography.fontSize['4xl'], // 28px
     lineHeight: typography.lineHeight.tight * typography.fontSize['4xl'],
     marginBottom: spacing.md,
   },
@@ -667,9 +1105,9 @@ const styles = StyleSheet.create({
     color: colors.primary[500],
   },
   heroSubtitle: {
-    fontSize: typography.fontSize.sm,
+    ...textStyles.bodySmall,
     color: colors.gray[600],
-    lineHeight: typography.lineHeight.relaxed * typography.fontSize.sm,
+    lineHeight: typography.lineHeight.relaxed * typography.fontSize.xsMedium,
     marginBottom: spacing.md,
   },
   searchContainer: {
@@ -729,18 +1167,21 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm, // Reduced from md(16) to sm(8) for even denser layout
+    alignItems: 'flex-start',
   },
   sectionTitle: {
-    fontSize: typography.fontSize['xl'],
-    fontFamily: typography.fontFamily.display,
-    fontWeight: '700' as const,
+    ...textStyles.h2,
     color: colors.text.primary,
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+    width: '100%',
   },
   sectionSubtitle: {
-    fontSize: typography.fontSize.base,
+    ...textStyles.bodyLarge,
     color: colors.gray[600],
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+    width: '100%',
   },
   categories: {
     flexDirection: 'row',
@@ -864,7 +1305,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     backgroundColor: colors.amber[50],
     borderRadius: borderRadius['2xl'],
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   businessIcon: {
     fontSize: 40,
@@ -876,19 +1317,19 @@ const styles = StyleSheet.create({
     color: colors.amber[900],
     marginTop: spacing.sm,
     marginBottom: spacing.xs,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   businessSubtitle: {
     fontSize: typography.fontSize.lg,
     color: colors.amber[700],
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: spacing.lg,
   },
   businessButtons: {
     flexDirection: 'row',
     gap: spacing.md,
     flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   businessButton: {
     backgroundColor: colors.primary[500],
@@ -910,15 +1351,14 @@ const styles = StyleSheet.create({
   mascotRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    // paddingLeft: -0,
-    // paddingHorizontal: 10,
-    marginBottom: -4.2,
-    // zIndex: 10,
+    marginBottom: -4.2, // Back to original subtle overlap
   },
   catImage: {
     width: 110,
     height: 110,
     marginRight: 2,
+    transform: [{ translateY: 20 }],
+    zIndex: 1000, // Move ONLY the mascot down
   },
   speechBubble: {
     flex: 1,
@@ -926,7 +1366,7 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 16,
     borderBottomLeftRadius: 0, // Makes it look like a speech bubble
-    marginBottom: 10, // Push bubble up slightly more than the cat
+    marginBottom: 6, // Reduced from 10
   },
   bubbleTitle: {
     fontWeight: 'bold',
@@ -947,8 +1387,8 @@ const styles = StyleSheet.create({
     borderRadius: 10, // High number for pill shape
     paddingHorizontal: 10,
     height: 40,
-    marginTop: 0, // The negative margin on mascotRow handles the overlap
-    zIndex: 1, // Ensure search bar sits on TOP
+    marginTop: 0,
+    zIndex: 10, // Ensure search bar sits on TOP of the mascot
     shadowColor: '#000', // Optional: nice drop shadow
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -990,90 +1430,148 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontFamily: typography.fontFamily.medium,
   },
-  promoContainer: {
-    marginBottom: spacing.xs,
-    height: 140, // Slightly more compact (was 150)
+  bentoSection: {
+    paddingHorizontal: BENTO_PADDING,
+    paddingVertical: BENTO_GAP,
+  },
+  bentoGrid: {
+    gap: BENTO_GAP,
+  },
+  bentoRow: {
+    flexDirection: 'row',
+    gap: BENTO_GAP,
+    // Note: bentoGrid's gap handles vertical spacing now
+  },
+  promoWrapper: {
+    flex: 3,
+    height: BENTO_UNIT, // 1 unit high
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.gray[100],
+    ...shadow.soft,
   },
   promoScroll: {
-    // paddingLeft: spacing.md, 
-  },
-  promoCard: {
-    // width handled by parent wrapper
-    height: 140, // Reduced from 160
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    backgroundColor: colors.gray[200],
-    position: 'relative',
-    ...shadow.medium, // Stronger shadow for promos
     width: '100%',
   },
-  promoImage: {
+  promoCardContent: {
     width: '100%',
     height: '100%',
+    justifyContent: 'flex-end',
   },
   promoOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.3)',
   },
   promoContent: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: spacing.md,
+    padding: 12,
   },
   promoTitle: {
-    fontSize: typography.fontSize.xl,
-    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.xl, // 16px (Aligned with H2)
+    fontFamily: typography.fontFamily.display,
+    fontWeight: typography.fontWeight.extrabold,
     color: colors.white,
-    marginBottom: 4,
+    marginBottom: 2,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowRadius: 2,
+    textAlign: 'left',
   },
   promoSubtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray[200],
-    marginBottom: spacing.md,
+    ...textStyles.bodySmall, // 11px
+    color: colors.gray[100],
+    fontWeight: typography.fontWeight.semibold,
+    textAlign: 'left',
   },
-  promoButton: {
+  promoMiniButton: {
     backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.lg,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
     alignSelf: 'flex-start',
+    marginTop: 4,
   },
-  promoButtonText: {
-    fontSize: typography.fontSize.xs,
-    fontFamily: typography.fontFamily.bold,
-    color: colors.text.primary,
+  promoMiniButtonText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.primary[600],
   },
-  pagination: {
-    flexDirection: 'row',
+  bentoDots: {
     position: 'absolute',
-    bottom: spacing.md,
-    alignSelf: 'center',
+    bottom: 8,
+    right: 8,
+    flexDirection: 'row',
+    gap: 4,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
+  bentoDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.4)',
   },
-  activeDot: {
+  bentoDotActive: {
     backgroundColor: colors.white,
+    width: 12,
   },
-  inactiveDot: {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  bentoVertical: {
+    flex: 1,
+    height: BENTO_UNIT, // 1 unit high
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.gray[100],
+    ...shadow.soft,
+  },
+  bentoHalf: {
+    flex: 1,
+    height: BENTO_UNIT, // 1 unit high
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.gray[100],
+    ...shadow.soft,
+  },
+  bentoQuarter: {
+    flex: 1,
+    height: BENTO_UNIT, // 1 unit high
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.gray[100],
+    ...shadow.soft,
+  },
+  bentoImageFull: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  bentoScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+  },
+  bentoScrimLight: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  bentoLabelFloating: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '800',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   // New Styles
   searchOverlay: {
     position: 'absolute',
-    top: 60,
+    top: 48, // Below the search bar
     left: 0,
     right: 0,
     backgroundColor: colors.white,
-    zIndex: 100,
+    zIndex: 1000,
     borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    paddingVertical: spacing.md,
     ...shadow.medium,
+    borderWidth: 1,
+    borderColor: colors.gray[100],
   },
   quickOptionsContainer: {
     // marginTop removed
@@ -1091,8 +1589,8 @@ const styles = StyleSheet.create({
   },
   quickTag: {
     backgroundColor: colors.gray[100],
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: 6, // Refined for sleekness
+    paddingVertical: 2, // Refined for sleekness
     borderRadius: borderRadius.full,
     borderWidth: 1,
     borderColor: colors.gray[200],
@@ -1105,45 +1603,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
-  },
-  bentoGrid: {
-    gap: spacing.xs,
-  },
-  bentoRow: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  bentoCol: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  bentoCard: {
-    padding: 8,
-    borderRadius: borderRadius['sm'],
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.gray[100],
-    ...shadow.soft, // Use soft shadow
-  },
-  bentoIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 999, // Circulrar
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  bentoTitle: {
-    fontSize: typography.fontSize.lg,
-    fontFamily: typography.fontFamily.bold,
-    marginBottom: 4,
-    letterSpacing: -0.5,
-  },
-  bentoSubtitle: {
-    fontSize: typography.fontSize.xs,
-    fontFamily: typography.fontFamily.medium,
-    lineHeight: 16,
   },
   compactGrid: {
     flexDirection: 'row',
@@ -1174,7 +1633,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   compactTitle: {
-    fontSize: 12,
+    fontSize: typography.fontSize.xsMedium,
     fontFamily: typography.fontFamily.bold,
     color: colors.text.primary,
     marginBottom: 2,
@@ -1187,48 +1646,88 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   compactMetaText: {
-    fontSize: 10,
-    color: colors.gray[600],
+    fontSize: typography.fontSize.xxs,
+    color: colors.gray[500],
+    fontFamily: typography.fontFamily.medium,
   },
-  compactMetaDivider: {
-    fontSize: 10,
-    color: colors.gray[400],
-  },
-  xpBadge: {
+  compactPriceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8E1',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  compactPriceStack: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  compactPrice: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.bold,
+    color: colors.text.primary,
+  },
+  compactMrp: {
+    fontSize: typography.fontSize.xxs,
+    color: colors.gray[400],
+    textDecorationLine: 'line-through',
+  },
+  compactSavingsBadge: {
+    backgroundColor: colors.accent[100],
     paddingHorizontal: 4,
     paddingVertical: 1,
     borderRadius: 4,
-    marginLeft: 2,
   },
-  xpCoin: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FFC107',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 2,
-  },
-  xpCoinText: {
-    fontSize: 6,
-    color: colors.white,
-  },
-  xpText: {
-    fontSize: 9,
+  compactSavingsText: {
+    fontSize: typography.fontSize.xxxs,
     fontFamily: typography.fontFamily.bold,
-    color: '#F57F17',
+    color: colors.accent[700],
   },
-  compactFooter: {
+  // Trending Hits Styles
+  hitsSection: {
+    paddingVertical: 12,
+    backgroundColor: colors.white,
+  },
+  hitsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    paddingHorizontal: 16,
+    gap: 6,
+    marginBottom: 10,
   },
-  compactFooterText: {
-    fontSize: 10,
-    color: colors.gray[500],
+  hitsTitle: {
+    ...textStyles.h2,
+    color: colors.gray[800],
+    letterSpacing: -0.5,
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+  },
+  bitumen: { // Fixing the bitumen regression here too if it exists
+    backgroundColor: colors.white,
+    borderLeftColor: colors.primary[500],
+  },
+  hitsScroll: {
+    paddingHorizontal: 12,
+    gap: 16,
+  },
+  gemContainer: {
+    alignItems: 'center',
+  },
+  gemCircle: {
+    width: 50, // Reduced from 64
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    backgroundColor: colors.gray[50],
+    borderWidth: 1,
+    borderColor: colors.gray[100],
+    ...shadow.soft,
+  },
+  gemImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 25,
   },
 });
 

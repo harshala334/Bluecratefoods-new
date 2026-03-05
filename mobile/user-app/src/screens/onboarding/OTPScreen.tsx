@@ -11,12 +11,12 @@ import {
     Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import useAuthStore from '../../stores/authStore';
 import { authService } from '../../services/authService';
 import { Alert, ActivityIndicator } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import { auth } from '../../utils/authProvider';
 
 const OTPScreen = ({ navigation, route }: any) => {
     const { phone, confirmation } = route.params || { phone: 'your phone', confirmation: null };
@@ -25,6 +25,7 @@ const OTPScreen = ({ navigation, route }: any) => {
     const inputRefs = useRef<Array<TextInput | null>>([]);
 
     const otpLogin = useAuthStore((state) => state.otpLogin);
+    const skipLogin = useAuthStore((state) => state.skipLogin);
     const isLoading = useAuthStore((state) => state.isLoading);
 
     useEffect(() => {
@@ -94,9 +95,14 @@ const OTPScreen = ({ navigation, route }: any) => {
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <View style={styles.content}>
                         <View style={styles.header}>
-                            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                <Feather name="arrow-left" size={24} color={colors.text.primary} />
-                            </TouchableOpacity>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                                <TouchableOpacity onPress={() => navigation.goBack()}>
+                                    <Feather name="arrow-left" size={24} color={colors.text.primary} />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => skipLogin()}>
+                                    <Text style={{ color: colors.primary[500], fontWeight: '600', fontSize: 16 }}>Skip for now</Text>
+                                </TouchableOpacity>
+                            </View>
                             <Text style={styles.title}>Enter the 4-digit code</Text>
                             <Text style={styles.subtitle}>
                                 Sent to <Text style={styles.phoneText}>{phone}</Text>

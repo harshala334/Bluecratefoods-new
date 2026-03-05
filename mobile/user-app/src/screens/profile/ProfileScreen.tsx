@@ -22,6 +22,7 @@ import { spacing, borderRadius, shadow } from '../../constants/spacing';
 import { User } from '../../types/user';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import useAuthStore from '../../stores/authStore';
 
 const { width } = Dimensions.get('window');
@@ -143,21 +144,23 @@ export const ProfileScreen = ({ navigation }: any) => {
 
   if (!isAuthenticated || !user) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={styles.guestContainer}>
-          <View style={styles.guestIconContainer}>
-            <Feather name="user" size={60} color={colors.primary[500]} />
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={styles.guestContainer}>
+            <View style={styles.guestIconContainer}>
+              <Feather name="user" size={60} color={colors.primary[500]} />
+            </View>
+            <Text style={styles.guestTitle}>Welcome to Blue Crate</Text>
+            <Text style={styles.guestSubtitle}>Ready-to-Cook. Ready-to-Love.</Text>
+            <TouchableOpacity
+              style={styles.signInButton}
+              onPress={() => navigation.navigate('Login')}
+            >
+              <Text style={styles.signInButtonText}>Get Started</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.guestTitle}>Welcome to Eatee</Text>
-          <Text style={styles.guestSubtitle}>Join our community of chefs to discover and share amazing recipes!</Text>
-          <TouchableOpacity
-            style={styles.signInButton}
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text style={styles.signInButtonText}>Get Started</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
@@ -174,228 +177,256 @@ export const ProfileScreen = ({ navigation }: any) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Background Image & Profile Photo */}
-      <View style={styles.profileHeader}>
-        <ImageBackground
-          source={{ uri: profileData.backgroundImage }}
-          style={styles.backgroundImage}
-          imageStyle={styles.backgroundImageStyle}
-        >
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.6)']}
-            style={styles.backgroundOverlay}
-          />
-        </ImageBackground>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Background Image & Profile Photo */}
+        <View style={styles.profileHeader}>
+          <ImageBackground
+            source={{ uri: profileData.backgroundImage }}
+            style={styles.backgroundImage}
+            imageStyle={styles.backgroundImageStyle}
+          >
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.6)']}
+              style={styles.backgroundOverlay}
+            />
+          </ImageBackground>
 
-        {/* Profile Photo positioned over background */}
-        <View style={styles.profilePhotoContainer}>
-          <Image
-            source={{ uri: profileData.profileImage }}
-            style={styles.profilePhoto}
-          />
-          <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
-            <Feather name="edit-2" size={14} color={colors.white} />
+          {/* Profile Photo positioned over background */}
+          <View style={styles.profilePhotoContainer}>
+            <Image
+              source={{ uri: profileData.profileImage }}
+              style={styles.profilePhoto}
+            />
+            <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+              <Feather name="edit-2" size={14} color={colors.white} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Profile Info */}
+        <View style={styles.profileInfo}>
+          <View style={styles.nameSection}>
+            <Text style={styles.profileName}>{profileData.name}</Text>
+            {profileData.isVerifiedCreator && (
+              <MaterialCommunityIcons name="check-decagram" size={20} color={colors.primary[500]} style={{ marginLeft: 4 }} />
+            )}
+          </View>
+          <Text style={styles.profileEmail}>{profileData.email}</Text>
+          {profileData.bio && (
+            <Text style={styles.profileBio}>{profileData.bio}</Text>
+          )}
+        </View>
+
+        {/* Stats Bar (Bento-fied) */}
+        <View style={styles.newStatsContainer}>
+          <View style={styles.newStatCard}>
+            <View style={[styles.statIconContainer, { backgroundColor: colors.primary[50] }]}>
+              <Ionicons name="eye-outline" size={20} color={colors.primary[600]} />
+            </View>
+            <View>
+              <Text style={styles.newStatValue}>{profileData.stats.views}</Text>
+              <Text style={styles.newStatLabel}>Views</Text>
+            </View>
+          </View>
+
+          <View style={styles.newStatCard}>
+            <View style={[styles.statIconContainer, { backgroundColor: '#FCE4EC' }]}>
+              <Ionicons name="people-outline" size={20} color="#D81B60" />
+            </View>
+            <View>
+              <Text style={styles.newStatValue}>{profileData.stats.followers}</Text>
+              <Text style={styles.newStatLabel}>Followers</Text>
+            </View>
+          </View>
+
+          <View style={styles.newStatCard}>
+            <View style={[styles.statIconContainer, { backgroundColor: '#E1F5FE' }]}>
+              <Ionicons name="restaurant-outline" size={20} color="#0288D1" />
+            </View>
+            <View>
+              <Text style={styles.newStatValue}>{profileData.stats.itemViews}</Text>
+              <Text style={styles.newStatLabel}>Recipes</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Creator Status Section */}
+        {/* Admin Dashboard Entry Point */}
+        {profileData.userType === 'admin' && (
+          <TouchableOpacity
+            style={styles.adminBanner}
+            onPress={() => navigation.navigate('AdminRequests')}
+          >
+            <View style={styles.adminBannerInfo}>
+              <View style={styles.adminIconCircle}>
+                <MaterialCommunityIcons name="shield-check" size={24} color={colors.primary[600]} />
+              </View>
+              <View style={{ flex: 1, marginRight: spacing.sm }}>
+                <Text style={styles.adminBannerTitle}>Admin Dashboard</Text>
+                <Text style={styles.adminBannerSubtitle}>Review pending creator and recipe requests</Text>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={24} color={colors.primary[600]} />
           </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Profile Info */}
-      <View style={styles.profileInfo}>
-        <View style={styles.nameSection}>
-          <Text style={styles.profileName}>{profileData.name}</Text>
-          {profileData.isVerifiedCreator && (
-            <MaterialCommunityIcons name="check-decagram" size={20} color={colors.primary[500]} style={{ marginLeft: 4 }} />
-          )}
-        </View>
-        <Text style={styles.profileEmail}>{profileData.email}</Text>
-        {profileData.bio && (
-          <Text style={styles.profileBio}>{profileData.bio}</Text>
         )}
-      </View>
 
-      {/* Stats Bar */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{profileData.stats.views}</Text>
-          <Text style={styles.statLabel}>Views</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{profileData.stats.followers}</Text>
-          <Text style={styles.statLabel}>Followers</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{profileData.stats.itemViews}</Text>
-          <Text style={styles.statLabel}>Recipes</Text>
-        </View>
-      </View>
-
-      {/* Creator Status Section */}
-      {/* Admin Dashboard Entry Point */}
-      {profileData.userType === 'admin' && (
-        <TouchableOpacity
-          style={styles.adminBanner}
-          onPress={() => navigation.navigate('AdminRequests')}
-        >
-          <View style={styles.adminBannerInfo}>
-            <View style={styles.adminIconCircle}>
-              <MaterialCommunityIcons name="shield-check" size={24} color={colors.primary[600]} />
+        {!profileData.isVerifiedCreator && profileData.userType !== 'admin' && (
+          <View style={styles.creatorBanner}>
+            <View style={[styles.creatorBannerInfo, { flex: 1, marginRight: spacing.md }]}>
+              <Text style={styles.creatorBannerTitle}>
+                {profileData.creatorStatus === 'pending' ? 'Application Pending' : 'Become a Creator'}
+              </Text>
+              <Text style={styles.creatorBannerSubtitle}>
+                {profileData.creatorStatus === 'pending'
+                  ? 'We are currently reviewing your profile for verification.'
+                  : 'Share your recipes with the world and get verified!'}
+              </Text>
             </View>
-            <View style={{ flex: 1, marginRight: spacing.sm }}>
-              <Text style={styles.adminBannerTitle}>Admin Dashboard</Text>
-              <Text style={styles.adminBannerSubtitle}>Review pending creator and recipe requests</Text>
-            </View>
-          </View>
-          <Feather name="chevron-right" size={24} color={colors.primary[600]} />
-        </TouchableOpacity>
-      )}
-
-      {!profileData.isVerifiedCreator && profileData.userType !== 'admin' && (
-        <View style={styles.creatorBanner}>
-          <View style={[styles.creatorBannerInfo, { flex: 1, marginRight: spacing.md }]}>
-            <Text style={styles.creatorBannerTitle}>
-              {profileData.creatorStatus === 'pending' ? 'Application Pending' : 'Become a Creator'}
-            </Text>
-            <Text style={styles.creatorBannerSubtitle}>
-              {profileData.creatorStatus === 'pending'
-                ? 'We are currently reviewing your profile for verification.'
-                : 'Share your recipes with the world and get verified!'}
-            </Text>
-          </View>
-          {profileData.creatorStatus !== 'pending' && (
-            <TouchableOpacity style={styles.applyButton} onPress={handleApplyCreator}>
-              <Text style={styles.applyButtonText}>Apply</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-
-      {/* User's Recipes */}
-      {(profileData.isVerifiedCreator || userRecipes.length > 0) && (
-        <View style={styles.recipesSection}>
-          <View style={styles.recipesSectionHeader}>
-            <Text style={styles.recipesSectionTitle}>My Recipes</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.recipeGrid}>
-            {userRecipes.map((recipe) => (
-              <TouchableOpacity
-                key={recipe.id}
-                style={styles.recipeCard}
-                onPress={() => handleRecipePress(recipe)}
-              >
-                <View style={styles.recipeImageContainer}>
-                  <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
-                  {recipe.status === 'pending' && (
-                    <View style={styles.pendingBadge}>
-                      <Text style={styles.pendingBadgeText}>Pending</Text>
-                    </View>
-                  )}
-                  {recipe.status === 'rejected' && (
-                    <View style={[styles.pendingBadge, { backgroundColor: '#FFEBEE', borderColor: '#EF5350' }]}>
-                      <Text style={[styles.pendingBadgeText, { color: '#C62828' }]}>Rejected</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.recipeInfo}>
-                  <Text style={styles.recipeTitle} numberOfLines={2}>
-                    {recipe.title}
-                  </Text>
-                  <View style={styles.recipeFooter}>
-                    <View style={styles.recipeStats}>
-                      <View style={styles.recipeStatItem}>
-                        <Ionicons name="eye-outline" size={14} color={colors.gray[500]} />
-                        <Text style={styles.recipeStatText}>{recipe.views}</Text>
-                      </View>
-                      <View style={styles.recipeStatItem}>
-                        <Ionicons name="heart-outline" size={14} color={colors.gray[500]} />
-                        <Text style={styles.recipeStatText}>{recipe.likes}</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => handleDeleteRecipe(recipe.id)}
-                    >
-                      <Feather name="trash-2" size={16} color={colors.error || '#F44336'} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+            {profileData.creatorStatus !== 'pending' && (
+              <TouchableOpacity style={styles.applyButton} onPress={handleApplyCreator}>
+                <Text style={styles.applyButtonText}>Apply</Text>
               </TouchableOpacity>
-            ))}
+            )}
+          </View>
+        )}
+
+        {/* User's Recipes */}
+        {(profileData.isVerifiedCreator || userRecipes.length > 0) && (
+          <View style={styles.recipesSection}>
+            <View style={styles.recipesSectionHeader}>
+              <Text style={styles.recipesSectionTitle}>My Recipes</Text>
+              <TouchableOpacity>
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.recipeGrid}>
+              {userRecipes.map((recipe) => (
+                <TouchableOpacity
+                  key={recipe.id}
+                  style={styles.recipeCard}
+                  onPress={() => handleRecipePress(recipe)}
+                >
+                  <View style={styles.recipeImageContainer}>
+                    <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+                    {recipe.status === 'pending' && (
+                      <View style={styles.pendingBadge}>
+                        <Text style={styles.pendingBadgeText}>Pending</Text>
+                      </View>
+                    )}
+                    {recipe.status === 'rejected' && (
+                      <View style={[styles.pendingBadge, { backgroundColor: '#FFEBEE', borderColor: '#EF5350' }]}>
+                        <Text style={[styles.pendingBadgeText, { color: '#C62828' }]}>Rejected</Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.recipeInfo}>
+                    <Text style={styles.recipeTitle} numberOfLines={2}>
+                      {recipe.title}
+                    </Text>
+                    <View style={styles.recipeFooter}>
+                      <View style={styles.recipeStats}>
+                        <View style={styles.recipeStatItem}>
+                          <Ionicons name="eye-outline" size={14} color={colors.gray[500]} />
+                          <Text style={styles.recipeStatText}>{recipe.views}</Text>
+                        </View>
+                        <View style={styles.recipeStatItem}>
+                          <Ionicons name="heart-outline" size={14} color={colors.gray[500]} />
+                          <Text style={styles.recipeStatText}>{recipe.likes}</Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDeleteRecipe(recipe.id)}
+                      >
+                        <Feather name="trash-2" size={16} color={colors.error || '#F44336'} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Quick Actions (Bento Grid) */}
+        <View style={styles.bentoMenuGrid}>
+          <View style={styles.bentoRow}>
+            <TouchableOpacity style={[styles.bentoCard, { backgroundColor: '#E3F2FD' }]}>
+              <View style={[styles.bentoIconBadge, { backgroundColor: '#1976D2' }]}>
+                <Ionicons name="cube-outline" size={24} color={colors.white} />
+              </View>
+              <Text style={styles.bentoCardTitle}>My Orders</Text>
+              <Text style={styles.bentoCardSubtitle}>Track deliveries</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.bentoCard, { backgroundColor: '#FCE4EC' }]}>
+              <View style={[styles.bentoIconBadge, { backgroundColor: '#D81B60' }]}>
+                <Ionicons name="heart-outline" size={24} color={colors.white} />
+              </View>
+              <Text style={styles.bentoCardTitle}>Favorites</Text>
+              <Text style={styles.bentoCardSubtitle}>Saved recipes</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.bentoRow}>
+            <TouchableOpacity
+              style={[styles.bentoCard, { backgroundColor: '#E0F2F1' }]}
+              onPress={() => navigation.navigate('Subscription')}
+            >
+              <View style={[styles.bentoIconBadge, { backgroundColor: '#00796B' }]}>
+                <Ionicons name="card-outline" size={24} color={colors.white} />
+              </View>
+              <Text style={styles.bentoCardTitle}>Premium</Text>
+              <Text style={styles.bentoCardSubtitle}>Unlock perks</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.bentoCard, { backgroundColor: '#F3E5F5' }]}
+            >
+              <View style={[styles.bentoIconBadge, { backgroundColor: '#7B1FA2' }]}>
+                <Ionicons name="settings-outline" size={24} color={colors.white} />
+              </View>
+              <Text style={styles.bentoCardTitle}>Settings</Text>
+              <Text style={styles.bentoCardSubtitle}>Account info</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.bentoRow}>
+            <TouchableOpacity
+              style={[styles.bentoCard, { backgroundColor: '#FFF3E0', flex: 2 }]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <View style={[styles.bentoIconBadge, { backgroundColor: '#F57C00' }]}>
+                  <Ionicons name="help-circle-outline" size={24} color={colors.white} />
+                </View>
+                <View>
+                  <Text style={styles.bentoCardTitle}>Help & Support</Text>
+                  <Text style={styles.bentoCardSubtitle}>24/7 Assistance</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.bentoCard, { backgroundColor: '#FFEBEE', flex: 1.2 }]}
+              onPress={handleLogout}
+            >
+              <View style={[styles.bentoIconBadge, { backgroundColor: '#D32F2F' }]}>
+                <Ionicons name="log-out-outline" size={24} color={colors.white} />
+              </View>
+              <Text style={[styles.bentoCardTitle, { color: '#D32F2F' }]}>Logout</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      )}
 
-      {/* Main Menu */}
-      <View style={styles.menu}>
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={[styles.menuIconContainer, { backgroundColor: '#E3F2FD' }]}>
-            <Ionicons name="cube-outline" size={22} color="#1976D2" />
-          </View>
-          <Text style={styles.menuTitle}>My Orders</Text>
-          <Feather name="chevron-right" size={20} color={colors.gray[400]} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={[styles.menuIconContainer, { backgroundColor: '#FCE4EC' }]}>
-            <Ionicons name="heart-outline" size={22} color="#D81B60" />
-          </View>
-          <Text style={styles.menuTitle}>Favorite Recipes</Text>
-          <Feather name="chevron-right" size={20} color={colors.gray[400]} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('HowItWorks')}>
-          <View style={[styles.menuIconContainer, { backgroundColor: '#E8F5E9' }]}>
-            <Ionicons name="information-circle-outline" size={22} color="#388E3C" />
-          </View>
-          <Text style={styles.menuTitle}>How It Works</Text>
-          <Feather name="chevron-right" size={20} color={colors.gray[400]} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={[styles.menuIconContainer, { backgroundColor: '#F3E5F5' }]}>
-            <Ionicons name="settings-outline" size={22} color="#7B1FA2" />
-          </View>
-          <Text style={styles.menuTitle}>Settings</Text>
-          <Feather name="chevron-right" size={20} color={colors.gray[400]} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('RecipeSimulation')}>
-          <View style={[styles.menuIconContainer, { backgroundColor: '#FFF3E0' }]}>
-            <Ionicons name="help-circle-outline" size={22} color="#F57C00" />
-          </View>
-          <Text style={styles.menuTitle}>Recipe Simulation</Text>
-          <Feather name="chevron-right" size={20} color={colors.gray[400]} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={[styles.menuIconContainer, { backgroundColor: '#FFF3E0' }]}>
-            <Ionicons name="help-circle-outline" size={22} color="#F57C00" />
-          </View>
-          <Text style={styles.menuTitle}>Help & Support</Text>
-          <Feather name="chevron-right" size={20} color={colors.gray[400]} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={handleLogout}>
-          <View style={[styles.menuIconContainer, { backgroundColor: '#FFEBEE' }]}>
-            <Ionicons name="log-out-outline" size={22} color="#D32F2F" />
-          </View>
-          <Text style={[styles.menuTitle, { color: '#D32F2F' }]}>Sign Out</Text>
-          <Feather name="chevron-right" size={20} color={colors.gray[400]} />
-        </TouchableOpacity>
-      </View>
-
-      {/* App Info */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Eatee v1.0.0</Text>
-        <Text style={styles.footerText}>© 2025 All rights reserved</Text>
-      </View>
-    </ScrollView>
+        {/* App Info */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Blue Crate v1.0.0</Text>
+          <Text style={styles.footerText}>© 2025 All rights reserved</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -421,7 +452,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     backgroundColor: colors.primary[50],
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: spacing.xl,
   },
   guestTitle: {
@@ -429,15 +460,15 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.display,
     fontWeight: '700' as const,
     color: colors.text.primary,
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: spacing.sm,
   },
   guestSubtitle: {
     fontSize: typography.fontSize.lg,
     color: colors.gray[500],
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
+    paddingRight: spacing.lg,
     lineHeight: 24,
   },
   signInButton: {
@@ -568,38 +599,84 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontFamily: typography.fontFamily.body,
   },
-  // Stats Styles
-  statsContainer: {
+  // New Stats Styles
+  newStatsContainer: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
-    paddingVertical: spacing.lg,
-    marginVertical: spacing.xs,
-    marginHorizontal: spacing.md,
-    borderRadius: borderRadius.xl,
-    ...shadow.soft,
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
   },
-  statItem: {
+  newStatCard: {
     flex: 1,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: spacing.md,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm,
+    ...shadow.soft,
+    borderWidth: 1,
+    borderColor: colors.gray[50],
   },
-  statValue: {
-    fontSize: typography.fontSize.xl,
+  statIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newStatValue: {
+    fontSize: 16,
     fontFamily: typography.fontFamily.bold,
     color: colors.text.primary,
   },
-  statLabel: {
+  newStatLabel: {
     fontSize: 10,
     color: colors.gray[500],
-    marginTop: 4,
+    fontFamily: typography.fontFamily.medium,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    fontFamily: typography.fontFamily.bold,
   },
-  statDivider: {
-    width: 1,
-    backgroundColor: colors.gray[100],
-    height: '60%',
-    alignSelf: 'center',
+
+  // Bento Menu Styles
+  bentoMenuGrid: {
+    paddingHorizontal: spacing.lg,
+    gap: 12,
+    marginBottom: spacing.xl,
+  },
+  bentoRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  bentoCard: {
+    flex: 1,
+    borderRadius: 20,
+    padding: spacing.lg,
+    minHeight: 110,
+    justifyContent: 'space-between',
+    ...shadow.soft,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  bentoIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.soft,
+  },
+  bentoCardTitle: {
+    fontSize: 16,
+    fontFamily: typography.fontFamily.bold,
+    color: colors.text.primary,
+    marginTop: spacing.sm,
+  },
+  bentoCardSubtitle: {
+    fontSize: 12,
+    color: colors.gray[600],
+    fontFamily: typography.fontFamily.medium,
+    marginTop: 2,
   },
   creatorBanner: {
     flexDirection: 'row',
@@ -736,35 +813,7 @@ const styles = StyleSheet.create({
     color: colors.gray[500],
     fontFamily: typography.fontFamily.medium,
   },
-  // Main Menu Styles
-  menu: {
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: colors.background.primary,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[50],
-    backgroundColor: colors.background.primary,
-  },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  menuTitle: {
-    flex: 1,
-    fontSize: typography.fontSize.base,
-    fontFamily: typography.fontFamily.semibold,
-    color: colors.text.primary,
-  },
+  // Legacy or Helper Styles
   footer: {
     alignItems: 'center',
     padding: spacing.xl,

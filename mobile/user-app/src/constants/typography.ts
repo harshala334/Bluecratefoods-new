@@ -13,29 +13,30 @@ export const typography = {
     medium: 'Inter-Medium',
     semibold: 'Inter-SemiBold',
     bold: 'Inter-Bold',
-  },
+  } as const,
 
-  // Font Sizes
+  // Font Sizes (Dense Premium Scale)
   fontSize: {
-    xxs: moderateScale(10),
-    xs: moderateScale(12),
-    sm: moderateScale(14),
-    base: moderateScale(16),
-    lg: moderateScale(18),
-    xl: moderateScale(20),
-    '2xl': moderateScale(24),
-    '3xl': moderateScale(28),
-    '4xl': moderateScale(32),
-    '5xl': moderateScale(40),
-    '6xl': moderateScale(48),
-    '7xl': moderateScale(56),
+    xxxs: moderateScale(8),
+    xxs: moderateScale(9),
+    xs: moderateScale(10),
+    xsMedium: moderateScale(11), // Carousel Subtitle
+    sm: moderateScale(12),       // Standard Body
+    base: moderateScale(13),
+    md: moderateScale(14),       // H4
+    lg: moderateScale(15),       // H3
+    xl: moderateScale(16),       // H2 / Section Title / Carousel Title
+    '2xl': moderateScale(18),    // H1 / Hero Title
+    '3xl': moderateScale(22),
+    '4xl': moderateScale(24),
+    '5xl': moderateScale(28),
   },
 
   // Line Heights
   lineHeight: {
-    tight: 1.2,
-    normal: 1.5,
-    relaxed: 1.75,
+    tight: 1.1,
+    normal: 1.4,
+    relaxed: 1.6,
     loose: 2,
   },
 
@@ -43,8 +44,8 @@ export const typography = {
   letterSpacing: {
     tight: -0.5,
     normal: 0,
-    wide: 0.5,
-    wider: 1,
+    wide: 0.2,
+    wider: 0.5,
   },
 
   // Font Weights
@@ -54,83 +55,85 @@ export const typography = {
     semibold: '600',
     bold: '700',
     extrabold: '800',
-  },
+  } as const,
 };
 
-// Text Style Presets (commonly used combinations)
+// Text Style Presets (Dense Premium Hierarchy)
 export const textStyles = {
   // Headings
   h1: {
     fontFamily: typography.fontFamily.display,
-    fontSize: typography.fontSize['5xl'],
-    lineHeight: typography.lineHeight.tight * typography.fontSize['5xl'],
+    fontSize: typography.fontSize['2xl'], // 18px
     fontWeight: typography.fontWeight.bold,
+    lineHeight: typography.fontSize['2xl'] * 1.2,
+    textAlign: 'left' as const,
   },
   h2: {
     fontFamily: typography.fontFamily.display,
-    fontSize: typography.fontSize['4xl'],
-    lineHeight: typography.lineHeight.tight * typography.fontSize['4xl'],
-    fontWeight: typography.fontWeight.bold,
+    fontSize: typography.fontSize.xl, // 16px
+    fontWeight: typography.fontWeight.extrabold,
+    lineHeight: typography.fontSize.xl * 1.2,
+    textAlign: 'left' as const,
   },
   h3: {
-    fontFamily: typography.fontFamily.display,
-    fontSize: typography.fontSize['3xl'],
-    lineHeight: typography.lineHeight.tight * typography.fontSize['3xl'],
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: typography.fontSize.lg, // 15px
     fontWeight: typography.fontWeight.bold,
+    textAlign: 'left' as const,
   },
   h4: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize['2xl'],
-    lineHeight: typography.lineHeight.normal * typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold,
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: typography.fontSize.md, // 14px
+    fontWeight: typography.fontWeight.semibold,
+    textAlign: 'left' as const,
   },
 
   // Body text
   bodyLarge: {
     fontFamily: typography.fontFamily.body,
-    fontSize: typography.fontSize.lg,
-    lineHeight: typography.lineHeight.relaxed * typography.fontSize.lg,
+    fontSize: typography.fontSize.base, // 13px
   },
   body: {
     fontFamily: typography.fontFamily.body,
-    fontSize: typography.fontSize.base,
-    lineHeight: typography.lineHeight.normal * typography.fontSize.base,
+    fontSize: typography.fontSize.sm, // 12px
   },
   bodySmall: {
     fontFamily: typography.fontFamily.body,
-    fontSize: typography.fontSize.sm,
-    lineHeight: typography.lineHeight.normal * typography.fontSize.sm,
+    fontSize: typography.fontSize.xsMedium, // 11px
   },
 
   // Labels
   label: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: typography.fontSize.base,
+    fontSize: typography.fontSize.md, // 14px
     fontWeight: typography.fontWeight.medium,
   },
   labelSmall: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.body,
+    fontSize: typography.fontSize.sm, // 12px
     fontWeight: typography.fontWeight.medium,
   },
 
   // Buttons
   button: {
     fontFamily: typography.fontFamily.semibold,
-    fontSize: typography.fontSize.base,
+    fontSize: typography.fontSize.base, // 13px
     fontWeight: typography.fontWeight.semibold,
   },
   buttonSmall: {
     fontFamily: typography.fontFamily.semibold,
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.sm, // 12px
     fontWeight: typography.fontWeight.semibold,
   },
 
   // Caption
   caption: {
     fontFamily: typography.fontFamily.body,
-    fontSize: typography.fontSize.xs,
-    lineHeight: typography.lineHeight.normal * typography.fontSize.xs,
+    fontSize: typography.fontSize.xsMedium, // 11px
+  },
+  captionSmall: {
+    fontFamily: typography.fontFamily.body,
+    fontSize: typography.fontSize.xs, // 10px
   },
 };
 

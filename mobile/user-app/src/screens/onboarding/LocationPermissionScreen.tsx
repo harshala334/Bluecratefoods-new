@@ -62,7 +62,7 @@ const LocationPermissionScreen = ({ navigation }: any) => {
 
                     <Text style={styles.title}>Enable location access</Text>
                     <Text style={styles.description}>
-                        BlueCrate needs your location to find the best restaurants and deliver your food fresh and hot.
+                        Blue Crate needs your location to find the best restaurants and deliver your food fresh and hot.
                     </Text>
 
                     <View style={styles.features}>

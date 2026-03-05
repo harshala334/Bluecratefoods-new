@@ -1,6 +1,6 @@
-# BlueCrateFoods Mobile App (User App)
+# Blue Crate Mobile App (User App)
 
-A beautiful, feature-rich React Native mobile app for the BlueCrateFoods platform built with Expo, TypeScript, and modern best practices.
+A beautiful, feature-rich React Native mobile app for the Blue Crate platform built with Expo, TypeScript, and modern best practices.
 
 ## 🎨 Design System
 
@@ -297,7 +297,7 @@ cd android && ./gradlew clean && cd ..
 
 ## 📄 License
 
-Proprietary - BlueCrateFoods
+Proprietary - Blue Crate
 
 ## 👥 Team
 

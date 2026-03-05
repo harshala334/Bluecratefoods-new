@@ -1,10 +1,10 @@
-# 📱 BlueCrateFoods Mobile App
-> **Cooking Made Simple. Ingredients Delivered Fresh.**
+# 📱 Blue Crate Mobile App
+> **Ready-to-Cook. Ready-to-Love.**
 
-![Banner Placeholder](https://via.placeholder.com/1200x400?text=BlueCrateFoods+Mobile+Experience)
+![Banner Placeholder](https://via.placeholder.com/1200x400?text=Blue+Crate+Mobile+Experience)
 
 ## 🌟 Product Overview
-**BlueCrateFoods** transforms the home cooking experience by bridging the gap between recipe discovery and ingredient delivery. We don't just sell groceries; we sell **home-cooked meals made easy**. 
+**Blue Crate** transforms the home cooking experience by bridging the gap between recipe discovery and ingredient delivery. We don't just sell groceries; we sell **home-cooked meals made easy**. 
 
 Our mobile application serves as a personal sous-chef and grocery assistant in one, allowing users to browse chef-curated recipes, order exact pre-portioned ingredients, and follow interactive cooking guides—all in a seamless, beautiful interface.
 
@@ -82,4 +82,4 @@ To request access to the beta build (.apk / TestFlight), please contact the engi
 - **Engineering**: engineering@bluecratefoods.com
 
 ---
-*BlueCrateFoods - Bringing the joy of cooking back to your kitchen.*
+*Blue Crate - Bringing the joy of cooking back to your kitchen.*

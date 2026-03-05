@@ -16,18 +16,19 @@ export type HomeStackParamList = {
   };
 };
 
-// Recipe Stack
-export type RecipeStackParamList = {
-  RecipeList: {
-    timeCategory?: string;
+// Product Stack
+export type ProductStackParamList = {
+  ProductList: {
     initialSearch?: string;
   };
-  RecipeDetail: {
-    recipeId: string;
+  CategoryDetail: {
+    categoryId: string;
+    categoryTitle: string;
+    subCategoryId?: string;
   };
-  CookingGuide: {
-    recipeId: string;
-    recipeName: string;
+  ProductDetail: {
+    product: any; // Ideally this should be Recipe or Product type
+    productId?: string;
   };
 };
 
@@ -62,20 +63,32 @@ export type ProfileStackParamList = {
 
 // Main Bottom Tabs
 export type MainTabParamList = {
-  Home: NavigatorScreenParams<HomeStackParamList>;
-  RecipesTab: NavigatorScreenParams<RecipeStackParamList>;
-  Cart: NavigatorScreenParams<CartStackParamList>;
-  Orders: NavigatorScreenParams<OrdersStackParamList>;
-  Profile: NavigatorScreenParams<ProfileStackParamList>;
+  HomeTab: undefined;
+  ProductsTab: NavigatorScreenParams<ProductStackParamList>;
+  MissionsTab: undefined;
+  CommunityTab: undefined;
+  CartTab: NavigatorScreenParams<CartStackParamList>;
 };
 
 // Root Navigator
 export type RootStackParamList = {
-  Auth: NavigatorScreenParams<AuthStackParamList>;
+  Onboarding: undefined;
   Main: NavigatorScreenParams<MainTabParamList>;
   Chat: {
     initialQuery?: string;
   };
+  EditProfile: undefined;
+  Location: undefined;
+  Profile: undefined;
+  TrackOrder: {
+    orderId: string;
+  };
+  MyOrders: undefined;
+  AdminRequests: undefined;
+  CreatorApplication: undefined;
+  Login: undefined;
+  Register: undefined;
+  Subscription: undefined;
 };
 
 declare global {

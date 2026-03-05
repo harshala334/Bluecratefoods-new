@@ -24,6 +24,7 @@ interface AuthState {
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  skipLogin: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -187,6 +188,37 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ hasCompletedOnboarding: true });
     } catch (error) {
       console.error('Complete onboarding error:', error);
+    }
+  },
+
+  skipLogin: async () => {
+    try {
+      set({ isLoading: true });
+      const now = new Date().toISOString();
+      const mockUser: User = {
+        id: 'skip-id',
+        name: 'Guest User',
+        email: 'guest@example.com',
+        userType: 'customer',
+        createdAt: now,
+        updatedAt: now,
+      };
+      const mockToken = 'skip-jwt-token';
+
+      await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, mockToken);
+      await storage.setItem(STORAGE_KEYS.USER_DATA, mockUser);
+      await storage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+
+      set({
+        user: mockUser,
+        token: mockToken,
+        isAuthenticated: true,
+        hasCompletedOnboarding: true,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Skip login error:', error);
+      set({ isLoading: false });
     }
   },
 

@@ -4,6 +4,7 @@ import {
     View,
     Text,
     TouchableOpacity,
+    Image,
     ImageBackground,
     Dimensions,
     StatusBar,
@@ -11,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../constants/colors';
+import { typography } from '../../constants/typography';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,11 +30,20 @@ const WelcomeScreen = ({ navigation }: any) => {
                 >
                     <SafeAreaView style={styles.content}>
                         <View style={styles.header}>
-                            <Text style={styles.logoText}>
-                                Eatee
-                            </Text>
-                            <Text style={styles.tagline}>Ready-to-cook. Ready-to-eat.</Text>
+                            <Text style={styles.brandName}>Blue Crate</Text>
+                            <Text style={styles.tagline}>Ready-to-Cook. Ready-to-Love.</Text>
+                            <Image
+                                source={require('../../../assets/images/logo.png')}
+                                style={styles.welcomeLogo}
+                                resizeMode="contain"
+                            />
                         </View>
+
+                        <Image
+                            source={require('../../../assets/images/kitty_with_cart-removebg-preview.png')}
+                            style={styles.kittyMascot}
+                            resizeMode="contain"
+                        />
 
                         <View style={styles.footer}>
                             <TouchableOpacity
@@ -79,23 +90,47 @@ const styles = StyleSheet.create({
         paddingVertical: 40,
     },
     header: {
-        marginTop: 60,
+        alignItems: 'center',
+        marginBottom: 40,
     },
-    logoText: {
+    kittyMascot: {
+        position: 'absolute',
+        top: 520,
+        left: -20,
+        width: 260,
+        height: 260,
+        opacity: 0.9,
+        zIndex: -1, // Bring forward to overlap slightly
+    },
+    welcomeLogo: {
+        position: 'absolute',
+        width: 230,
+        height: 230,
+        top: 20,
+    },
+    brandName: {
         fontSize: 48,
+        fontFamily: typography.fontFamily.display,
         fontWeight: '800',
-        color: 'white',
+        color: colors.white,
         letterSpacing: -1,
+        marginTop: 250, // Adjust this without moving the logo
+        textAlign: 'center',
+        width: '100%',
     },
     logoAccent: {
         color: colors.primary[400],
     },
     tagline: {
         fontSize: 18,
-        color: 'rgba(255, 255, 255, 0.8)',
+        fontFamily: typography.fontFamily.body,
+        color: 'rgba(255, 255, 255, 0.9)', // Slightly more visible
         marginTop: 12,
         lineHeight: 26,
-        maxWidth: '80%',
+        maxWidth: '85%',
+        textAlign: 'center',
+        alignSelf: 'center',
+        letterSpacing: 0.5,
     },
     footer: {
         marginBottom: 20,

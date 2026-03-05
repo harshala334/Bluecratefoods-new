@@ -6,24 +6,24 @@ export interface Message {
     text: string;
     sender: 'user' | 'bot';
     timestamp: number;
-    recipes?: Recipe[];
+    products?: Recipe[]; // Keeping the type as Recipe for now as it's the model, but renaming key
 }
 
 type Listener = (messages: Message[]) => void;
 
 class ChatService {
     private messages: Message[] = [
-        { id: '1', text: "Hey! What should we cook today? I can help you cook or find something to eat.", sender: 'bot', timestamp: Date.now() },
+        { id: '1', text: "Hey! I'm your Blue Crate assistant. I can help you find fresh groceries or ready-to-eat meals for instant delivery!", sender: 'bot', timestamp: Date.now() },
     ];
     private listeners: Listener[] = [];
 
     // Words to ignore when extracting intent
     private stopWords = new Set([
         'i', 'want', 'need', 'show', 'me', 'find', 'some', 'for', 'the', 'a', 'an',
-        'recipes', 'recipe', 'cooking', 'cook', 'please', 'can', 'you', 'help',
-        'with', 'get', 'give', 'suggest', 'looking', 'searching', 'dish', 'food',
+        'grocery', 'item', 'buy', 'order', 'please', 'can', 'you', 'help',
+        'with', 'get', 'give', 'suggest', 'looking', 'searching', 'product', 'food',
         'something', 'today', 'tonight', 'dinner', 'lunch', 'breakfast', 'hey', 'hi',
-        'hello', 'assistant', 'chef', 'any', 'available', 'to', 'make', 'and', 'or',
+        'hello', 'assistant', 'delivery', 'any', 'available', 'to', 'make', 'and', 'or',
         'of', 'is', 'it', 'my', 'in', 'on', 'at'
     ]);
 
@@ -100,25 +100,25 @@ class ChatService {
 
             // Prepare response logic
             let responseText = '';
-            let responseRecipes: Recipe[] = [];
+            let responseProducts: Recipe[] = [];
 
             if (recipes.length > 0) {
                 const responses = [
-                    `I found some tasty recipes for "${usedKeywords}"!`,
-                    `Here are some cool options for "${usedKeywords}":`,
-                    `Check out these recipes using "${usedKeywords}":`
+                    `I found some great options for "${usedKeywords}"!`,
+                    `Check out these products matching "${usedKeywords}":`,
+                    `Here's what we have for "${usedKeywords}":`
                 ];
                 responseText = responses[Math.floor(Math.random() * responses.length)];
-                responseRecipes = recipes.slice(0, 5);
+                responseProducts = recipes.slice(0, 5);
             } else {
                 // Determine if greeting or general talk
                 const greetings = ['hi', 'hello', 'hey', 'greetings', 'yo', 'sup'];
                 const firstWord = trimmedInput.toLowerCase().split(' ')[0];
 
                 if (greetings.includes(firstWord)) {
-                    responseText = "Hello! I'm your Chef Assistant. Tell me what ingredients you have, and I'll find a recipe!";
+                    responseText = "Hello! I'm your Blue Crate personal shopper. Just tell me what you're looking for!";
                 } else {
-                    responseText = `I couldn't find any recipes for "${trimmedInput}". Try searching for specific ingredients like "Chicken" or "Pasta"!`;
+                    responseText = `I couldn't find matches for "${trimmedInput}" right now. Try searching for "Fresh Milk" or "Frozen Snacks"!`;
                 }
             }
 
@@ -127,7 +127,7 @@ class ChatService {
                 text: responseText,
                 sender: 'bot',
                 timestamp: Date.now(),
-                recipes: responseRecipes
+                products: responseProducts
             };
 
             this.addMessage(msg);
@@ -135,7 +135,7 @@ class ChatService {
             console.error("Bot response error:", error);
             this.addMessage({
                 id: Date.now().toString(),
-                text: "I'm having a little trouble looking up recipes right now. Please try again later!",
+                text: "I'm having a little trouble connecting to the store right now. Please try again later!",
                 sender: 'bot',
                 timestamp: Date.now()
             });

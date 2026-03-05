@@ -5,30 +5,28 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    SafeAreaView,
     KeyboardAvoidingView,
     Platform,
     TouchableWithoutFeedback,
     Keyboard,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import useAuthStore from '../../stores/authStore';
 import { authService } from '../../services/authService';
 import { Alert, ActivityIndicator } from 'react-native';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import auth from '@react-native-firebase/auth';
-
-// Configure Google Sign-In
-GoogleSignin.configure({
-    webClientId: '1069338996291-soumd199113mj5jej337snc28ou88dop.apps.googleusercontent.com',
-    offlineAccess: true,
-});
+import { GoogleSignin, statusCodes, auth } from '../../utils/authProvider';
 
 const AuthMethodScreen = ({ navigation }: any) => {
     const [phone, setPhone] = useState('');
     const googleLogin = useAuthStore((state) => state.googleLogin);
+    const skipLogin = useAuthStore((state) => state.skipLogin);
     const isLoading = useAuthStore((state) => state.isLoading);
+
+    const handleSkip = async () => {
+        await skipLogin();
+    };
 
     const handleContinue = async () => {
         if (phone.length >= 10) {
@@ -86,9 +84,14 @@ const AuthMethodScreen = ({ navigation }: any) => {
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <View style={styles.content}>
                         <View style={styles.header}>
-                            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                <Feather name="arrow-left" size={24} color={colors.text.primary} />
-                            </TouchableOpacity>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+                                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                                    <Feather name="arrow-left" size={24} color={colors.text.primary} />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={handleSkip}>
+                                    <Text style={{ color: colors.primary[500], fontWeight: '600', fontSize: 16 }}>Skip for now</Text>
+                                </TouchableOpacity>
+                            </View>
                             <Text style={styles.title}>Enter your mobile number</Text>
                         </View>
 
@@ -134,9 +137,9 @@ const AuthMethodScreen = ({ navigation }: any) => {
                                 )}
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.socialButton}>
-                                <Ionicons name="logo-apple" size={20} color={colors.text.primary} />
-                                <Text style={styles.socialButtonText}>Continue with Apple</Text>
+                            <TouchableOpacity style={styles.socialButton} onPress={handleSkip}>
+                                <Feather name="fast-forward" size={20} color={colors.primary[500]} />
+                                <Text style={[styles.socialButtonText, { color: colors.primary[600] }]}>Skip & Browse App</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -188,7 +191,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     backButton: {
-        marginBottom: 24,
+        // Removed marginBottom to align with Skip button
     },
     title: {
         fontSize: 24,

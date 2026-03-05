@@ -17,7 +17,7 @@ export const InvisiblePartnerScreen = () => {
       <View style={styles.header}>
         <Text style={styles.title as any}>Your Kitchen’s Invisible Partner</Text>
         <Text style={styles.subtitle}>
-          Streamline your kitchen operations with Eatee. We handle the prep, so you can focus on creating amazing dishes.
+          Streamline your kitchen operations with Blue Crate. We handle the prep, so you can focus on creating amazing dishes.
         </Text>
       </View>
 
@@ -42,19 +42,19 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing.xl,
     backgroundColor: colors.primary[50],
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   title: {
     ...textStyles.h2,
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: spacing.md,
     color: colors.primary[700],
   },
   subtitle: {
     fontSize: typography.fontSize.lg,
     color: colors.gray[600],
-    textAlign: 'center',
-    maxWidth: '90%',
+    textAlign: 'left',
+    maxWidth: '100%',
   },
   benefitsGrid: {
     flexDirection: 'row',
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     width: '45%',
     aspectRatio: 1,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   benefitText: {
     fontSize: typography.fontSize.base,
     fontFamily: typography.fontFamily.semibold,
-    textAlign: 'center',
+    textAlign: 'left',
     color: colors.text.primary,
   },
 });

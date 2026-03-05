@@ -236,7 +236,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out this delicious recipe for ${recipe.name} on Eatee!`,
+        message: `Check out this delicious recipe for ${recipe.name} on Blue Crate!`,
       });
     } catch (error) {
       console.error(error);
@@ -391,7 +391,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
             <View style={styles.authorRow}>
               <Ionicons name="person-outline" size={14} color={colors.gray[300]} style={{ marginRight: 4 }} />
               <Text style={styles.authorText}>
-                Recipe by {recipe.authorName || 'BlueCrate Chef'}
+                Recipe by {recipe.authorName || 'Blue Crate Chef'}
               </Text>
             </View>
 
@@ -532,7 +532,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                 <View style={styles.ingredientsList}>
                   {/* Mandatory Section */}
                   <View style={styles.ingredientSection}>
-                    <Text style={styles.providedTitle}>Provided by Eatee</Text>
+                    <Text style={styles.providedTitle}>Provided by Blue Crate</Text>
                     <View style={styles.infoBanner}>
                       <Feather name="truck" size={16} color={colors.green[600]} />
                       <Text style={styles.infoBannerText}>These will be included in your kit</Text>

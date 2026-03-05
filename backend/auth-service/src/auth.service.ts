@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { SignupDto, LoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { FirebaseService } from './firebase.service';
 

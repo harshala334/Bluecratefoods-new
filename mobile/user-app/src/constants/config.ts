@@ -4,78 +4,73 @@ import { Platform } from 'react-native';
 // API Configuration
 export const PROD_URL = 'https://api.bluecratefoods.com/api';
 // Use LAN IP for Android to support both Emulator and Real Device (via Expo Tunnel)
-export const LOCAL_URL = Platform.OS === 'android' ? 'http://192.168.31.31:8003' : 'http://localhost:8003';
+// NOTE: 10.0.2.2 is used for Android Emulator to access host machine localhost
+export const LOCAL_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000/api' : 'http://localhost:8000/api';
 export const CDN_URL = 'https://storage.googleapis.com/bluecrate-assets';
 
 // Helper to decide base URL per endpoint
-const getBaseUrl = (endpoint: string) => {
-  // If it's an Order endpoint, use LOCAL
-  if (endpoint.includes('/orders') || endpoint.includes('/cart')) {
-    return LOCAL_URL;
-  }
-  // Otherwise (Recipes, etc) use PROD
-  return PROD_URL;
+const getBaseUrl = () => {
+  return LOCAL_URL; // Force local for testing
 };
 
+const baseUrl = getBaseUrl();
+
 export const API_CONFIG = {
-  // We won't use a single BASE_URL anymore directly in the app, but if we have to:
-  // Let's keep BASE_URL as PROD for safety, but we need to patch the service to choose.
-  // Actually, providing full URLs in ENDPOINTS is safer if we want mixed mode.
-  BASE_URL: PROD_URL,
+  BASE_URL: baseUrl,
 
   TIMEOUT: 30000, // 30 seconds
 
   // API Endpoints
   ENDPOINTS: {
     // Auth
-    LOGIN: `${PROD_URL}/auth/login`,
-    SIGNUP: `${PROD_URL}/auth/signup`,
-    LOGOUT: `${PROD_URL}/auth/logout`,
-    REFRESH_TOKEN: `${PROD_URL}/auth/refresh-token`,
-    FORGOT_PASSWORD: `${PROD_URL}/auth/forgot-password`,
-    USER_PROFILE: `${PROD_URL}/auth/profile`,
-    UPDATE_PROFILE: `${PROD_URL}/auth/profile`,
-    APPLY_CREATOR: `${PROD_URL}/auth/apply-creator`,
-    PENDING_CREATORS: `${PROD_URL}/auth/admin/pending-creators`,
-    APPROVE_CREATOR: (id: string) => `${PROD_URL}/auth/admin/approve-creator/${id}`,
-    REJECT_CREATOR: (id: string) => `${PROD_URL}/auth/admin/reject-creator/${id}`,
-    VERIFIED_CREATORS: `${PROD_URL}/auth/admin/verified-creators`,
-    REVOKE_CREATOR: (id: string) => `${PROD_URL}/auth/admin/revoke-creator/${id}`,
+    LOGIN: `${baseUrl}/auth/login`,
+    SIGNUP: `${baseUrl}/auth/signup`,
+    LOGOUT: `${baseUrl}/auth/logout`,
+    REFRESH_TOKEN: `${baseUrl}/auth/refresh-token`,
+    FORGOT_PASSWORD: `${baseUrl}/auth/forgot-password`,
+    USER_PROFILE: `${baseUrl}/auth/profile`,
+    UPDATE_PROFILE: `${baseUrl}/auth/profile`,
+    APPLY_CREATOR: `${baseUrl}/auth/apply-creator`,
+    PENDING_CREATORS: `${baseUrl}/auth/admin/pending-creators`,
+    APPROVE_CREATOR: (id: string) => `${baseUrl}/auth/admin/approve-creator/${id}`,
+    REJECT_CREATOR: (id: string) => `${baseUrl}/auth/admin/reject-creator/${id}`,
+    VERIFIED_CREATORS: `${baseUrl}/auth/admin/verified-creators`,
+    REVOKE_CREATOR: (id: string) => `${baseUrl}/auth/admin/revoke-creator/${id}`,
 
     // Recipes - Use Default (Prod)
-    RECIPES: `${PROD_URL}/recipes`,
-    ADMIN_ALL_RECIPES: `${PROD_URL}/recipes/admin/all`,
-    RECIPE_DETAIL: (id: string) => `${PROD_URL}/recipes/${id}`,
-    RECIPE_CATEGORIES: `${PROD_URL}/recipes/categories`,
-    RECIPE_SEARCH: `${PROD_URL}/recipes/search`,
-    PENDING_RECIPES: `${PROD_URL}/recipes/admin/pending`,
-    APPROVE_RECIPE: (id: string) => `${PROD_URL}/recipes/admin/${id}/approve`,
-    REJECT_RECIPE: (id: string) => `${PROD_URL}/recipes/admin/${id}/reject`,
-    REJECT_BY_AUTHOR: (authorId: string) => `${PROD_URL}/recipes/admin/reject-by-author/${authorId}`,
+    RECIPES: `${baseUrl}/recipes`,
+    ADMIN_ALL_RECIPES: `${baseUrl}/recipes/admin/all`,
+    RECIPE_DETAIL: (id: string) => `${baseUrl}/recipes/${id}`,
+    RECIPE_CATEGORIES: `${baseUrl}/recipes/categories`,
+    RECIPE_SEARCH: `${baseUrl}/recipes/search`,
+    PENDING_RECIPES: `${baseUrl}/recipes/admin/pending`,
+    APPROVE_RECIPE: (id: string) => `${baseUrl}/recipes/admin/${id}/approve`,
+    REJECT_RECIPE: (id: string) => `${baseUrl}/recipes/admin/${id}/reject`,
+    REJECT_BY_AUTHOR: (authorId: string) => `${baseUrl}/recipes/admin/reject-by-author/${authorId}`,
 
     // Cart - Use Prod
-    CART: `${PROD_URL}/cart`,
-    ADD_TO_CART: `${PROD_URL}/cart/add`,
-    UPDATE_CART: `${PROD_URL}/cart/update`,
-    REMOVE_FROM_CART: `${PROD_URL}/cart/remove`,
-    CLEAR_CART: `${PROD_URL}/cart/clear`,
+    CART: `${baseUrl}/cart`,
+    ADD_TO_CART: `${baseUrl}/cart/add`,
+    UPDATE_CART: `${baseUrl}/cart/update`,
+    REMOVE_FROM_CART: `${baseUrl}/cart/remove`,
+    CLEAR_CART: `${baseUrl}/cart/clear`,
 
     // Orders - Use Prod (Gateway)
-    ORDERS: `${PROD_URL}/orders`, // Note: Gateway requires trailing slash for root sometimes, but app logic should handle paths
-    ORDER_DETAIL: (id: string) => `${PROD_URL}/orders/${id}`,
-    CREATE_ORDER: `${PROD_URL}/orders/`,
-    ORDERS_MINE: `${PROD_URL}/orders/mine`,
-    ORDERS_STORE: (storeId: string) => `${PROD_URL}/orders/store/${storeId}`,
-    UPDATE_STATUS: (id: string) => `${PROD_URL}/orders/${id}/status`,
-    TRACK_ORDER: (id: string) => `${PROD_URL}/orders/${id}/track`,
+    ORDERS: `${baseUrl}/orders`, // Note: Gateway requires trailing slash for root sometimes, but app logic should handle paths
+    ORDER_DETAIL: (id: string) => `${baseUrl}/orders/${id}`,
+    CREATE_ORDER: `${baseUrl}/orders/`,
+    ORDERS_MINE: `${baseUrl}/orders/mine`,
+    ORDERS_STORE: (storeId: string) => `${baseUrl}/orders/store/${storeId}`,
+    UPDATE_STATUS: (id: string) => `${baseUrl}/orders/${id}/status`,
+    TRACK_ORDER: (id: string) => `${baseUrl}/orders/${id}/track`,
 
     // Payment
-    CREATE_PAYMENT: `${PROD_URL}/payments/create`,
-    VERIFY_PAYMENT: `${PROD_URL}/payments/verify`,
+    CREATE_PAYMENT: `${baseUrl}/payments/create`,
+    VERIFY_PAYMENT: `${baseUrl}/payments/verify`,
 
     // Location (Google Maps Proxy)
-    LOCATION: `${PROD_URL}/location`, // Base URL for GooglePlacesAutocomplete
-    REVERSE_GEOCODE: `${PROD_URL}/location/reverse-geocode`,
+    LOCATION: `${baseUrl}/location`, // Base URL for GooglePlacesAutocomplete
+    REVERSE_GEOCODE: `${baseUrl}/location/reverse-geocode`,
   },
 };
 
@@ -91,7 +86,8 @@ export const STORAGE_KEYS = {
 
 // App Configuration
 export const APP_CONFIG = {
-  APP_NAME: 'BlueCrateFoods',
+  APP_NAME: 'Blue Crate',
+  TAGLINE: 'Ready-to-Cook. Ready-to-Love.',
   APP_VERSION: '1.0.0',
   SUPPORT_EMAIL: 'connect@bluecratefoods.com',
   SUPPORT_PHONE: '+91 9591890828',

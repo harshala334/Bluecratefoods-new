@@ -2,7 +2,7 @@
 
 ## 📋 Implementation Roadmap
 
-This document outlines the step-by-step plan to complete the BlueCrateFoods mobile app.
+This document outlines the step-by-step plan to complete the Blue Crate mobile app (Ready-to-Cook. Ready-to-Love.).
 
 ---
 

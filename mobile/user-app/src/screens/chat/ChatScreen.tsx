@@ -80,11 +80,8 @@ export const ChatScreen = () => {
 
     const generateBotResponse = async (query: string) => {
         setIsTyping(true);
-        // Simulate a small delay for natural feel before the service actually responds
-        setTimeout(async () => {
-            await chatService.generateBotResponse(query);
-            setIsTyping(false);
-        }, 1000);
+        await chatService.generateBotResponse(query);
+        setIsTyping(false);
     };
 
     const handleSend = () => {
@@ -111,10 +108,10 @@ export const ChatScreen = () => {
 
         // Navigate to Recipe Detail (nested in Main > RecipesTab)
         navigation.navigate('Main', {
-            screen: 'RecipesTab',
+            screen: 'ProductsTab',
             params: {
-                screen: 'RecipeDetail',
-                params: { recipeId: String(recipe.id) },
+                screen: 'ProductDetail',
+                params: { product: recipe },
             }
         });
     };
@@ -126,9 +123,9 @@ export const ChatScreen = () => {
 
         // Navigate to Recipe List (nested in Main > RecipesTab)
         navigation.navigate('Main', {
-            screen: 'RecipesTab',
+            screen: 'ProductsTab',
             params: {
-                screen: 'RecipeList',
+                screen: 'ProductList',
                 params: { initialSearch: query },
             }
         });
@@ -140,11 +137,11 @@ export const ChatScreen = () => {
             <View style={[
                 styles.messageBubble,
                 isUser ? styles.userBubble : styles.botBubble,
-                item.recipes && item.recipes.length > 0 ? { alignItems: 'flex-start', flexWrap: 'wrap' } : {}
+                item.products && item.products.length > 0 ? { alignItems: 'flex-start', flexWrap: 'wrap' } : {}
             ]}>
                 {!isUser && (
                     <View style={styles.botIcon}>
-                        <Feather name="cpu" size={16} color={colors.white} />
+                        <Feather name="shopping-bag" size={16} color={colors.white} />
                     </View>
                 )}
                 <View style={{ flex: 1, maxWidth: isUser ? '100%' : '100%' }}>
@@ -161,13 +158,13 @@ export const ChatScreen = () => {
                     </View>
 
                     {/* Render Recipe Cards if available */}
-                    {!isUser && item.recipes && item.recipes.length > 0 && (
+                    {!isUser && item.products && item.products.length > 0 && (
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.recipeListContainer}
                         >
-                            {item.recipes.map((recipe) => (
+                            {item.products.map((recipe) => (
                                 <TouchableOpacity
                                     key={recipe.id}
                                     style={styles.chatRecipeCard}
@@ -179,8 +176,8 @@ export const ChatScreen = () => {
                                         <Text style={styles.chatRecipeName} numberOfLines={2}>{recipe.name}</Text>
                                         <View style={styles.chatRecipeMeta}>
                                             <View style={styles.chatMetaItem}>
-                                                <Feather name="clock" size={12} color={colors.gray[500]} />
-                                                <Text style={styles.chatMetaText}>{recipe.time}</Text>
+                                                <Feather name="truck" size={12} color={colors.primary[500]} />
+                                                <Text style={styles.chatMetaText}>Fast Delivery</Text>
                                             </View>
                                             <View style={styles.chatMetaItem}>
                                                 <Feather name="star" size={12} color={colors.yellow[500]} />
@@ -203,7 +200,7 @@ export const ChatScreen = () => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Feather name="arrow-left" size={24} color={colors.gray[800]} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Chef Assistant</Text>
+                <Text style={styles.headerTitle}>Shopping Assistant</Text>
                 <View style={{ width: 24 }} />
             </View>
 
@@ -220,7 +217,7 @@ export const ChatScreen = () => {
             {isTyping && (
                 <View style={styles.typingIndicator}>
                     <ActivityIndicator size="small" color={colors.primary[500]} />
-                    <Text style={styles.typingText}>Chef is thinking...</Text>
+                    <Text style={styles.typingText}>Assistant is searching...</Text>
                 </View>
             )}
 
@@ -261,7 +258,7 @@ export const ChatScreen = () => {
                 <View style={styles.inputWrapper}>
                     <TextInput
                         style={styles.input}
-                        placeholder="Ask me anything about food..."
+                        placeholder="Search for groceries, products..."
                         placeholderTextColor={colors.gray[400]}
                         value={inputText}
                         onChangeText={setInputText}

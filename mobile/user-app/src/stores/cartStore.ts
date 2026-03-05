@@ -15,6 +15,7 @@ interface CartState extends Cart {
   addItem: (ingredient: Ingredient, quantity: number, recipeId?: string, recipeName?: string) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+  updateQuantityByIngredientId: (ingredientId: string | number, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   loadCart: () => Promise<void>;
   getCartSummary: () => CartSummary;
@@ -121,6 +122,35 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ items: newItems, totalItems, totalPrice });
     } catch (error) {
       console.error('Update quantity error:', error);
+    }
+  },
+
+  updateQuantityByIngredientId: async (ingredientId, quantity) => {
+    try {
+      const { items } = get();
+      const existingItem = items.find(item => String(item.ingredient.id) === String(ingredientId));
+
+      if (!existingItem) return;
+
+      if (quantity <= 0) {
+        await get().removeItem(existingItem.id);
+        return;
+      }
+
+      const newItems = items.map((item) =>
+        String(item.ingredient.id) === String(ingredientId) ? { ...item, quantity } : item
+      );
+
+      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalPrice = newItems.reduce(
+        (sum, item) => sum + item.ingredient.price * item.quantity,
+        0
+      );
+
+      await storage.setItem(STORAGE_KEYS.CART_DATA, newItems);
+      set({ items: newItems, totalItems, totalPrice });
+    } catch (error) {
+      console.error('Update quantity by ingredient ID error:', error);
     }
   },
 

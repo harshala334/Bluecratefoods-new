@@ -108,7 +108,7 @@ const CreatorApplicationScreen = ({ navigation, route }: any) => {
                     <Text style={styles.label}>Why do you want to join? *</Text>
                     <TextInput
                         style={styles.textArea}
-                        placeholder="Tell us about your culinary journey and what you hope to achieve as a BlueCrate creator..."
+                        placeholder="Tell us about your culinary journey and what you hope to achieve as a Blue Crate creator..."
                         placeholderTextColor={colors.gray[400]}
                         multiline
                         numberOfLines={6}

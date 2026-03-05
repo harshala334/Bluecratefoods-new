@@ -1,18 +1,18 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../constants/colors';
 import { Feather } from '@expo/vector-icons';
-import LogoHeader from '../components/common/LogoHeader';
+import UnifiedHeader from '../components/common/UnifiedHeader';
 
 // Screens
 import HomeScreen from '../screens/home/HomeScreen';
+import CategoryDetailScreen from '../screens/category/CategoryDetailScreen';
+import ProductDetailScreen from '../screens/product/ProductDetailScreen';
+import ProductListScreen from '../screens/product/ProductListScreen';
 import InvisiblePartnerScreen from '../screens/home/InvisiblePartnerScreen';
 import WholesaleFormScreen from '../screens/wholesale/WholesaleFormScreen';
-import RecipeListScreen from '../screens/recipes/RecipeListScreen';
-import AddRecipeScreen from '../screens/recipes/AddRecipeScreen';
-import RecipeDetailScreen from '../../src/screens/recipes/RecipeDetailScreen';
 import CartScreen from '../../src/screens/cart/CartScreen';
 import CheckoutScreen from '../../src/screens/cart/CheckoutScreen';
 import LoginScreen from '../../src/screens/auth/LoginScreen';
@@ -20,8 +20,8 @@ import RegisterScreen from '../../src/screens/auth/RegisterScreen';
 import ProfileScreen from '../../src/screens/profile/ProfileScreen';
 import EditProfileScreen from '../../src/screens/profile/EditProfileScreen';
 import LocationScreen from '../../src/screens/location/LocationScreen';
-import LocationHeader from '../components/common/LocationHeader';
 import ComingSoonScreen from '../screens/common/ComingSoonScreen';
+import OffersScreen from '../screens/common/OffersScreen';
 import GoalsScreen from '../screens/goals/GoalsScreen';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import ChatScreen from '../screens/chat/ChatScreen';
@@ -29,8 +29,8 @@ import TrackOrderScreen from '../screens/orders/TrackOrderScreen';
 import { MyOrdersScreen } from '../screens/orders/MyOrdersScreen';
 import AdminRequestsScreen from '../screens/profile/AdminRequestsScreen';
 import CreatorApplicationScreen from '../screens/profile/CreatorApplicationScreen';
-import RecipeSimulationScreen from '../screens/simulation/RecipeSimulationScreen';
-import { Ionicons } from '@expo/vector-icons';
+import SubscriptionScreen from '../screens/profile/SubscriptionScreen';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Onboarding Screens
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
@@ -45,6 +45,16 @@ import { useLocationStore } from '../stores/locationStore';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+
+const styles = StyleSheet.create({
+  centralButtonShadow: {
+    shadowColor: colors.primary[600],
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+});
 
 /**
  * Home Stack Navigator
@@ -66,8 +76,12 @@ function HomeStack() {
         name="Home"
         component={HomeScreen}
         options={{
-          headerTitle: () => <LogoHeader />,
-          headerRight: () => <LocationHeader />,
+          headerTitle: () => <UnifiedHeader />,
+          headerStyle: {
+            backgroundColor: colors.primary[500],
+            elevation: 0,
+            shadowOpacity: 0,
+          },
         }}
       />
       <Stack.Screen
@@ -85,9 +99,9 @@ function HomeStack() {
 }
 
 /**
- * Recipe Stack Navigator
+ * Product Stack Navigator
  */
-function RecipeStack() {
+function ProductStack() {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -101,25 +115,35 @@ function RecipeStack() {
       }}
     >
       <Stack.Screen
-        name="RecipeList"
-        component={RecipeListScreen}
+        name="ProductList"
+        component={ProductListScreen}
         options={{
-          headerTitle: () => <LogoHeader />,
+          headerShown: false,
         }}
       />
       <Stack.Screen
-        name="RecipeDetail"
-        component={RecipeDetailScreen}
-        options={{ title: 'Recipe Details' }}
+        name="CategoryDetail"
+        component={CategoryDetailScreen}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
-        name="AddRecipe"
-        component={AddRecipeScreen}
-        options={{ title: 'Add New Recipe', presentation: 'modal' }}
+        name="ProductDetail"
+        component={ProductDetailScreen}
+        options={{
+          headerTitle: () => <UnifiedHeader />,
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor: colors.primary[500],
+          },
+          headerTintColor: '#fff',
+        }}
       />
     </Stack.Navigator>
   );
 }
+
 
 /**
  * Cart Stack Navigator
@@ -141,7 +165,7 @@ function CartStack() {
         name="CartMain"
         component={CartScreen}
         options={{
-          headerTitle: () => <LogoHeader />,
+          headerTitle: () => <UnifiedHeader />,
         }}
       />
       <Stack.Screen
@@ -152,6 +176,37 @@ function CartStack() {
     </Stack.Navigator>
   );
 }
+
+/**
+ * Custom Circular Tab Button
+ */
+const CentralTabButton = ({ children, onPress }: any) => (
+  <TouchableOpacity
+    style={{
+      top: -18, // Fine-tuned to align bottom with labels/icons
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...styles.centralButtonShadow,
+    }}
+    onPress={onPress}
+    activeOpacity={0.9}
+  >
+    <View
+      style={{
+        width: 76, // Prominent size
+        height: 76,
+        borderRadius: 38,
+        backgroundColor: colors.primary[600],
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 5,
+        borderColor: '#fff',
+      }}
+    >
+      {children}
+    </View>
+  </TouchableOpacity>
+);
 
 /**
  * Main Tab Navigator
@@ -198,14 +253,55 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="RecipesTab"
-        component={RecipeStack}
+        name="ProductsTab"
+        component={ProductStack}
         options={{
-          tabBarLabel: 'Recipes',
-          tabBarIcon: ({ color }) => <Feather name="book-open" size={24} color={color} />,
+          tabBarLabel: 'Products',
+          tabBarIcon: ({ color }) => <Feather name="package" size={24} color={color} />,
           headerShown: false,
         }}
       />
+
+      <Tab.Screen
+        name="OffersTab"
+        component={OffersScreen}
+        options={{
+          tabBarLabel: 'Offers',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="label-percent" size={32} color={colors.white} />
+          ),
+          tabBarButton: (props) => <CentralTabButton {...props} />,
+          headerShown: false,
+        }}
+      />
+
+      <Tab.Screen
+        name="CartTab"
+        component={CartStack}
+        options={{
+          tabBarLabel: 'Cart',
+          tabBarIcon: ({ color }) => <Feather name="shopping-cart" size={24} color={color} />,
+          headerShown: false,
+        }}
+      />
+
+      <Tab.Screen
+        name="OrdersTab"
+        component={MyOrdersScreen}
+        options={{
+          tabBarLabel: 'Orders',
+          tabBarIcon: ({ color }) => <Feather name="truck" size={24} color={color} />,
+          headerTitle: 'My Orders',
+          headerShown: true, // Show header for orders list
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: colors.primary[500],
+          },
+          headerTintColor: colors.white,
+        }}
+      />
+
+      {/* 
       <Tab.Screen
         name="MissionsTab"
         component={GoalsScreen}
@@ -224,16 +320,8 @@ function MainTabs() {
           tabBarIcon: ({ color }) => <Feather name="users" size={24} color={color} />,
           headerShown: false,
         }}
-      />
-      <Tab.Screen
-        name="CartTab"
-        component={CartStack}
-        options={{
-          tabBarLabel: isServiceable ? 'Cart' : 'Shop',
-          tabBarIcon: ({ color }) => <Feather name={isServiceable ? "shopping-cart" : "list"} size={24} color={color} />,
-          headerShown: false,
-        }}
-      />
+      /> 
+      */}
     </Tab.Navigator>
   );
 }
@@ -254,7 +342,7 @@ function OnboardingStack() {
   );
 }
 
-export default function RootNavigator() {
+function RootNavigator() {
   const { hasCompletedOnboarding, isAuthenticated, isLoading } = useAuthStore();
 
   if (isLoading) {
@@ -314,8 +402,7 @@ export default function RootNavigator() {
             name="Profile"
             component={ProfileScreen}
             options={{
-              title: 'Profile',
-              headerTitle: () => <LogoHeader />,
+              headerShown: false,
             }}
           />
           <Stack.Screen
@@ -344,7 +431,7 @@ export default function RootNavigator() {
             component={AdminRequestsScreen}
             options={{
               title: 'Admin Dashboard',
-              headerTitle: () => <LogoHeader />,
+              headerTitle: () => <UnifiedHeader />,
             }}
           />
           <Stack.Screen
@@ -352,15 +439,14 @@ export default function RootNavigator() {
             component={CreatorApplicationScreen}
             options={{
               title: 'Apply for Creator',
-              headerTitle: () => <LogoHeader />,
+              headerTitle: () => <UnifiedHeader />,
             }}
           />
           <Stack.Screen
-            name="RecipeSimulation"
-            component={RecipeSimulationScreen}
+            name="Subscription"
+            component={SubscriptionScreen}
             options={{
               headerShown: false,
-              presentation: 'modal',
             }}
           />
         </>
@@ -371,7 +457,7 @@ export default function RootNavigator() {
         name="Login"
         component={LoginScreen}
         options={{
-          headerTitle: () => <LogoHeader />,
+          headerTitle: () => <UnifiedHeader />,
           presentation: 'modal',
         }}
       />
@@ -379,10 +465,14 @@ export default function RootNavigator() {
         name="Register"
         component={RegisterScreen}
         options={{
-          headerTitle: () => <LogoHeader />,
+          headerTitle: () => <UnifiedHeader />,
           presentation: 'modal',
         }}
       />
     </Stack.Navigator>
   );
 }
+
+
+
+export default RootNavigator;
