@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         width: '100%',
-        height: 120,
+        height: 90, // Reduced from 100
         backgroundColor: colors.gray[50],
         position: 'relative',
     },
@@ -652,27 +652,28 @@ const styles = StyleSheet.create({
         marginLeft: 2,
     },
     productInfo: {
-        padding: 6, // Tighter padding
+        padding: 2, // Reduced from 4
     },
     productName: {
-        fontSize: typography.fontSize.xsMedium,
+        fontSize: 11, // Reduced from 12
         color: colors.gray[800],
         fontFamily: typography.fontFamily.semibold,
-        height: 32,
-        marginBottom: 2,
+        height: 26, // Reduced from 28
+        marginBottom: 1,
     },
     productWeight: {
-        fontSize: typography.fontSize.xxs,
+        fontSize: 9, // Reduced from 10
         fontFamily: typography.fontFamily.medium,
-        marginBottom: 4, // Reduced to make space for tiers
+        marginBottom: 1,
+        color: colors.gray[500],
     },
     bulkTiersContainer: {
         flexDirection: 'column',
-        gap: 6,
-        marginBottom: 8,
+        gap: 2, // Reduced from 6
+        marginBottom: 4, // Reduced from 8
         backgroundColor: colors.gray[50],
-        padding: 4,
-        borderRadius: 6,
+        padding: 2, // Reduced from 4
+        borderRadius: 4,
     },
     bulkTierItem: {
         flexDirection: 'row',
@@ -720,7 +721,7 @@ const styles = StyleSheet.create({
         gap: 0,
     },
     productPrice: {
-        fontSize: typography.fontSize.base,
+        fontSize: 14, // Reduced from base (16)
         fontFamily: typography.fontFamily.bold,
         color: colors.text.primary,
     },
@@ -734,8 +735,8 @@ const styles = StyleSheet.create({
         backgroundColor: colors.white,
         borderWidth: 1,
         borderColor: colors.primary[500],
-        paddingHorizontal: 12,
-        paddingVertical: 5,
+        paddingHorizontal: 8, // Reduced from 12
+        paddingVertical: 3, // Reduced from 5
         borderRadius: 6,
         ...shadow.soft,
     },
@@ -753,8 +754,8 @@ const styles = StyleSheet.create({
         borderColor: colors.primary[100],
     },
     stepperBtn: {
-        padding: 6,
-        paddingHorizontal: 6, // Slightly tighter
+        padding: 4, // Reduced from 6
+        paddingHorizontal: 4,
     },
     stepperQty: {
         fontSize: typography.fontSize.xsMedium,

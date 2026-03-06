@@ -283,7 +283,7 @@ export const HomeScreen = ({ navigation }: any) => {
         <View style={styles.compactContent}>
           <Text style={styles.compactTitle} numberOfLines={1}>{product.name}</Text>
           <View style={styles.compactMeta}>
-            <Ionicons name="star" size={12} color={colors.yellow[500]} />
+            <Ionicons name="star" size={10} color={colors.yellow[500]} />
             <Text style={styles.compactMetaText}>{product.rating || 4.5}</Text>
             <Text style={styles.compactMetaText}>•</Text>
             <Text style={styles.compactMetaText}>{product.unit || 'per unit'}</Text>
@@ -377,7 +377,7 @@ export const HomeScreen = ({ navigation }: any) => {
         <View style={{ position: 'relative' }}>
           <Image
             source={{ uri: product.image }}
-            style={{ width: '100%', height: 110, backgroundColor: colors.gray[100] }}
+            style={{ width: '100%', height: 90, backgroundColor: colors.gray[100] }} // Reduced from 100
             resizeMode="cover"
           />
           {product.badge && (
@@ -414,19 +414,19 @@ export const HomeScreen = ({ navigation }: any) => {
         </View>
 
         {/* Content Area */}
-        <View style={{ padding: 6 }}>
+        <View style={{ padding: 4 }}>
           <Text style={{
-            fontSize: 12,
+            fontSize: 11, // Reduced from 12
             fontFamily: typography.fontFamily.semibold,
             color: colors.gray[800],
-            marginBottom: 2,
-            height: 32,
+            marginBottom: 1,
+            height: 26, // Reduced from 28
           }} numberOfLines={2}>
             {product.name}
           </Text>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={{ fontSize: 10, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 1 }}>
+            <Text style={{ fontSize: 9, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
               {product.unit || 'per unit'}
             </Text>
           </View>
@@ -434,11 +434,11 @@ export const HomeScreen = ({ navigation }: any) => {
           {product.bulkTiers && (
             <View style={{
               flexDirection: 'column',
-              gap: 4,
-              marginBottom: 8,
+              gap: 2, // Reduced from 4
+              marginBottom: 4, // Reduced from 8
               backgroundColor: colors.gray[50],
-              padding: 4,
-              borderRadius: 6,
+              padding: 2, // Reduced from 4
+              borderRadius: 4, // Reduced from 6
             }}>
               {product.bulkTiers.map((tier: any, idx: number) => {
                 const qtyNum = parseInt(tier.quantity) || 1;
@@ -480,11 +480,11 @@ export const HomeScreen = ({ navigation }: any) => {
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View>
               <View style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
-                <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
+                <Text style={{ fontSize: 14, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
                   ₹{product.basePrice}
                 </Text>
                 {product.mrp && product.mrp > product.basePrice && (
-                  <Text style={{ fontSize: 10, color: colors.gray[400], textDecorationLine: 'line-through' }}>
+                  <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
                     ₹{product.mrp}
                   </Text>
                 )}
@@ -503,7 +503,7 @@ export const HomeScreen = ({ navigation }: any) => {
               }}>
                 <TouchableOpacity
                   onPress={handleDecrement}
-                  style={{ padding: 6, paddingHorizontal: 6 }}
+                  style={{ padding: 4, paddingHorizontal: 4 }}
                 >
                   <Feather name="minus" size={14} color={colors.primary[600]} />
                 </TouchableOpacity>
@@ -518,7 +518,7 @@ export const HomeScreen = ({ navigation }: any) => {
                 </Text>
                 <TouchableOpacity
                   onPress={handleIncrement}
-                  style={{ padding: 6, paddingHorizontal: 6 }}
+                  style={{ padding: 4, paddingHorizontal: 4 }}
                 >
                   <Feather name="plus" size={14} color={colors.primary[600]} />
                 </TouchableOpacity>
@@ -529,14 +529,14 @@ export const HomeScreen = ({ navigation }: any) => {
                   backgroundColor: colors.white,
                   borderWidth: 1,
                   borderColor: colors.primary[500],
-                  paddingHorizontal: 12,
-                  paddingVertical: 5,
+                  paddingHorizontal: 8, // Reduced from 12
+                  paddingVertical: 3, // Reduced from 5
                   borderRadius: 6,
                   ...shadow.soft,
                 }}
                 onPress={handleAdd}
               >
-                <Text style={{ fontSize: 12, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>
+                <Text style={{ fontSize: 11, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>
                   ADD
                 </Text>
               </TouchableOpacity>
@@ -711,57 +711,16 @@ export const HomeScreen = ({ navigation }: any) => {
                         style={{ marginTop: 4 }}
                       >
                         {item.products.map((product: any) => (
-                          <TouchableOpacity
-                            key={product.id}
-                            style={{
-                              width: 140,
-                              backgroundColor: colors.white,
-                              borderRadius: 8,
-                              padding: 8,
-                              marginRight: 10,
-                              borderWidth: 1,
-                              borderColor: colors.gray[100],
-                              ...shadow.soft,
-                            }}
-                            onPress={() => navigation.navigate('ProductsTab', {
-                              screen: 'ProductDetail',
-                              params: { product }
-                            })}
-                          >
-                            <Image
-                              source={{ uri: product.image }}
-                              style={{ width: '100%', height: 80, borderRadius: 6, marginBottom: 6 }}
-                              resizeMode="cover"
+                          <View key={product.id} style={{ marginRight: 10 }}>
+                            <VerticalProductCard
+                              product={product}
+                              width={140}
+                              onPress={() => navigation.navigate('ProductsTab', {
+                                screen: 'ProductDetail',
+                                params: { product }
+                              })}
                             />
-                            <Text style={{
-                              fontSize: 11,
-                              fontFamily: typography.fontFamily.semibold,
-                              color: colors.gray[800],
-                              height: 30,
-                            }} numberOfLines={2}>
-                              {product.name}
-                            </Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-                              <View>
-                                <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
-                                  ₹{product.basePrice || product.price || 99}
-                                </Text>
-                                <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
-                                  ₹{Math.round((product.basePrice || product.price || 99) * 1.2)}
-                                </Text>
-                              </View>
-                              <View style={{
-                                backgroundColor: colors.accent[50],
-                                paddingHorizontal: 4,
-                                paddingVertical: 2,
-                                borderRadius: 4,
-                              }}>
-                                <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.accent[600] }}>
-                                  20% OFF
-                                </Text>
-                              </View>
-                            </View>
-                          </TouchableOpacity>
+                          </View>
                         ))}
                       </ScrollView>
                     )}
@@ -1058,9 +1017,6 @@ export const HomeScreen = ({ navigation }: any) => {
       {/* Bestsellers Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Best Selling Products</Text>
-        <Text style={styles.sectionSubtitle}>
-          Highly rated picks delivered fresh to your door
-        </Text>
         <View style={styles.compactGrid}>
           {bestsellers.map((product) => (
             <CompactProductCard
@@ -1611,21 +1567,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   compactCard: {
-    width: '48%', // Slightly smaller to ensure gap fits
+    width: '48%',
     flexDirection: 'row',
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
-    padding: spacing.sm,
-    marginBottom: spacing.sm, // Reduced from spacing.md(16)
+    marginBottom: spacing.sm,
     ...shadow.soft,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.gray[50], // Very subtle border
+    borderColor: colors.gray[50],
+    overflow: 'hidden', // Ensure image doesn't bleed out of rounded corners
   },
   compactImage: {
-    width: 50,
-    height: 50,
-    borderRadius: borderRadius.md,
+    width: 65, // Increased slightly for full coverage
+    height: '100%', // Match card height
+    aspectRatio: 1,
     backgroundColor: colors.gray[100],
   },
   compactContent: {
@@ -1684,7 +1640,7 @@ const styles = StyleSheet.create({
   },
   // Trending Hits Styles
   hitsSection: {
-    paddingVertical: 12,
+    paddingVertical: 4, // Reduced from 12
     backgroundColor: colors.white,
   },
   hitsHeader: {
@@ -1692,10 +1648,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     gap: 6,
-    marginBottom: 10,
+    marginBottom: 6, // Reduced from 10
   },
   hitsTitle: {
-    ...textStyles.h2,
+    ...textStyles.h3, // Using h3 for sleeker look
     color: colors.gray[800],
     letterSpacing: -0.5,
     textAlign: 'left',
