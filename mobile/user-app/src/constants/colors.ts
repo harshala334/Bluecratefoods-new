@@ -171,7 +171,7 @@ export const colors = {
 
   // Background colors
   background: {
-    primary: '#ffffff',
+    primary: '#f0fdfa', // Match chat section (primary.50)
     secondary: '#f9fafb',
     tertiary: '#f3f4f6',
   },

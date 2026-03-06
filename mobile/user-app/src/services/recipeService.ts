@@ -21,7 +21,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 2,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 20, protein: 1, carbs: 4, fat: 0 }
+    nutrition: { calories: 20, protein: 1, carbs: 4, fat: 0 },
+    bulkTiers: [{ quantity: '5 kg', price: 180 }, { quantity: '10 kg', price: 340 }]
   },
   {
     id: 2,
@@ -37,7 +38,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 4,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 150, protein: 3, carbs: 20, fat: 7 }
+    nutrition: { calories: 150, protein: 3, carbs: 20, fat: 7 },
+    bulkTiers: [{ quantity: '1 kg', price: 450 }, { quantity: '2 kg', price: 850 }]
   },
   {
     id: 3,
@@ -53,7 +55,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 1,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 300, protein: 5, carbs: 40, fat: 12 }
+    nutrition: { calories: 300, protein: 5, carbs: 40, fat: 12 },
+    bulkTiers: [{ quantity: '10 pcs', price: 280 }, { quantity: '20 pcs', price: 540 }]
   },
   {
     id: 4,
@@ -69,7 +72,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 2,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 165, protein: 31, carbs: 0, fat: 3.6 }
+    nutrition: { calories: 165, protein: 31, carbs: 0, fat: 3.6 },
+    bulkTiers: [{ quantity: '2 kg', price: 950 }, { quantity: '5 kg', price: 2300 }]
   },
   {
     id: 5,
@@ -85,7 +89,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 20,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 350, protein: 7, carbs: 78, fat: 0.5 }
+    nutrition: { calories: 350, protein: 7, carbs: 78, fat: 0.5 },
+    bulkTiers: [{ quantity: '25 kg', price: 2100 }, { quantity: '50 kg', price: 4000 }]
   },
   {
     id: 6,
@@ -101,7 +106,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 1,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    nutrition: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    bulkTiers: [{ quantity: '100 pcs', price: 1200 }, { quantity: '500 pcs', price: 5500 }]
   },
   {
     id: 7,
@@ -117,7 +123,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 2,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 250, protein: 12, carbs: 8, fat: 18 }
+    nutrition: { calories: 250, protein: 12, carbs: 8, fat: 18 },
+    bulkTiers: [{ quantity: '5 pcs', price: 850 }, { quantity: '10 pcs', price: 1600 }]
   },
   {
     id: 8,
@@ -133,7 +140,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 2,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 312, protein: 3, carbs: 41, fat: 15 }
+    nutrition: { calories: 312, protein: 3, carbs: 41, fat: 15 },
+    bulkTiers: [{ quantity: '1 kg', price: 340 }, { quantity: '2.5 kg', price: 800 }]
   },
   {
     id: 9,
@@ -149,7 +157,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 2,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4 }
+    nutrition: { calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4 },
+    bulkTiers: [{ quantity: '5 kg', price: 110 }, { quantity: '10 kg', price: 200 }]
   },
   {
     id: 11,
@@ -165,7 +174,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 4,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 81, protein: 5, carbs: 14, fat: 0.4 }
+    nutrition: { calories: 81, protein: 5, carbs: 14, fat: 0.4 },
+    bulkTiers: [{ quantity: '1 kg', price: 360 }, { quantity: '2 kg', price: 700 }]
   },
   {
     id: 12,
@@ -181,7 +191,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 3,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 250, protein: 3, carbs: 32, fat: 12 }
+    nutrition: { calories: 250, protein: 3, carbs: 32, fat: 12 },
+    bulkTiers: [{ quantity: '1 kg', price: 550 }, { quantity: '2.5 kg', price: 1300 }]
   },
   {
     id: 13,
@@ -197,7 +208,8 @@ const MOCK_PRODUCTS: Recipe[] = [
     servings: 2,
     ingredients: [],
     steps: [],
-    nutrition: { calories: 120, protein: 8, carbs: 20, fat: 2 }
+    nutrition: { calories: 120, protein: 8, carbs: 20, fat: 2 },
+    bulkTiers: [{ quantity: '500g', price: 380 }, { quantity: '1 kg', price: 740 }]
   }
 ];
 

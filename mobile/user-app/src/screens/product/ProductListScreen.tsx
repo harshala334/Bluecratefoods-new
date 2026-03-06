@@ -114,7 +114,7 @@ const ProductListScreen = ({ navigation }: any) => {
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
-            <View style={[styles.hero, { backgroundColor: colors.primary[50] }]}>
+            <View style={styles.hero}>
                 <KittyChatSearchBar
                     navigation={navigation}
                     onSearchResults={(results) => setSearchResults(results)}
@@ -165,7 +165,7 @@ const ProductListScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.white,
+        backgroundColor: colors.background.primary,
     },
     header: {
         display: 'none',

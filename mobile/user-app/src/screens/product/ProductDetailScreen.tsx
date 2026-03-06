@@ -198,7 +198,7 @@ const NutritionRow = ({ label, value }: any) => (
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.white,
+        backgroundColor: colors.background.primary,
     },
     imageContainer: {
         width: width,

@@ -63,4 +63,6 @@ export interface Recipe {
   isApproved?: boolean;
   status?: 'pending' | 'approved' | 'rejected';
   videoUrl?: string;
+  bulkTiers?: { quantity: string; price: number }[];
+  unit?: string;
 }

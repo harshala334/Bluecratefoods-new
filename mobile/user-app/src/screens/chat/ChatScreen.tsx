@@ -10,7 +10,8 @@ import {
     Platform,
     ActivityIndicator,
     Image,
-    ScrollView
+    ScrollView,
+    Dimensions
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
@@ -21,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { recipeService } from '../../services/recipeService';
 import { chatService, Message } from '../../services/chatService';
 import { Recipe } from '../../types/recipe';
+import { VerticalProductCard } from '../../components/product/VerticalProductCard';
 
 export const ChatScreen = () => {
     const route = useRoute<any>();
@@ -157,35 +159,27 @@ export const ChatScreen = () => {
                         ]}>{item.text}</Text>
                     </View>
 
-                    {/* Render Recipe Cards if available */}
+                    {/* Render Standardized VerticalProductCard */}
                     {!isUser && item.products && item.products.length > 0 && (
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.recipeListContainer}
                         >
-                            {item.products.map((recipe) => (
-                                <TouchableOpacity
-                                    key={recipe.id}
-                                    style={styles.chatRecipeCard}
-                                    onPress={() => handleSuggestionPress(recipe)}
-                                    activeOpacity={0.9}
-                                >
-                                    <Image source={{ uri: recipe.image }} style={styles.chatRecipeImage} />
-                                    <View style={styles.chatRecipeInfo}>
-                                        <Text style={styles.chatRecipeName} numberOfLines={2}>{recipe.name}</Text>
-                                        <View style={styles.chatRecipeMeta}>
-                                            <View style={styles.chatMetaItem}>
-                                                <Feather name="truck" size={12} color={colors.primary[500]} />
-                                                <Text style={styles.chatMetaText}>Fast Delivery</Text>
-                                            </View>
-                                            <View style={styles.chatMetaItem}>
-                                                <Feather name="star" size={12} color={colors.yellow[500]} />
-                                                <Text style={styles.chatMetaText}>{recipe.rating}</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </TouchableOpacity>
+                            {item.products.map((product) => (
+                                <View key={product.id} style={{ marginRight: 10 }}>
+                                    <VerticalProductCard
+                                        product={product as any}
+                                        width={Dimensions.get('window').width * 0.42}
+                                        onPress={() => navigation.navigate('Main', {
+                                            screen: 'ProductsTab',
+                                            params: {
+                                                screen: 'ProductDetail',
+                                                params: { product },
+                                            }
+                                        })}
+                                    />
+                                </View>
                             ))}
                         </ScrollView>
                     )}
@@ -425,44 +419,6 @@ const styles = StyleSheet.create({
         paddingTop: spacing.md,
         paddingRight: spacing.md,
         gap: spacing.md,
-    },
-    chatRecipeCard: {
-        width: 220,
-        backgroundColor: colors.white,
-        borderRadius: borderRadius.lg,
-        ...shadow.soft,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: colors.gray[100],
-    },
-    chatRecipeImage: {
-        width: '100%',
-        height: 120,
-        backgroundColor: colors.gray[200],
-    },
-    chatRecipeInfo: {
-        padding: spacing.sm,
-    },
-    chatRecipeName: {
-        fontSize: typography.fontSize.sm,
-        fontFamily: typography.fontFamily.bold,
-        color: colors.text.primary,
-        marginBottom: 4,
-        height: 40,
-    },
-    chatRecipeMeta: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    chatMetaItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    chatMetaText: {
-        fontSize: typography.fontSize.xs,
-        color: colors.gray[500],
     },
 });
 

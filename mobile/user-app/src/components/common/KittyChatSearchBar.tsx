@@ -9,6 +9,7 @@ import {
     ScrollView,
     Keyboard,
     FlatList,
+    Dimensions,
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
@@ -202,7 +203,7 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
                                                 <View key={product.id} style={{ marginRight: 10 }}>
                                                     <VerticalProductCard
                                                         product={product}
-                                                        width={140}
+                                                        width={Dimensions.get('window').width * 0.42}
                                                         onPress={() => navigation.navigate('ProductsTab', {
                                                             screen: 'ProductDetail',
                                                             params: { product }
