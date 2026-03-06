@@ -25,6 +25,8 @@ import { chatService, Message } from '../../services/chatService';
 import { recipeService } from '../../services/recipeService';
 import { Recipe } from '../../types/recipe';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KittyChatSearchBar } from '../../components/common/KittyChatSearchBar';
+import { VerticalProductCard } from '../../components/product/VerticalProductCard';
 
 const { width: windowWidth } = Dimensions.get('window'); // Re-declaring since we removed interface
 
@@ -45,68 +47,6 @@ export const HomeScreen = ({ navigation }: any) => {
   const { items, addItem, updateQuantityByIngredientId } = useCartStore();
   const { addSearchTerm, getUnifiedFrequentList, addFrequentItem } = useRecipeStore();
   const unifiedFrequent = getUnifiedFrequentList();
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const [searchResults, setSearchResults] = useState<Recipe[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchingText, setSearchingText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-
-  // ... (previous state definitions remain the same)
-
-  const placeholderTexts = [
-    "Search 'Fresh organic milk'",
-    "Try 'Frozen snacks'",
-    "Search 'Ready to eat meals'",
-    "Try 'Sustainable packaging'"
-  ];
-  const [placeholderIndex, setPlaceholderIndex] = useState(0); // Keeping for safety if used elsewhere, though we'll use dynamicPlaceholder
-  const [dynamicPlaceholder, setDynamicPlaceholder] = useState(placeholderTexts[0]);
-
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    let currentTextIndex = 0;
-    let charIndex = placeholderTexts[0].length;
-    let isDeleting = false;
-
-    const runTypingEffect = () => {
-      const currentFullText = placeholderTexts[currentTextIndex];
-      const prefix = "Try '";
-
-      if (isDeleting) {
-        // Instant 'delete' - jump straight to the prefix of the next sentence
-        isDeleting = false;
-        currentTextIndex = (currentTextIndex + 1) % placeholderTexts.length;
-        charIndex = prefix.length;
-        setDynamicPlaceholder(placeholderTexts[currentTextIndex].substring(0, charIndex));
-        timeoutId = setTimeout(runTypingEffect, 1);
-      } else {
-        if (charIndex < currentFullText.length) {
-          charIndex++;
-          setDynamicPlaceholder(currentFullText.substring(0, charIndex));
-          timeoutId = setTimeout(runTypingEffect, 2);
-        } else {
-          isDeleting = true;
-          timeoutId = setTimeout(runTypingEffect, 1200);
-        }
-      }
-    };
-
-    timeoutId = setTimeout(() => {
-      isDeleting = true;
-      runTypingEffect();
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = chatService.subscribe((messages) => {
-      setChatMessages(messages);
-    });
-    return unsubscribe;
-  }, []);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
@@ -129,7 +69,7 @@ export const HomeScreen = ({ navigation }: any) => {
   useEffect(() => {
     const backAction = () => {
       if (isSearchFocused) {
-        handleSearchCancel();
+        setIsSearchFocused(false);
         return true;
       }
       return false;
@@ -307,297 +247,7 @@ export const HomeScreen = ({ navigation }: any) => {
     );
   };
 
-  const VerticalProductCard = ({ product, onPress, width }: any) => {
-    const savings = product.mrp ? Math.round(((product.mrp - product.basePrice) / product.mrp) * 100) : 0;
-
-    const cartItem = items.find(i => i.ingredient.id === product.id);
-    const quantity = cartItem?.quantity || 0;
-
-    const handleAdd = (e: any) => {
-      e.stopPropagation();
-      const ingredient = {
-        id: product.id,
-        name: product.name,
-        price: product.basePrice || product.price,
-        unit: product.unit || product.weight,
-        image: product.image,
-        category: product.category || 'general'
-      };
-      addItem(ingredient as any, 1);
-      addFrequentItem(product);
-    };
-
-    const handleIncrement = (e: any) => {
-      e.stopPropagation();
-      updateQuantityByIngredientId(product.id, quantity + 1);
-    };
-
-    const handleDecrement = (e: any) => {
-      e.stopPropagation();
-      updateQuantityByIngredientId(product.id, quantity - 1);
-    };
-
-    const handleAddBulk = (e: any, bulkQuantity: string) => {
-      e.stopPropagation();
-      const qty = parseInt(bulkQuantity) || 1;
-      const cartItem = items.find(i => i.ingredient.id === product.id);
-
-      if (!cartItem) {
-        const ingredient = {
-          id: product.id,
-          name: product.name,
-          price: product.basePrice || product.price,
-          unit: product.unit || product.weight,
-          image: product.image,
-          category: product.category || 'general'
-        };
-        addItem(ingredient as any, qty);
-        addFrequentItem(product);
-      } else {
-        updateQuantityByIngredientId(product.id, qty);
-      }
-    };
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onPress}
-        style={{
-          width: width,
-          backgroundColor: colors.white,
-          borderRadius: 12,
-          overflow: 'hidden',
-          ...shadow.soft,
-          borderWidth: 1,
-          borderColor: colors.gray[100],
-          marginBottom: 12,
-        }}
-      >
-        {/* Product Image Area */}
-        <View style={{ position: 'relative' }}>
-          <Image
-            source={{ uri: product.image }}
-            style={{ width: '100%', height: 90, backgroundColor: colors.gray[100] }} // Reduced from 100
-            resizeMode="cover"
-          />
-          {product.badge && (
-            <View style={{
-              position: 'absolute',
-              top: 8,
-              left: 0,
-              backgroundColor: colors.primary[600],
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-              borderTopRightRadius: 4,
-              borderBottomRightRadius: 4,
-            }}>
-              <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.white }}>
-                {product.badge}
-              </Text>
-            </View>
-          )}
-          {savings > 0 && (
-            <View style={{
-              position: 'absolute',
-              bottom: 8,
-              right: 8,
-              backgroundColor: colors.accent[500],
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-              borderRadius: 4,
-            }}>
-              <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.white }}>
-                {savings}% OFF
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Content Area */}
-        <View style={{ padding: 4 }}>
-          <Text style={{
-            fontSize: 11, // Reduced from 12
-            fontFamily: typography.fontFamily.semibold,
-            color: colors.gray[800],
-            marginBottom: 1,
-            height: 26, // Reduced from 28
-          }} numberOfLines={2}>
-            {product.name}
-          </Text>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 1 }}>
-            <Text style={{ fontSize: 9, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
-              {product.unit || 'per unit'}
-            </Text>
-          </View>
-
-          {product.bulkTiers && (
-            <View style={{
-              flexDirection: 'column',
-              gap: 2, // Reduced from 4
-              marginBottom: 4, // Reduced from 8
-              backgroundColor: colors.gray[50],
-              padding: 2, // Reduced from 4
-              borderRadius: 4, // Reduced from 6
-            }}>
-              {product.bulkTiers.map((tier: any, idx: number) => {
-                const qtyNum = parseInt(tier.quantity) || 1;
-                const unitPrice = Math.round(tier.price / qtyNum);
-                return (
-                  <View key={idx} style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingVertical: 1,
-                  }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[600] }}>
-                        {tier.quantity}: <Text style={{ color: colors.primary[600] }}>₹{tier.price}</Text>
-                      </Text>
-                      <Text style={{ fontSize: 7, color: colors.gray[400], fontFamily: typography.fontFamily.medium }}>
-                        ₹{unitPrice} / unit
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: colors.white,
-                        borderWidth: 1,
-                        borderColor: colors.primary[200],
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 4,
-                      }}
-                      onPress={(e) => handleAddBulk(e, tier.quantity)}
-                    >
-                      <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>ADD</Text>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View>
-              <View style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
-                <Text style={{ fontSize: 14, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
-                  ₹{product.basePrice}
-                </Text>
-                {product.mrp && product.mrp > product.basePrice && (
-                  <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
-                    ₹{product.mrp}
-                  </Text>
-                )}
-              </View>
-            </View>
-
-            {quantity > 0 ? (
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: colors.primary[50],
-                borderRadius: 6,
-                borderWidth: 1,
-                borderColor: colors.primary[100],
-                ...shadow.soft,
-              }}>
-                <TouchableOpacity
-                  onPress={handleDecrement}
-                  style={{ padding: 4, paddingHorizontal: 4 }}
-                >
-                  <Feather name="minus" size={14} color={colors.primary[600]} />
-                </TouchableOpacity>
-                <Text style={{
-                  fontSize: 12,
-                  fontFamily: typography.fontFamily.bold,
-                  color: colors.primary[700],
-                  minWidth: 16,
-                  textAlign: 'center',
-                }}>
-                  {quantity}
-                </Text>
-                <TouchableOpacity
-                  onPress={handleIncrement}
-                  style={{ padding: 4, paddingHorizontal: 4 }}
-                >
-                  <Feather name="plus" size={14} color={colors.primary[600]} />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: colors.white,
-                  borderWidth: 1,
-                  borderColor: colors.primary[500],
-                  paddingHorizontal: 8, // Reduced from 12
-                  paddingVertical: 3, // Reduced from 5
-                  borderRadius: 6,
-                  ...shadow.soft,
-                }}
-                onPress={handleAdd}
-              >
-                <Text style={{ fontSize: 11, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>
-                  ADD
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const handleChatSubmit = async (text?: string) => {
-    const userText = text || searchQuery;
-    if (!userText.trim()) return;
-
-    setSearchQuery('');
-    setIsSearching(true);
-    setSearchingText(userText);
-    Keyboard.dismiss();
-    setIsSearchFocused(false);
-
-    // Add User Message
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      text: userText,
-      sender: 'user',
-      timestamp: Date.now(),
-    };
-    chatService.addMessage(userMsg);
-    addSearchTerm(userText);
-
-    generateMascotResponse(userText);
-  };
-
-  const generateMascotResponse = async (query: string) => {
-    setIsTyping(true);
-
-    try {
-      // Fetch results for the dedicated results section
-      try {
-        const results = await recipeService.searchRecipes(query);
-        setSearchResults(results);
-        setIsSearching(false); // Clear feedback as soon as results are here
-      } catch (error) {
-        console.warn("HomeScreen: Failed to fetch search results for section", error);
-        setIsSearching(false);
-      }
-
-      // Use the centralized chat logic from ChatService
-      await chatService.generateBotResponse(query);
-    } finally {
-      setIsTyping(false);
-      setIsSearching(false); // Safety fallback
-    }
-  };
-
-  const handleBrowseProducts = () => {
-    setIsSearchFocused(false);
-    navigation.navigate('ProductsTab');
-  };
-
-
+  const [searchResults, setSearchResults] = useState<Recipe[]>([]);
 
   const handleCategoryPress = (filter: string) => {
     const category = categories.find(c => c.filter === filter || c.id === filter);
@@ -610,24 +260,6 @@ export const HomeScreen = ({ navigation }: any) => {
     });
   };
 
-  const handleSearchPress = (query: string) => {
-    setIsSearchFocused(false);
-    setSearchQuery('');
-    Keyboard.dismiss();
-
-    // Use handleChatSubmit to visually show the search in chat
-    handleChatSubmit(query);
-  };
-
-  const handleSearchFocus = () => {
-    setIsSearchFocused(true);
-  };
-
-  const handleSearchCancel = () => {
-    setIsSearchFocused(false);
-    setSearchQuery('');
-    Keyboard.dismiss();
-  };
 
   const TrendingGem = ({ item, onPress }: any) => (
     <TouchableOpacity
@@ -651,180 +283,10 @@ export const HomeScreen = ({ navigation }: any) => {
 
       {/* Hero Section */}
       <View style={[styles.hero, { backgroundColor: colors.primary[50] }]}>
-        {/* Search Bar */}
-        {/* ... */}
-        <View style={styles.mascotRow}>
-          {/* TODO: [CLOUDINARY] Upload 'cat-cheff.png' to Cloudinary and usage remote URL.
-              Example: source={{ uri: 'https://res.cloudinary.com/.../cat-cheff.png' }}
-              This reduces bundle size. */}
-          <Image
-            source={require('../../../assets/images/kitty_with_cart_cropped.png')}
-            style={styles.catImage}
-            resizeMode="contain"
-          />
-          <View style={styles.speechBubble}>
-            {/* Maximize Icon */}
-            <TouchableOpacity
-              style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}
-              onPress={() => navigation.navigate('Chat')}
-            >
-              <Feather name="maximize-2" size={16} color={colors.gray[500]} />
-            </TouchableOpacity>
-
-            <View style={{ height: 80 }}>
-              <ScrollView
-                ref={chatListRef}
-                nestedScrollEnabled={true}
-                showsVerticalScrollIndicator={false}
-                onContentSizeChange={() => chatListRef.current?.scrollToEnd({ animated: true })}
-              >
-                {chatMessages.map((item) => (
-                  <View
-                    key={item.id}
-                    style={{
-                      marginBottom: 8,
-                      alignSelf: item.sender === 'user' ? 'flex-end' : 'flex-start',
-                      backgroundColor: item.sender === 'user' ? colors.primary[500] : colors.white,
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                      borderRadius: 12,
-                      borderBottomRightRadius: item.sender === 'user' ? 2 : 12,
-                      borderBottomLeftRadius: item.sender === 'bot' ? 2 : 12,
-                      maxWidth: '92%',
-                      ...shadow.soft,
-                    }}
-                  >
-                    <Text style={{
-                      fontSize: typography.fontSize.xs,
-                      color: item.sender === 'user' ? colors.white : colors.text.primary,
-                      fontFamily: typography.fontFamily.medium,
-                      marginBottom: item.products && item.products.length > 0 ? 8 : 0,
-                    }}>
-                      {item.text}
-                    </Text>
-
-                    {item.products && item.products.length > 0 && (
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        nestedScrollEnabled={true}
-                        style={{ marginTop: 4 }}
-                      >
-                        {item.products.map((product: any) => (
-                          <View key={product.id} style={{ marginRight: 10 }}>
-                            <VerticalProductCard
-                              product={product}
-                              width={140}
-                              onPress={() => navigation.navigate('ProductsTab', {
-                                screen: 'ProductDetail',
-                                params: { product }
-                              })}
-                            />
-                          </View>
-                        ))}
-                      </ScrollView>
-                    )}
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-          </View>
-        </View>
-        <View style={{ zIndex: 100, position: 'relative' }}>
-          <View style={styles.newSearchContainer}>
-            <TouchableOpacity onPress={() => handleChatSubmit()} style={{ marginRight: 10 }}>
-              <Feather name="search" size={20} color={colors.primary[500]} />
-            </TouchableOpacity>
-            {isSearching ? (
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ fontSize: 13, color: colors.gray[500], fontStyle: 'italic' }}>
-                  Searching for "{searchingText}"...
-                </Text>
-              </View>
-            ) : (
-              <TextInput
-                style={styles.searchInput}
-                placeholder={dynamicPlaceholder}
-                placeholderTextColor={colors.gray[400]}
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                }}
-                onSubmitEditing={() => handleChatSubmit()}
-                onFocus={handleSearchFocus}
-              />
-            )}
-            {isSearchFocused ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                {/* <TouchableOpacity onPress={() => handleBrowseRecipes()}>
-                  <Feather name="arrow-right-circle" size={20} color={colors.primary[500]} />
-                </TouchableOpacity> */}
-                <TouchableOpacity onPress={handleSearchCancel}>
-                  <Feather name="x" size={20} color={colors.gray[400]} />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity onPress={() => console.log('Mic pressed')}>
-                <Feather name="mic" size={20} color={colors.gray[400]} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Search Mode Tags Row - RELATIVE positioning for robust scroll */}
-          {isSearchFocused && (
-            <View style={{ width: '100%', height: 44, marginBottom: spacing.xs, borderBottomWidth: 1, borderBottomColor: colors.gray[100], paddingBottom: spacing.xs }}>
-              <FlatList
-                data={quickOptions}
-                horizontal
-                showsHorizontalScrollIndicator={true}
-                nestedScrollEnabled={true}
-                keyExtractor={(item) => item}
-                keyboardShouldPersistTaps="always"
-                style={{ width: '100%', height: '100%' }}
-                contentContainerStyle={{
-                  paddingHorizontal: spacing.md,
-                  alignItems: 'center',
-                }}
-                renderItem={({ item: tag }) => (
-                  <TouchableOpacity
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      backgroundColor: colors.gray[50],
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 100,
-                      borderWidth: 1,
-                      borderColor: colors.gray[200],
-                      marginRight: 8,
-                    }}
-                    onPress={() => handleSearchPress(tag)}
-                  >
-                    <Feather name="search" size={12} color={colors.gray[400]} style={{ marginRight: 6 }} />
-                    <Text style={{ fontSize: 13, color: colors.gray[700], fontFamily: typography.fontFamily.medium }}>{tag}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            </View>
-          )}
-
-          {/* Search Mode Overlay Content - Absolute but below the relative tags row */}
-          {isSearchFocused && searchQuery.length > 0 && (
-            <View style={[styles.searchOverlay, { top: 94 }]}>
-              <View style={[styles.resultsList, { paddingHorizontal: spacing.md }]}>
-                <TouchableOpacity
-                  style={styles.suggestionItem}
-                  onPress={() => handleSearchPress(searchQuery)}
-                >
-                  <Feather name="list" size={16} color={colors.primary[500]} style={{ marginRight: 10 }} />
-                  <Text style={[styles.suggestionText, { color: colors.primary[500], fontWeight: '600' }]}>
-                    See all results for "{searchQuery}"
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </View>
+        <KittyChatSearchBar
+          navigation={navigation}
+          onSearchResults={(results) => setSearchResults(results)}
+        />
         {/* Active Search Results Section */}
         {searchResults.length > 0 && (
           <View style={{ marginTop: spacing.xs, marginBottom: spacing.xs }}>
@@ -876,13 +338,17 @@ export const HomeScreen = ({ navigation }: any) => {
               <TouchableOpacity
                 key={item.id}
                 style={styles.gemContainer}
-                onPress={() => item.type === 'search'
-                  ? handleSearchPress(item.title)
-                  : navigation.navigate('ProductsTab', {
-                    screen: 'ProductDetail',
-                    params: { product: item.product }
-                  })
-                }
+                onPress={() => {
+                  // Re-implement search logic if needed, or just navigate
+                  if (item.type === 'search') {
+                    // Logic for search
+                  } else {
+                    navigation.navigate('ProductsTab', {
+                      screen: 'ProductDetail',
+                      params: { product: item.product }
+                    })
+                  }
+                }}
               >
                 <View style={[
                   styles.gemCircle,
@@ -907,7 +373,7 @@ export const HomeScreen = ({ navigation }: any) => {
               <TouchableOpacity
                 key={item}
                 style={styles.gemContainer}
-                onPress={() => handleSearchPress(item)}
+                onPress={() => { }}
               >
                 <View style={[styles.gemCircle, { backgroundColor: colors.gray[50] }]}>
                   <Feather name="search" size={24} color={colors.gray[300]} />
@@ -1046,10 +512,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.primary,
   },
   hero: {
-    paddingHorizontal: spacing.md, // 16px
-    paddingTop: 0, // Removed padding to move the whole mascot row up
-    paddingBottom: 2, // Tighter padding
-    marginTop: -8, // Pull tight against top bar
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+    paddingBottom: 2,
+    marginTop: 0,
   },
   heroTitle: {
     ...textStyles.h1,

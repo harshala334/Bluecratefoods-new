@@ -32,26 +32,30 @@ export const UnifiedHeader = () => {
                     </Text>
                     <Feather name="chevron-down" size={12} color={colors.white} style={{ opacity: 0.8 }} />
                 </TouchableOpacity>
+            </View>
 
+            <View style={styles.rightSection}>
                 {/* 2. Brand Group (Text > Logo) */}
                 <View style={styles.brandGroup}>
                     <Text style={styles.brandText}>Blue Crate</Text>
-                    <Image
-                        source={require('../../../assets/images/logo.png')}
-                        style={styles.logoImage}
-                        resizeMode="contain"
-                    />
+                    <View style={styles.logoCircle}>
+                        <Image
+                            source={require('../../../assets/images/new_logo.png')}
+                            style={styles.logoImage}
+                            resizeMode="contain"
+                        />
+                    </View>
                 </View>
-            </View>
 
-            {/* 3. Profile Group */}
-            <TouchableOpacity
-                style={styles.profileGroup}
-                onPress={() => navigation.navigate('Profile')}
-                activeOpacity={0.7}
-            >
-                <Feather name="user" size={20} color={colors.white} />
-            </TouchableOpacity>
+                {/* 3. Profile Group */}
+                <TouchableOpacity
+                    style={styles.profileGroup}
+                    onPress={() => navigation.navigate('Profile')}
+                    activeOpacity={0.7}
+                >
+                    <Feather name="user" size={18} color={colors.white} />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -67,43 +71,56 @@ const styles = StyleSheet.create({
     leftSection: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8, // Tight gap between location and brand
+    },
+    rightSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
     },
     locationGroup: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 20,
-        gap: 4,
-        maxWidth: width * 0.3,
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        paddingHorizontal: 12,
+        height: 32,
+        borderRadius: 16,
+        gap: 6,
+        minWidth: 120,
+        maxWidth: width * 0.45,
     },
     locationText: {
         color: colors.white,
         fontFamily: typography.fontFamily.semibold,
         fontSize: typography.fontSize.xs,
-        maxWidth: 60,
+        maxWidth: 120,
     },
     brandGroup: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: -8, // Tightening the text and logo
+        gap: 6,
     },
     brandText: {
-        fontSize: typography.fontSize.lg,
+        fontSize: typography.fontSize.md,
         fontFamily: typography.fontFamily.bold,
         color: colors.white,
     },
+    logoCircle: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    },
     logoImage: {
-        width: 50,
-        height: 30,
+        width: 32,
+        height: 32,
     },
     profileGroup: {
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
         alignItems: 'center',
         justifyContent: 'center',
     },

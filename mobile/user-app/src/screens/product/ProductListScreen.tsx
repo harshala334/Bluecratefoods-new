@@ -14,6 +14,9 @@ import { Feather } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import { typography, textStyles } from '../../constants/typography';
 import { spacing, borderRadius, shadow } from '../../constants/spacing';
+import { KittyChatSearchBar } from '../../components/common/KittyChatSearchBar';
+import { VerticalProductCard } from '../../components/product/VerticalProductCard';
+import { Recipe } from '../../types/recipe';
 
 const { width } = Dimensions.get('window');
 
@@ -78,6 +81,7 @@ const CATEGORIES = [
 
 const ProductListScreen = ({ navigation }: any) => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<Recipe[]>([]);
 
     const filteredCategories = CATEGORIES.filter(cat =>
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -110,22 +114,39 @@ const ProductListScreen = ({ navigation }: any) => {
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
-            <View style={styles.searchBarWrapper}>
-                <View style={styles.searchContainer}>
-                    <Feather name="search" size={18} color={colors.primary[500]} style={styles.searchIcon} />
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search categories..."
-                        placeholderTextColor={colors.gray[400]}
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
-                    {searchQuery.length > 0 && (
-                        <TouchableOpacity onPress={() => setSearchQuery('')}>
-                            <Feather name="x" size={18} color={colors.gray[400]} />
-                        </TouchableOpacity>
-                    )}
-                </View>
+            <View style={[styles.hero, { backgroundColor: colors.primary[50] }]}>
+                <KittyChatSearchBar
+                    navigation={navigation}
+                    onSearchResults={(results) => setSearchResults(results)}
+                />
+
+                {searchResults.length > 0 && (
+                    <View style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text.primary }}>
+                                Search Results
+                            </Text>
+                            <TouchableOpacity onPress={() => setSearchResults([])}>
+                                <Text style={{ fontSize: 13, color: colors.primary[600], fontWeight: '700' }}>Clear</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <FlatList
+                            data={searchResults}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.id.toString()}
+                            renderItem={({ item: product }) => (
+                                <View style={{ marginRight: 12 }}>
+                                    <VerticalProductCard
+                                        product={product}
+                                        width={150}
+                                        onPress={() => navigation.navigate('ProductDetail', { product })}
+                                    />
+                                </View>
+                            )}
+                        />
+                    </View>
+                )}
             </View>
 
             <FlatList
@@ -149,30 +170,10 @@ const styles = StyleSheet.create({
     header: {
         display: 'none',
     },
-    searchBarWrapper: {
-        backgroundColor: colors.primary[500],
-        paddingHorizontal: spacing.md,
+    hero: {
+        paddingTop: spacing.xs,
         paddingBottom: spacing.sm,
-        paddingTop: spacing.md, // Increased padding to clear status bar
-        marginTop: 0,
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.white,
-        borderRadius: 8,
-        height: 40,
-        paddingHorizontal: spacing.sm,
-        ...shadow.soft,
-    },
-    searchIcon: {
-        marginRight: spacing.xs,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: typography.fontSize.base,
-        color: colors.text.primary,
-        paddingVertical: 0,
+        paddingHorizontal: spacing.md,
     },
     listContent: {
         padding: spacing.md,

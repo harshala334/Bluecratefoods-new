@@ -13,7 +13,7 @@ export const LogoHeader = () => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../../assets/images/logo.png')}
+        source={require('../../../assets/images/new_logo.png')}
         style={styles.logoImage}
         resizeMode="contain"
       />

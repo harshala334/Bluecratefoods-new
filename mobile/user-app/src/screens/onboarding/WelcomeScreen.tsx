@@ -33,7 +33,7 @@ const WelcomeScreen = ({ navigation }: any) => {
                             <Text style={styles.brandName}>Blue Crate</Text>
                             <Text style={styles.tagline}>Ready-to-Cook. Ready-to-Love.</Text>
                             <Image
-                                source={require('../../../assets/images/logo.png')}
+                                source={require('../../../assets/images/new_logo.png')}
                                 style={styles.welcomeLogo}
                                 resizeMode="contain"
                             />
