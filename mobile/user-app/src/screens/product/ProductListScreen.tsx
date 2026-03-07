@@ -6,10 +6,12 @@ import {
     FlatList,
     TouchableOpacity,
     Image,
+    ImageBackground,
     TextInput,
     Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import { typography, textStyles } from '../../constants/typography';
@@ -80,6 +82,7 @@ const CATEGORIES = [
 ];
 
 const ProductListScreen = ({ navigation }: any) => {
+    const insets = useSafeAreaInsets();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<Recipe[]>([]);
 
@@ -94,27 +97,37 @@ const ProductListScreen = ({ navigation }: any) => {
                 categoryId: item.id,
                 categoryTitle: item.name
             })}
-            activeOpacity={0.8}
+            activeOpacity={0.9}
         >
-            <View style={[styles.imageContainer, { backgroundColor: item.color }]}>
-                <Image source={{ uri: item.image }} style={styles.image} />
-                <View style={styles.iconBadge}>
-                    <Text style={styles.iconText}>{item.icon}</Text>
-                </View>
-            </View>
-            <View style={styles.info}>
-                <Text style={styles.name}>{item.name}</Text>
-                <View style={styles.footer}>
-                    <Text style={styles.itemCount}>{item.items}</Text>
-                    <Feather name="chevron-right" size={16} color={colors.primary[500]} />
-                </View>
-            </View>
+            <ImageBackground
+                source={{ uri: item.image }}
+                style={styles.imageContainer}
+                imageStyle={{ borderRadius: borderRadius.xl }}
+            >
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.85)']}
+                    style={styles.categoryGradient}
+                >
+                    <View style={styles.categoryContent}>
+                        <View style={styles.categoryBadge}>
+                            <Text style={styles.categoryBadgeText}>{item.icon || '🛍️'}</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.categoryName} numberOfLines={1}>{item.name}</Text>
+                            <View style={styles.categoryFooter}>
+                                <Text style={styles.categoryCount}>{item.items}</Text>
+                                <Feather name="arrow-right" size={14} color={colors.white} />
+                            </View>
+                        </View>
+                    </View>
+                </LinearGradient>
+            </ImageBackground>
         </TouchableOpacity>
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
-            <View style={styles.hero}>
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+            <View style={[styles.hero, { marginTop: insets.top + spacing.md }]}>
                 <KittyChatSearchBar
                     navigation={navigation}
                     onSearchResults={(results) => setSearchResults(results)}
@@ -171,44 +184,40 @@ const styles = StyleSheet.create({
         display: 'none',
     },
     hero: {
-        paddingTop: spacing.xs,
-        paddingBottom: spacing.sm,
         paddingHorizontal: spacing.md,
+        paddingBottom: spacing.sm,
     },
     listContent: {
-        padding: spacing.md,
-        paddingTop: spacing.xs, // Reduced to match sleek design
+        paddingHorizontal: spacing.md,
         paddingBottom: 100,
     },
     row: {
         justifyContent: 'space-between',
-        marginBottom: spacing.xs, // Further reduced for high density
+        marginBottom: spacing.md,
     },
     categoryCard: {
         width: (width - spacing.md * 3) / 2,
+        height: 180,
         backgroundColor: colors.white,
-        borderRadius: 8, // Sleek 8px rounding
-        ...shadow.soft,
-        borderWidth: 1,
-        borderColor: colors.gray[100],
-        overflow: 'hidden',
+        borderRadius: borderRadius.xl,
+        ...shadow.medium,
     },
     imageContainer: {
         width: '100%',
-        height: 120,
-        position: 'relative',
-    },
-    image: {
-        width: '100%',
         height: '100%',
-        opacity: 0.8,
-        resizeMode: 'cover',
     },
-    iconBadge: {
-        position: 'absolute',
-        bottom: 8,
-        left: 8,
-        backgroundColor: colors.white,
+    categoryGradient: {
+        flex: 1,
+        borderRadius: borderRadius.xl,
+        justifyContent: 'flex-end',
+        padding: 12,
+    },
+    categoryContent: {
+        justifyContent: 'space-between',
+        height: '100%',
+    },
+    categoryBadge: {
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
         width: 32,
         height: 32,
         borderRadius: 16,
@@ -216,27 +225,26 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         ...shadow.soft,
     },
-    iconText: {
-        fontSize: 18,
+    categoryBadgeText: {
+        fontSize: 16,
     },
-    info: {
-        padding: 12,
-    },
-    name: {
-        fontSize: typography.fontSize.base,
+    categoryName: {
+        fontSize: 15,
         fontWeight: '700',
-        color: colors.text.primary,
+        color: colors.white,
         marginBottom: 4,
+        fontFamily: typography.fontFamily.bold,
     },
-    footer: {
+    categoryFooter: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    itemCount: {
-        fontSize: typography.fontSize.xsMedium,
-        color: colors.gray[500],
-        fontWeight: '500',
+    categoryCount: {
+        fontSize: 11,
+        color: 'rgba(255, 255, 255, 0.8)',
+        fontWeight: '600',
+        fontFamily: typography.fontFamily.medium,
     }
 });
 

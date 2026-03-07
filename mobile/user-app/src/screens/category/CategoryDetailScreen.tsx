@@ -19,6 +19,7 @@ import { spacing, borderRadius, shadow } from '../../constants/spacing';
 import useCartStore from '../../stores/cartStore';
 import useRecipeStore from '../../stores/recipeStore';
 import { recipeService } from '../../services/recipeService';
+import { VerticalProductCard } from '../../components/product/VerticalProductCard';
 
 const { width: windowWidth } = Dimensions.get('window');
 const SIDEBAR_WIDTH = 90;
@@ -224,116 +225,15 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         { id: 'nameAZ', label: 'Name: A to Z', icon: 'type' },
     ];
 
-    const renderProduct = ({ item }: { item: any }) => {
-        const savings = item.mrp ? Math.round(((item.mrp - item.price) / item.mrp) * 100) : 0;
-
-        return (
-            <TouchableOpacity
+    const renderProduct = ({ item }: { item: any }) => (
+        <View style={styles.productCardWrapper}>
+            <VerticalProductCard
+                product={item}
+                width={(windowWidth - SIDEBAR_WIDTH - 24) / 2}
                 onPress={() => navigation.navigate('ProductDetail', { product: item })}
-                style={styles.card}
-                activeOpacity={0.8}
-            >
-                <View style={styles.imageContainer}>
-                    <Image source={{ uri: item.image }} style={styles.productImage} />
-                    {item.badge && (
-                        <View style={styles.badgeLabel}>
-                            <Text style={styles.badgeLabelText}>{item.badge}</Text>
-                        </View>
-                    )}
-                    {savings > 0 && (
-                        <View style={styles.savingsBadge}>
-                            <Text style={styles.savingsBadgeText}>{savings}% OFF</Text>
-                        </View>
-                    )}
-                </View>
-                <View style={styles.productInfo}>
-                    <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-                    <Text style={styles.productWeight}>{item.weight || item.unit}</Text>
-
-                    {item.bulkTiers && (
-                        <View style={styles.bulkTiersContainer}>
-                            {item.bulkTiers.map((tier: any, idx: number) => {
-                                const qtyNum = parseInt(tier.quantity) || 1;
-                                const unitPrice = Math.round(tier.price / qtyNum);
-                                return (
-                                    <View key={idx} style={styles.bulkTierItem}>
-                                        <View style={styles.bulkTierInfo}>
-                                            <Text style={styles.bulkTierQty}>{tier.quantity}: <Text style={styles.bulkTierPrice}>₹{tier.price}</Text></Text>
-                                            <Text style={styles.bulkTierUnitPrice}>₹{unitPrice} / unit</Text>
-                                        </View>
-                                        <TouchableOpacity
-                                            style={styles.bulkAddBtn}
-                                            onPress={(e) => {
-                                                e.stopPropagation();
-                                                handleAddBulk(item, tier.quantity);
-                                                addFrequentItem(item);
-                                            }}
-                                        >
-                                            <Text style={styles.bulkAddBtnText}>ADD</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                );
-                            })}
-                        </View>
-                    )}
-
-                    <View style={styles.priceRow}>
-                        <View>
-                            <View style={styles.priceStack}>
-                                <Text style={styles.productPrice}>₹{item.price}</Text>
-                                {item.mrp && item.mrp > item.price && (
-                                    <Text style={styles.mrpText}>₹{item.mrp}</Text>
-                                )}
-                            </View>
-                        </View>
-
-                        {(() => {
-                            const cartItem = items.find(i => i.ingredient.id === item.id);
-                            const quantity = cartItem?.quantity || 0;
-
-                            if (quantity > 0) {
-                                return (
-                                    <View style={[styles.stepperContainer, shadow.soft]}>
-                                        <TouchableOpacity
-                                            onPress={(e) => {
-                                                e.stopPropagation();
-                                                updateQuantityByIngredientId(item.id, quantity - 1);
-                                            }}
-                                            style={styles.stepperBtn}
-                                        >
-                                            <Feather name="minus" size={14} color={colors.primary[600]} />
-                                        </TouchableOpacity>
-                                        <Text style={styles.stepperQty}>{quantity}</Text>
-                                        <TouchableOpacity
-                                            onPress={(e) => {
-                                                e.stopPropagation();
-                                                updateQuantityByIngredientId(item.id, quantity + 1);
-                                            }}
-                                            style={styles.stepperBtn}
-                                        >
-                                            <Feather name="plus" size={14} color={colors.primary[600]} />
-                                        </TouchableOpacity>
-                                    </View>
-                                );
-                            }
-
-                            return (
-                                <TouchableOpacity
-                                    style={styles.actionButton}
-                                    onPress={(e) => {
-                                        e.stopPropagation();
-                                        handleAdd(item);
-                                    }}
-                                >
-                                    <Text style={styles.actionButtonText}>ADD</Text>
-                                </TouchableOpacity>
-                            );
-                        })()}
-                    </View>
-                </View>
-            </TouchableOpacity>
-        );
-    };
+            />
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
@@ -372,7 +272,17 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
                 {/* Product Grid */}
                 <View style={styles.productContent}>
                     <View style={styles.listHeader}>
-                        <Text style={styles.listTitle}>{subcategories.find((s: any) => s.id === selectedSub)?.name || 'Items'}</Text>
+                        <View style={styles.headerTitleGroup}>
+                            <TouchableOpacity
+                                style={styles.backButton}
+                                onPress={() => navigation.goBack()}
+                            >
+                                <Feather name="arrow-left" size={20} color={colors.primary[600]} />
+                            </TouchableOpacity>
+                            <Text style={styles.listTitle} numberOfLines={1}>
+                                {subcategories.find((s: any) => s.id === selectedSub)?.name || 'Items'}
+                            </Text>
+                        </View>
                         <TouchableOpacity
                             style={styles.filterButton}
                             onPress={() => setShowSortModal(true)}
@@ -380,7 +290,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
                             <Text style={styles.filterText}>
                                 {sortOptions.find(o => o.id === sortBy)?.label || 'Sort'}
                             </Text>
-                            <Feather name="chevron-down" size={14} color={colors.primary[500]} />
+                            <Ionicons name="options-outline" size={16} color={colors.primary[500]} />
                         </TouchableOpacity>
                     </View>
                     <FlatList
@@ -479,131 +389,105 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.white,
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs || 4,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.gray[100],
-        gap: spacing.sm,
-        backgroundColor: colors.white,
-        ...shadow.soft,
-    },
-    backButton: {
-        padding: 4,
-    },
-    headerSearch: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.gray[50],
-        borderRadius: borderRadius.lg,
-        paddingHorizontal: spacing.sm,
-        height: 40,
-    },
-    searchInput: {
-        flex: 1,
-        marginLeft: 8,
-        fontSize: typography.fontSize.base,
-        color: colors.text.primary,
-    },
-    cartHeaderButton: {
-        padding: 4,
-    },
-    badge: {
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        backgroundColor: colors.primary[500],
-        borderRadius: 8,
-        minWidth: 16,
-        height: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: colors.white,
-    },
-    badgeText: {
-        color: colors.white,
-        fontSize: typography.fontSize.xxs,
-        fontWeight: '700',
-    },
     mainContent: {
         flex: 1,
         flexDirection: 'row',
-        marginTop: 0, // Removed gap below topbar
+        marginTop: 0,
     },
     sidebar: {
         width: SIDEBAR_WIDTH,
-        backgroundColor: colors.gray[50],
+        backgroundColor: colors.background.primary,
         borderRightWidth: 1,
         borderRightColor: colors.gray[100],
-        paddingTop: spacing.xs, // Add minimal top padding for sleekness
+        paddingTop: spacing.xs,
     },
     sidebarItem: {
-        paddingVertical: 8,
-        alignItems: 'flex-start',
+        paddingVertical: 12,
+        alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 8,
-        borderLeftWidth: 3,
-        borderLeftColor: 'transparent',
+        paddingHorizontal: 6,
     },
     sidebarItemActive: {
         backgroundColor: colors.white,
-        borderLeftColor: colors.primary[500],
     },
     iconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         backgroundColor: colors.white,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 4,
+        marginBottom: 6,
         ...shadow.soft,
     },
     iconContainerActive: {
         backgroundColor: colors.primary[50],
+        borderWidth: 1.5,
+        borderColor: colors.primary[500],
     },
     subIcon: {
-        fontSize: 22,
+        fontSize: 20,
     },
     sidebarLabel: {
-        fontSize: typography.fontSize.xxs,
+        fontSize: 10,
         fontWeight: '600',
         color: colors.gray[500],
-        textAlign: 'left',
-        paddingHorizontal: 4,
+        textAlign: 'center',
+        paddingHorizontal: 2,
     },
     sidebarLabelActive: {
         color: colors.primary[700],
+        fontWeight: '700',
     },
     productContent: {
         flex: 1,
-        padding: 6, // Reduced from 8
+        padding: spacing.sm,
     },
     listHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: spacing.sm,
-        paddingHorizontal: 4,
+        marginBottom: spacing.md,
+    },
+    headerTitleGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+        flex: 1,
+    },
+    backButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: colors.white,
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...shadow.soft,
+        borderWidth: 1,
+        borderColor: colors.gray[100],
     },
     listTitle: {
-        ...textStyles.h3,
+        fontSize: 18,
+        fontFamily: typography.fontFamily.bold,
         color: colors.text.primary,
-        textAlign: 'left',
+        flex: 1,
     },
     filterButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: 6,
+        backgroundColor: colors.white,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: borderRadius.lg,
+        ...shadow.soft,
+        borderWidth: 1,
+        borderColor: colors.gray[100],
     },
     filterText: {
-        fontSize: typography.fontSize.xsMedium,
+        fontSize: 12,
         color: colors.gray[600],
-        fontWeight: '500',
+        fontWeight: '600',
     },
     gridContent: {
         paddingBottom: 20,
@@ -611,187 +495,8 @@ const styles = StyleSheet.create({
     columnWrapper: {
         justifyContent: 'space-between',
     },
-    card: {
-        width: (windowWidth - SIDEBAR_WIDTH - 20) / 2, // Adjusted to reduce gap
-        backgroundColor: colors.white,
-        borderRadius: 8, // Sleek 8px rounding
-        marginBottom: 12, // Reduced from 16
-        ...shadow.soft,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: colors.gray[100],
-    },
-    imageContainer: {
-        width: '100%',
-        height: 90, // Reduced from 100
-        backgroundColor: colors.gray[50],
-        position: 'relative',
-    },
-    productImage: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover',
-    },
-    addButton: {
-        position: 'absolute',
-        bottom: -15,
-        right: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.primary[500],
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 8,
-        height: 30,
-        ...shadow.medium,
-    },
-    addButtonText: {
-        color: colors.white,
-        fontSize: typography.fontSize.xsMedium,
-        fontWeight: '700',
-        marginLeft: 2,
-    },
-    productInfo: {
-        padding: 2, // Reduced from 4
-    },
-    productName: {
-        fontSize: 11, // Reduced from 12
-        color: colors.gray[800],
-        fontFamily: typography.fontFamily.semibold,
-        height: 26, // Reduced from 28
-        marginBottom: 1,
-    },
-    productWeight: {
-        fontSize: 9, // Reduced from 10
-        fontFamily: typography.fontFamily.medium,
-        marginBottom: 1,
-        color: colors.gray[500],
-    },
-    bulkTiersContainer: {
-        flexDirection: 'column',
-        gap: 2, // Reduced from 6
-        marginBottom: 4, // Reduced from 8
-        backgroundColor: colors.gray[50],
-        padding: 2, // Reduced from 4
-        borderRadius: 4,
-    },
-    bulkTierItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 2,
-    },
-    bulkTierInfo: {
-        flex: 1,
-    },
-    bulkTierQty: {
-        fontSize: typography.fontSize.xxxs,
-        fontFamily: typography.fontFamily.bold,
-        color: colors.gray[600],
-    },
-    bulkTierPrice: {
-        color: colors.primary[600],
-    },
-    bulkTierUnitPrice: {
-        fontSize: typography.fontSize.xxxs,
-        color: colors.gray[400],
-        fontFamily: typography.fontFamily.medium,
-    },
-    bulkAddBtn: {
-        backgroundColor: colors.white,
-        borderWidth: 1,
-        borderColor: colors.primary[200],
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
-    },
-    bulkAddBtnText: {
-        fontSize: typography.fontSize.xxxs,
-        fontFamily: typography.fontFamily.bold,
-        color: colors.primary[600],
-    },
-    priceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    priceStack: {
-        flexDirection: 'column', // Stack vertically to save horizontal space
-        alignItems: 'flex-start',
-        gap: 0,
-    },
-    productPrice: {
-        fontSize: 14, // Reduced from base (16)
-        fontFamily: typography.fontFamily.bold,
-        color: colors.text.primary,
-    },
-    mrpText: {
-        fontSize: typography.fontSize.xs,
-        color: colors.gray[400],
-        textDecorationLine: 'line-through',
-        fontFamily: typography.fontFamily.body,
-    },
-    actionButton: {
-        backgroundColor: colors.white,
-        borderWidth: 1,
-        borderColor: colors.primary[500],
-        paddingHorizontal: 8, // Reduced from 12
-        paddingVertical: 3, // Reduced from 5
-        borderRadius: 6,
-        ...shadow.soft,
-    },
-    actionButtonText: {
-        color: colors.primary[600],
-        fontSize: typography.fontSize.xsMedium,
-        fontFamily: typography.fontFamily.bold,
-    },
-    stepperContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.primary[50],
-        borderRadius: 6,
-        borderWidth: 1,
-        borderColor: colors.primary[100],
-    },
-    stepperBtn: {
-        padding: 4, // Reduced from 6
-        paddingHorizontal: 4,
-    },
-    stepperQty: {
-        fontSize: typography.fontSize.xsMedium,
-        fontFamily: typography.fontFamily.bold,
-        color: colors.primary[700],
-        minWidth: 18,
-        textAlign: 'center',
-    },
-    badgeLabel: {
-        position: 'absolute',
-        top: 8,
-        left: 0,
-        backgroundColor: colors.primary[600],
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderTopRightRadius: 4,
-        borderBottomRightRadius: 4,
-    },
-    badgeLabelText: {
-        fontSize: typography.fontSize.xxxs,
-        fontFamily: typography.fontFamily.bold,
-        color: colors.white,
-    },
-    savingsBadge: {
-        position: 'absolute',
-        bottom: 8,
-        right: 8,
-        backgroundColor: colors.accent[500],
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
-    },
-    savingsBadgeText: {
-        fontSize: typography.fontSize.xxxs,
-        fontFamily: typography.fontFamily.bold,
-        color: colors.white,
+    productCardWrapper: {
+        marginBottom: spacing.md,
     },
     cartBar: {
         position: 'absolute',

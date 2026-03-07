@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../constants/colors';
 import { Feather } from '@expo/vector-icons';
 import { shadow as commonShadow } from '../constants/spacing';
+import { typography } from '../constants/typography';
 import UnifiedHeader from '../components/common/UnifiedHeader';
 
 // Screens
@@ -32,6 +33,7 @@ import AdminRequestsScreen from '../screens/profile/AdminRequestsScreen';
 import CreatorApplicationScreen from '../screens/profile/CreatorApplicationScreen';
 import SubscriptionScreen from '../screens/profile/SubscriptionScreen';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Onboarding Screens
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
@@ -47,15 +49,6 @@ import { useLocationStore } from '../stores/locationStore';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const styles = StyleSheet.create({
-  centralButtonShadow: {
-    shadowColor: colors.primary[600],
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-});
 
 /**
  * Home Stack Navigator
@@ -65,7 +58,9 @@ function HomeStack() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.primary[500],
+          backgroundColor: colors.background.primary,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -77,12 +72,7 @@ function HomeStack() {
         name="Home"
         component={HomeScreen}
         options={{
-          headerTitle: () => <UnifiedHeader />,
-          headerStyle: {
-            backgroundColor: colors.primary[500],
-            elevation: 0,
-            shadowOpacity: 0,
-          },
+          header: () => <UnifiedHeader />,
         }}
       />
       <Stack.Screen
@@ -107,7 +97,7 @@ function ProductStack() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.primary[500],
+          backgroundColor: colors.background.primary,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -161,7 +151,7 @@ function CartStack() {
         name="CartMain"
         component={CartScreen}
         options={{
-          headerTitle: () => <UnifiedHeader />,
+          headerShown: false,
         }}
       />
       <Stack.Screen
@@ -178,32 +168,53 @@ function CartStack() {
  */
 const AnimatedOffers = () => {
   const [index, setIndex] = React.useState(0);
-  const offers = ['UPTO 50% OFF', 'BUY 1 GET 1'];
+  const offers = [
+    { icon: '🏷️', line1: 'UPTO', line2: '50% OFF' },
+    { icon: '🎁', line1: 'BUY 1', line2: 'GET 1' },
+    { icon: '🚚', line1: 'FREE', line2: 'DELIVERY' },
+  ];
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 0.85, duration: 400, useNativeDriver: true }),
+      ]).start(() => {
         setIndex((prev) => (prev + 1) % offers.length);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }).start();
+        Animated.parallel([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+          Animated.timing(scaleAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+        ]).start();
       });
-    }, 3000);
+    }, 2500);
     return () => clearInterval(interval);
   }, []);
 
+  const current = offers[index];
+
   return (
-    <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
-      <MaterialCommunityIcons name="label-percent" size={24} color={colors.white} />
-      <Text style={{ color: colors.white, fontSize: 8, fontWeight: '800', marginTop: -2 }}>
-        {offers[index]}
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
+      <Text style={{ fontSize: 20, lineHeight: 24 }}>{current.icon}</Text>
+      <Text style={{
+        color: colors.white,
+        fontSize: 8,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+        opacity: 0.85,
+        lineHeight: 10,
+      }}>
+        {current.line1}
+      </Text>
+      <Text style={{
+        color: colors.white,
+        fontSize: 11,
+        fontWeight: '900',
+        letterSpacing: 0.3,
+        lineHeight: 13,
+      }}>
+        {current.line2}
       </Text>
     </Animated.View>
   );
@@ -215,108 +226,170 @@ const AnimatedOffers = () => {
 const CentralTabButton = ({ children, onPress }: any) => (
   <TouchableOpacity
     style={{
-      top: -12, // Moved slightly lower to align better with bottom boundary
-      justifyContent: 'center',
+      flex: 1,
+      justifyContent: 'flex-end',
       alignItems: 'center',
-      ...styles.centralButtonShadow,
+      paddingBottom: 2,
     }}
     onPress={onPress}
-    activeOpacity={0.9}
+    activeOpacity={0.85}
   >
+    {/* Outer glow ring */}
     <View
       style={{
-        width: 80, // Increased from 70
-        height: 80, // Increased from 70
-        borderRadius: 40, // Adjusted for new size
-        backgroundColor: colors.primary[600],
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: colors.primary[100],
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 5, // Slightly thicker border
+        position: 'absolute',
+        bottom: -2,
+        opacity: 0.5,
+      }}
+    />
+    {/* Main button */}
+    <LinearGradient
+      colors={[colors.primary[400], colors.primary[700]]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
         borderColor: '#fff',
+        ...commonShadow.medium,
       }}
     >
-      <AnimatedOffers />
-    </View>
+      {/* Inner subtle ring */}
+      <View
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: 36,
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.25)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <AnimatedOffers />
+      </View>
+    </LinearGradient>
   </TouchableOpacity>
 );
+
 
 /**
  * Animated Advertisement Text for Bottom Bar
  */
 const AnimatedAdvs = () => {
   const [index, setIndex] = React.useState(0);
-  const ads = ['GET 10% OFF', 'FREE DELIVERY', 'CASHBACK 5%'];
+  const ads = [
+    { emoji: '🔥', line1: 'GET 10%', line2: 'OFF NOW' },
+    { emoji: '🚚', line1: 'FREE', line2: 'DELIVERY' },
+    { emoji: '💰', line1: 'CASHBACK', line2: '5% TODAY' },
+  ];
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
+  const slideAnim = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 350, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: -8, duration: 350, useNativeDriver: true }),
+      ]).start(() => {
         setIndex((prev) => (prev + 1) % ads.length);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }).start();
+        slideAnim.setValue(8);
+        Animated.parallel([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
+          Animated.timing(slideAnim, { toValue: 0, duration: 350, useNativeDriver: true }),
+        ]).start();
       });
-    }, 4000);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
+  const current = ads[index];
   return (
-    <Animated.View style={{ opacity: fadeAnim, minWidth: 60 }}>
-      <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary[700] }}>{ads[index]}</Text>
-      <Text style={{ fontSize: 8, fontWeight: '600', color: colors.gray[500], marginTop: 1 }}>TAP TO VIEW</Text>
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], alignItems: 'flex-start' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+        <Text style={{ fontSize: 10, lineHeight: 12 }}>{current.emoji}</Text>
+        <Text style={{ fontSize: 9, fontWeight: '800', color: '#B45309', letterSpacing: 0.2 }}>
+          {current.line1}
+        </Text>
+      </View>
+      <Text style={{ fontSize: 11, fontWeight: '900', color: '#78350F', letterSpacing: 0.3, lineHeight: 13 }}>
+        {current.line2}
+      </Text>
     </Animated.View>
   );
 };
 
+const PulsingDot = () => {
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.5, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  return (
+    <View style={{ width: 14, height: 14, justifyContent: 'center', alignItems: 'center', position: 'absolute', top: 4, right: 4, zIndex: 10 }}>
+      <Animated.View style={{
+        width: 10, height: 10, borderRadius: 5,
+        backgroundColor: '#F59E0B',
+        opacity: 0.35,
+        transform: [{ scale: pulseAnim }],
+        position: 'absolute',
+      }} />
+      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#D97706' }} />
+    </View>
+  );
+};
+
+
 /**
- * Rectangular Advertisement Tab Button (Licious-style)
+ * Rectangular Advertisement Tab Button (Premium Style)
  */
 const RectTabButton = ({ onPress }: any) => (
   <TouchableOpacity
     style={{
-      top: -4,
-      justifyContent: 'center',
+      flex: 1,
+      justifyContent: 'flex-end',
       alignItems: 'center',
-      marginLeft: -10,
+      paddingBottom: 2,
+      marginRight: 6,
     }}
     onPress={onPress}
     activeOpacity={0.8}
   >
-    <View
+    <LinearGradient
+      colors={['#FFF7ED', '#FFEDD5']} // Vibrant Orange/Amber background
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={{
-        width: 105, // Increased from 85
-        height: 44, // Increased from 38
-        borderRadius: 10, // Slightly more rounded
-        backgroundColor: '#FFF0F0',
-        flexDirection: 'row',
+        width: 92,
+        height: 58,
+        borderRadius: 14,
         alignItems: 'center',
-        paddingHorizontal: 8, // Increased padding
-        borderWidth: 1.5, // Slightly more prominent
-        borderColor: colors.primary[100],
+        justifyContent: 'center', // Center content since dot is absolute
+        paddingHorizontal: 12,
+        borderWidth: 1.5,
+        borderColor: '#FDBA74',
         ...commonShadow.soft,
       }}
     >
-      <View style={{
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: colors.primary[500],
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 4,
-      }}>
-        <MaterialCommunityIcons name="ticket-percent" size={16} color={colors.white} />
-      </View>
-      <View>
+      <PulsingDot />
+      <View style={{ width: '100%', alignItems: 'center' }}>
         <AnimatedAdvs />
       </View>
-    </View>
+    </LinearGradient>
   </TouchableOpacity>
 );
 
@@ -333,24 +406,23 @@ function MainTabs() {
         tabBarActiveTintColor: colors.primary[600],
         tabBarInactiveTintColor: colors.gray[400],
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          height: 80,
           borderTopWidth: 0,
-          elevation: 20, // Increased elevation for Android
-          shadowColor: '#000', // Stronger shadow for iOS
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
+          elevation: 20,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -8 },
+          shadowOpacity: 0.12,
           shadowRadius: 12,
-          // Let standard safe area handling work, but ensure we have some minimal padding
-          // The tab navigator handles safe area automatically if we don't force a height
-          paddingTop: 8,
         },
         tabBarItemStyle: {
-          // Adjust item spacing if needed, but usually default is fine
-          paddingVertical: 4,
+          paddingVertical: 10,
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '600',
+          fontFamily: typography.fontFamily.bold,
           marginBottom: 4,
         },
       }}
@@ -542,16 +614,14 @@ function RootNavigator() {
             name="AdminRequests"
             component={AdminRequestsScreen}
             options={{
-              title: 'Admin Dashboard',
-              headerTitle: () => <UnifiedHeader />,
+              headerShown: false,
             }}
           />
           <Stack.Screen
             name="CreatorApplication"
             component={CreatorApplicationScreen}
             options={{
-              title: 'Apply for Creator',
-              headerTitle: () => <UnifiedHeader />,
+              headerShown: false,
             }}
           />
           <Stack.Screen
@@ -569,7 +639,7 @@ function RootNavigator() {
         name="Login"
         component={LoginScreen}
         options={{
-          headerTitle: () => <UnifiedHeader />,
+          headerShown: false,
           presentation: 'modal',
         }}
       />
@@ -577,7 +647,7 @@ function RootNavigator() {
         name="Register"
         component={RegisterScreen}
         options={{
-          headerTitle: () => <UnifiedHeader />,
+          headerShown: false,
           presentation: 'modal',
         }}
       />

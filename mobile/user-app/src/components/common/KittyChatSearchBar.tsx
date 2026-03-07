@@ -306,13 +306,13 @@ const styles = StyleSheet.create({
     mascotRow: {
         flexDirection: 'row',
         alignItems: 'flex-end',
-        marginBottom: -2,
     },
     catImage: {
-        width: 110,
-        height: 110,
+        width: 130,
+        height: 130,
         marginRight: 2,
-        transform: [{ translateY: 22 }, { translateX: 8 }],
+        transform: [{ translateX: 8 }],
+        marginBottom: -28,
         zIndex: 1000,
     },
     speechBubble: {

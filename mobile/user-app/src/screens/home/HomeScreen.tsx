@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,9 @@ import {
   NativeScrollEvent,
   FlatList,
   ImageBackground,
-  BackHandler
+  BackHandler,
+  Animated,
+  Easing
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { API_CONFIG, CDN_URL } from '../../constants/config';
@@ -160,15 +162,12 @@ export const HomeScreen = ({ navigation }: any) => {
     // Row 2: Curated Deliveries (Auto-adjusting grid)
     { id: '5min', title: '5 Min Meals', subtitle: 'Instant satisfaction', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', filter: '5min', row: 2 },
     { id: '10min', title: '10 Min Meals', subtitle: 'Fast & fresh', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80', filter: '10min', row: 2 },
-    { id: 'veg', title: 'Fresh Veggies', subtitle: 'Farm to home', image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500&q=80', filter: 'vegetables', row: 3 },
 
-    // Row 3: Imported & Sourcing (Horizontal Scrollable)
-    { id: 'meat', title: 'Meat & Poultry', subtitle: 'Premium cuts', image: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?w=500&q=80', filter: 'meat', row: 3 },
-    { id: 'grocery', title: 'Daily Groceries', subtitle: 'Essentials', image: 'https://images.unsplash.com/photo-1506484334402-40ff22e05a6d?w=500&q=80', filter: 'groceries', row: 3 },
-    { id: 'packaging', title: 'Packaging', subtitle: 'Sustainable', image: 'https://images.unsplash.com/photo-1620455212513-ade425712128?w=500&q=80', filter: 'packaging', row: 3 },
-    { id: 'spices', title: 'Global Spices', subtitle: 'Authentic flavors', image: 'https://images.unsplash.com/photo-1532336414038-cf19250c5757?w=500&q=80', filter: 'spices', row: 3 },
-    { id: 'sauces', title: 'Imported Sauces', subtitle: 'Chef grade', image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=500&q=80', filter: 'sauces', row: 3 },
-    { id: 'japanese', title: 'Japanese Pantry', subtitle: 'Miso, Ramen, Nori', image: 'https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=500&q=80', filter: 'japanese', row: 3 },
+    // Row 3: Sourcing Categories — 4 squares with local images
+    { id: 'veg', title: 'Fresh Vegetables', subtitle: 'Farm to home', image: require('../../../assets/images/vege.jpg'), filter: 'vegetables', row: 3 },
+    { id: 'meat', title: 'Fresh Meat', subtitle: 'Premium cuts', image: require('../../../assets/images/chicken.jpg'), filter: 'meat', row: 3 },
+    { id: 'kitchen', title: 'Kitchen Essentials', subtitle: 'Pro grade tools', image: require('../../../assets/images/kitchen.jpg'), filter: 'kitchen', row: 3 },
+    { id: 'packaging', title: 'Packaging Materials', subtitle: 'Sustainable', image: require('../../../assets/images/packag.jpg'), filter: 'packaging', row: 3 },
   ];
 
 
@@ -271,11 +270,55 @@ export const HomeScreen = ({ navigation }: any) => {
   ];
 
   const CUISINES = [
-    { id: 'chinese', name: 'Chinese Sourcing', description: 'Oyster sauce, Noodles, Soy...', image: 'https://images.unsplash.com/photo-1552611052-33e04de081de?w=600&q=80' },
-    { id: 'italian', name: 'Italian Pantry', description: 'Pasta, Olive Oil, Herbs...', image: 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=600&q=80' },
-    { id: 'indian', name: 'Indian Spices', description: 'Basmati, Pulses, Masalas...', image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80' },
-    { id: 'mexican', name: 'Mexican Cantina', description: 'Tortillas, Jalapenos, Beans...', image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80' },
+    { id: 'chinese', name: 'Chinese', image: 'https://images.unsplash.com/photo-1552611052-33e04de081de?w=600&q=80' },
+    { id: 'italian', name: 'Italian', image: 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=600&q=80' },
+    { id: 'indian', name: 'Indian', image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80' },
+    { id: 'mexican', name: 'Mexican', image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80' },
+    { id: 'japanese', name: 'Japanese', image: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=600&q=80' },
+    { id: 'thai', name: 'Thai', image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80' },
+    { id: 'french', name: 'French', image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80' },
+    { id: 'mediterranean', name: 'Mediterranean', image: 'https://images.unsplash.com/photo-1505575967455-40e256f73376?w=600&q=80' },
+    { id: 'middle-eastern', name: 'Middle Eastern', image: 'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=600&q=80' },
   ];
+
+  const PACKAGING_DATA = [
+    { id: 'boxes', name: 'Premium Boxes', description: 'Bio-degradable, High durability', image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&q=80' },
+    { id: 'bags', name: 'Custom Bags', description: 'Eco-friendly, Custom printing', image: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&q=80' },
+    { id: 'cutlery', name: 'Eco Cutlery', description: 'Wooden & Bamboo essentials', image: 'https://images.unsplash.com/photo-1591871937573-74dbba515c4c?w=600&q=80' },
+    { id: 'wraps', name: 'Luxury Wraps', description: 'Protective & Aesthetic rolls', image: 'https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=600&q=80' },
+  ];
+
+  const PARTNER_BRANDS = [
+    { id: 'b1', name: 'Amul', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3b/Amul_logo.svg/200px-Amul_logo.svg.png', bg: 'https://images.unsplash.com/photo-1549466580-df607672db91?w=400&q=80' },
+    { id: 'b2', name: 'Nestle', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Nestl%C3%A9_Logo.svg/1200px-Nestl%C3%A9_Logo.svg.png', bg: 'https://images.unsplash.com/photo-1444837881208-4d46d5c1f127?w=400&q=80' },
+    { id: 'b3', name: 'Britannia', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Britannia_Industries_logo.svg/1024px-Britannia_Industries_logo.svg.png', bg: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80' },
+    { id: 'b4', name: 'Mother Dairy', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Mother_Dairy_logo.svg/1200px-Mother_Dairy_logo.svg.png', bg: 'https://images.unsplash.com/photo-1528498020303-451913008ce5?w=400&q=80' },
+    { id: 'b5', name: 'Parle', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Parle_Products_logo.svg/1200px-Parle_Products_logo.svg.png', bg: 'https://images.unsplash.com/photo-1574944973353-242e85afc7ad?w=400&q=80' },
+    { id: 'b6', name: 'Coca-Cola', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Coca-Cola_logo.svg/2560px-Coca-Cola_logo.svg.png', bg: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?w=400&q=80' },
+    { id: 'b7', name: 'Unilever', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Unilever.svg/1200px-Unilever.svg.png', bg: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=400&q=80' },
+    { id: 'b8', name: 'Pepsi', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Pepsi_logo_2014.svg/1200px-Pepsi_logo_2014.svg.png', bg: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&q=80' },
+  ];
+
+  // Animation for Brands Ticker
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const brandsCount = PARTNER_BRANDS.length;
+  const brandWidth = 100; // Increased from 80 for larger badge
+  const totalWidth = brandsCount * brandWidth;
+
+  useEffect(() => {
+    const startAnimation = () => {
+      scrollX.setValue(0);
+      Animated.loop(
+        Animated.timing(scrollX, {
+          toValue: -totalWidth,
+          duration: 20000, // Move slower for better look
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    };
+    startAnimation();
+  }, [totalWidth]);
 
   const CATEGORY_PRODUCTS: Record<string, any[]> = {
     frozen: [
@@ -310,7 +353,7 @@ export const HomeScreen = ({ navigation }: any) => {
           <Image source={{ uri: product.image }} style={styles.compactImage} />
         </View>
         <View style={styles.compactContent}>
-          <Text style={styles.compactTitle} numberOfLines={1}>{product.name}</Text>
+          <Text style={styles.compactTitle} numberOfLines={2}>{product.name}</Text>
           <View style={styles.compactMeta}>
             <Ionicons name="star" size={10} color={colors.yellow[500]} />
             <Text style={styles.compactMetaText}>{product.rating || 4.5}</Text>
@@ -320,31 +363,32 @@ export const HomeScreen = ({ navigation }: any) => {
 
           <View style={styles.compactPriceRow}>
             <View style={styles.compactPriceStack}>
-              <Text style={styles.compactPrice}>₹{product.basePrice || product.price}</Text>
               {product.mrp && product.mrp > (product.basePrice || product.price) && (
                 <Text style={styles.compactMrp}>₹{product.mrp}</Text>
               )}
+              <Text style={styles.compactPrice}>₹{product.basePrice || product.price}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.miniAddBtn}
-              onPress={(e) => {
-                e.stopPropagation();
-                const ingredient = {
-                  id: product.id,
-                  name: product.name,
-                  price: product.basePrice || product.price,
-                  unit: product.unit || product.weight,
-                  image: product.image,
-                  category: product.category || 'general'
-                };
-                addItem(ingredient as any, 1);
-                addFrequentItem(product);
-              }}
-            >
-              <Feather name="plus" size={14} color={colors.white} />
-            </TouchableOpacity>
           </View>
         </View>
+
+        <TouchableOpacity
+          style={styles.miniAddBtn}
+          onPress={(e) => {
+            e.stopPropagation();
+            const ingredient = {
+              id: product.id,
+              name: product.name,
+              price: product.basePrice || product.price,
+              unit: product.unit || product.weight,
+              image: product.image,
+              category: product.category || 'general'
+            };
+            addItem(ingredient as any, 1);
+            addFrequentItem(product);
+          }}
+        >
+          <Feather name="plus" size={12} color={colors.white} />
+        </TouchableOpacity>
       </TouchableOpacity>
     );
   };
@@ -378,6 +422,7 @@ export const HomeScreen = ({ navigation }: any) => {
   return (
     <ScrollView
       style={styles.container}
+      contentContainerStyle={{ paddingBottom: 100 }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       scrollEnabled={true}
@@ -389,326 +434,424 @@ export const HomeScreen = ({ navigation }: any) => {
           navigation={navigation}
           onSearchResults={(results) => setSearchResults(results)}
         />
-        {/* Active Search Results Section */}
-        {searchResults.length > 0 && (
-          <View style={{ marginTop: spacing.xs, marginBottom: spacing.xs }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4, marginBottom: 2 }}>
-              <Text style={{ ...textStyles.h2, color: colors.text.primary, textAlign: 'left' }}>
-                Search Results
-              </Text>
-              <TouchableOpacity onPress={() => setSearchResults([])}>
-                <Text style={{ fontSize: 13, color: colors.primary[600], fontWeight: '700', fontFamily: typography.fontFamily.semibold }}>Clear</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 4, paddingHorizontal: 4, alignItems: 'flex-start' }}
-            >
-              {searchResults.map((product) => (
-                <View key={product.id} style={{ marginRight: 8 }}>
-                  <VerticalProductCard
-                    product={product}
-                    width={windowWidth * 0.42}
-                    onPress={() => navigation.navigate('ProductsTab', {
-                      screen: 'ProductDetail',
-                      params: { product }
-                    })}
-                  />
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-
       </View>
 
-      {/* Recommended for You Section - Unified */}
-      <View style={styles.hitsSection}>
-        <View style={styles.hitsHeader}>
-          <Text style={styles.hitsTitle}>Recommended for You</Text>
-          <Ionicons name="sparkles" size={14} color={colors.primary[500]} />
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.hitsScroll}
-        >
-          {unifiedFrequent.length > 0 ? (
-            unifiedFrequent.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.gemContainer}
-                onPress={() => {
-                  // Re-implement search logic if needed, or just navigate
-                  if (item.type === 'search') {
-                    // Logic for search
-                  } else {
-                    navigation.navigate('ProductsTab', {
-                      screen: 'ProductDetail',
-                      params: { product: item.product }
-                    })
-                  }
-                }}
-              >
-                <View style={[
-                  styles.gemCircle,
-                  item.type === 'search'
-                    ? { backgroundColor: colors.primary[50], borderStyle: 'dashed', borderWidth: 1, borderColor: colors.primary[200] }
-                    : { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }
-                ]}>
-                  {item.type === 'search' ? (
-                    <Feather name="search" size={24} color={colors.primary[400]} />
-                  ) : (
-                    <Image source={{ uri: item.image }} style={{ width: '100%', height: '100%', borderRadius: 100 }} />
-                  )}
-                </View>
-                <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
-            ))
-          ) : (
-            // Initial placeholders
-            ['Frozen', 'Vegetables', 'Meat', 'Dairy'].map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={styles.gemContainer}
-                onPress={() => { }}
-              >
-                <View style={[styles.gemCircle, { backgroundColor: colors.gray[50] }]}>
-                  <Feather name="search" size={24} color={colors.gray[300]} />
-                </View>
-                <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[400], marginTop: 6, width: 70, textAlign: 'center' }}>
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            ))
-          )}
-        </ScrollView>
-      </View>
-
-      <View style={styles.bentoSection}>
-        <View style={styles.bentoGrid}>
-          {/* Row 1: Carousel (3/4) + First Row 1 Category (1/4) */}
-          <View style={styles.bentoRow}>
-            <View style={styles.promoWrapper}>
-              <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                pagingEnabled={false}
-                snapToInterval={BENTO_WIDE_WIDTH}
-                snapToAlignment="start"
-                decelerationRate="fast"
-                showsHorizontalScrollIndicator={false}
-                onScroll={onScroll}
-                scrollEventThrottle={16}
-                style={styles.promoScroll}
-              >
-                {promos.map((promo) => (
-                  <View key={promo.id} style={{ width: carouselWidth, height: 96 }}>
-                    <ImageBackground
-                      source={{ uri: promo.image }}
-                      style={styles.promoCardContent}
-                      imageStyle={{ borderRadius: 12 }}
-                    >
-                      <View style={styles.promoOverlay} />
-                      <View style={styles.promoContent}>
-                        <Text style={styles.promoTitle} numberOfLines={1}>{promo.title}</Text>
-                        <Text style={styles.promoSubtitle} numberOfLines={1}>{promo.subtitle}</Text>
-                        <TouchableOpacity style={styles.promoMiniButton}>
-                          <Text style={styles.promoMiniButtonText}>GO</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </ImageBackground>
-                  </View>
-                ))}
-              </ScrollView>
-              {/* Dots */}
-              <View style={styles.bentoDots}>
-                {promos.map((_, i) => (
-                  <View key={i} style={[styles.bentoDot, currentSlide === i && styles.bentoDotActive]} />
-                ))}
-              </View>
-            </View>
-
-            {categories.filter(c => c.row === 1).slice(0, 1).map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                style={styles.bentoVertical}
-                onPress={() => handleCategoryPress(cat.filter)}
-              >
-                <ImageBackground source={{ uri: cat.image }} style={styles.bentoImageFull}>
-                  <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.8)']}
-                    style={styles.bentoGradient}
-                  >
-                    <Text style={styles.bentoLabelFloating}>{cat.title.split(':').pop()?.trim()}</Text>
-                  </LinearGradient>
-                </ImageBackground>
-              </TouchableOpacity>
-            ))}
+      {/* Active Search Results Section */}
+      {searchResults.length > 0 && (
+        <View style={styles.sectionCard}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 0, marginBottom: 12 }}>
+            <Text style={{ ...textStyles.h2, color: colors.text.primary, textAlign: 'left' }}>
+              Search Results
+            </Text>
+            <TouchableOpacity onPress={() => setSearchResults([])}>
+              <Text style={{ fontSize: 13, color: colors.primary[600], fontWeight: '700', fontFamily: typography.fontFamily.semibold }}>Clear</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* Row 2: Curated Deliveries (Auto-adjusting grid) */}
-          <View style={styles.bentoRow}>
-            {categories.filter(c => c.row === 2).map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                style={styles.bentoHalf} // Adjusts width automatically in flex-row bentoRow
-                onPress={() => handleCategoryPress(cat.filter)}
-              >
-                <ImageBackground source={{ uri: cat.image }} style={styles.bentoImageFull}>
-                  <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.8)']}
-                    style={styles.bentoGradient}
-                  >
-                    <Text style={styles.bentoLabelFloating}>{cat.title.split(':').pop()?.trim()}</Text>
-                  </LinearGradient>
-                </ImageBackground>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Row 3: Imported Sourcing (Horizontal Scrollable) */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.bentoScrollRow}
+            contentContainerStyle={{ paddingBottom: 4, paddingHorizontal: 0, alignItems: 'flex-start' }}
           >
-            {categories.filter(c => c.row === 3).map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                style={styles.bentoScrollItem}
-                onPress={() => handleCategoryPress(cat.filter)}
-              >
-                <ImageBackground source={{ uri: cat.image }} style={styles.bentoImageFull}>
-                  <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.8)']}
-                    style={styles.bentoGradient}
-                  >
-                    <Text style={styles.bentoLabelFloating}>{cat.title.split(':').pop()?.trim()}</Text>
-                  </LinearGradient>
-                </ImageBackground>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </View>
-
-      {/* Cuisine Sourcing Hub */}
-      <View style={[styles.section, { paddingBottom: spacing.sm }]}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Cuisine Sourcing Hub</Text>
-          <MaterialCommunityIcons name="earth" size={18} color={colors.primary[500]} />
-        </View>
-        <Text style={styles.sectionSubtitle}>Professional essentials curated for your kitchen</Text>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={windowWidth * 0.7 + spacing.md}
-          decelerationRate="fast"
-          contentContainerStyle={styles.cuisineScroll}
-        >
-          {CUISINES.map((cuisine) => (
-            <TouchableOpacity
-              key={cuisine.id}
-              style={styles.cuisineCard}
-              onPress={() => handleCategoryPress(cuisine.id)}
-              activeOpacity={0.9}
-            >
-              <ImageBackground
-                source={{ uri: cuisine.image }}
-                style={styles.cuisineImage}
-                imageStyle={{ borderRadius: borderRadius.xl }}
-              >
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.85)']}
-                  style={styles.cuisineGradient}
-                >
-                  <View style={styles.cuisineContent}>
-                    <Text style={styles.cuisineName}>{cuisine.name}</Text>
-                    <Text style={styles.cuisineDescription} numberOfLines={1}>
-                      {cuisine.description}
-                    </Text>
-                    <View style={styles.cuisineBadge}>
-                      <Text style={styles.cuisineBadgeText}>SOURCING LIST</Text>
-                      <Feather name="arrow-right" size={12} color={colors.white} />
-                    </View>
-                  </View>
-                </LinearGradient>
-              </ImageBackground>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Best Selling Products</Text>
-          <Feather name="trending-up" size={16} color={colors.primary[500]} />
-        </View>
-        <View style={styles.bestsellerScrollContainer}>
-          <ScrollView
-            nestedScrollEnabled={true}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.compactGrid}
-          >
-            {bestsellers.map((product) => (
-              <CompactProductCard
-                key={product.id}
-                recipe={product}
-                onPress={() => navigation.navigate('ProductsTab', {
-                  screen: 'ProductDetail',
-                  params: { product }
-                })}
-              />
-            ))}
-          </ScrollView>
-        </View>
-      </View >
-
-      {/* Infinite Category Flow */}
-      {categories.map((category) => {
-        const products = CATEGORY_PRODUCTS[category.id] || CATEGORY_PRODUCTS['frozen'];
-        return (
-          <View key={category.id} style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{category.title.split(':').pop()?.trim()}</Text>
-              <MaterialCommunityIcons name="lightning-bolt" size={16} color={colors.primary[500]} />
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.discoveryScroll}
-            >
-              {products.map((product) => (
+            {searchResults.map((product) => (
+              <View key={product.id} style={{ marginRight: 8 }}>
                 <VerticalProductCard
-                  key={product.id}
-                  width={windowWidth * 0.42}
                   product={product}
+                  width={windowWidth * 0.42}
                   onPress={() => navigation.navigate('ProductsTab', {
                     screen: 'ProductDetail',
                     params: { product }
                   })}
                 />
-              ))}
-              {/* "View All" Card */}
-              <TouchableOpacity
-                style={styles.viewAllCard}
-                onPress={() => handleCategoryPress(category.id)}
-              >
-                <View style={styles.viewAllCircle}>
-                  <Feather name="arrow-right" size={24} color={colors.primary[500]} />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Recommended for You Section - Unified */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.hitsSection, { backgroundColor: 'transparent' }]}>
+          <View style={[styles.hitsHeader, { paddingHorizontal: 0 }]}>
+            <Text style={styles.hitsTitle}>Recommended for You</Text>
+            <Ionicons name="sparkles" size={14} color={colors.primary[500]} />
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.hitsScroll, { paddingHorizontal: 0 }]}
+          >
+            {unifiedFrequent.length > 0 ? (
+              unifiedFrequent.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.gemContainer}
+                  onPress={() => {
+                    // Re-implement search logic if needed, or just navigate
+                    if (item.type === 'search') {
+                      // Logic for search
+                    } else {
+                      navigation.navigate('ProductsTab', {
+                        screen: 'ProductDetail',
+                        params: { product: item.product }
+                      })
+                    }
+                  }}
+                >
+                  <View style={[
+                    styles.gemCircle,
+                    item.type === 'search'
+                      ? { backgroundColor: colors.primary[50], borderStyle: 'dashed', borderWidth: 1, borderColor: colors.primary[200] }
+                      : { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }
+                  ]}>
+                    {item.type === 'search' ? (
+                      <Feather name="search" size={24} color={colors.primary[400]} />
+                    ) : (
+                      <Image source={{ uri: item.image }} style={{ width: '100%', height: '100%', borderRadius: 100 }} />
+                    )}
+                  </View>
+                  <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
+                    {item.title}
+                  </Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              // Initial placeholders
+              ['Frozen', 'Vegetables', 'Meat', 'Dairy'].map((item) => (
+                <TouchableOpacity
+                  key={item}
+                  style={styles.gemContainer}
+                  onPress={() => { }}
+                >
+                  <View style={[styles.gemCircle, { backgroundColor: colors.gray[50] }]}>
+                    <Feather name="search" size={24} color={colors.gray[300]} />
+                  </View>
+                  <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[400], marginTop: 6, width: 70, textAlign: 'center' }}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
+        </View>
+      </View>
+
+      <View style={styles.sectionCard}>
+        <View style={styles.bentoSection}>
+          <View style={styles.bentoGrid}>
+            {/* Row 1: Carousel (3/4) + First Row 1 Category (1/4) */}
+            <View style={styles.bentoRow}>
+              <View style={styles.promoWrapper}>
+                <ScrollView
+                  ref={scrollViewRef}
+                  horizontal
+                  pagingEnabled={false}
+                  snapToInterval={BENTO_WIDE_WIDTH}
+                  snapToAlignment="start"
+                  decelerationRate="fast"
+                  showsHorizontalScrollIndicator={false}
+                  onScroll={onScroll}
+                  scrollEventThrottle={16}
+                  style={styles.promoScroll}
+                >
+                  {promos.map((promo) => (
+                    <View key={promo.id} style={{ width: carouselWidth, height: 96 }}>
+                      <ImageBackground
+                        source={{ uri: promo.image }}
+                        style={styles.promoCardContent}
+                        imageStyle={{ borderRadius: 12 }}
+                      >
+                        <View style={styles.promoOverlay} />
+                        <View style={styles.promoContent}>
+                          <Text style={styles.promoTitle} numberOfLines={1}>{promo.title}</Text>
+                          <Text style={styles.promoSubtitle} numberOfLines={1}>{promo.subtitle}</Text>
+                          <TouchableOpacity style={styles.promoMiniButton}>
+                            <Text style={styles.promoMiniButtonText}>GO</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </ImageBackground>
+                    </View>
+                  ))}
+                </ScrollView>
+                {/* Dots */}
+                <View style={styles.bentoDots}>
+                  {promos.map((_, i) => (
+                    <View key={i} style={[styles.bentoDot, currentSlide === i && styles.bentoDotActive]} />
+                  ))}
                 </View>
-                <Text style={styles.viewAllText}>View All</Text>
-              </TouchableOpacity>
+              </View>
+
+              {categories.filter(c => c.row === 1).slice(0, 1).map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.bentoVertical}
+                  onPress={() => handleCategoryPress(cat.filter)}
+                >
+                  <ImageBackground
+                    source={{ uri: cat.image }}
+                    style={styles.bentoImageFull}
+                    imageStyle={{ transform: [{ scale: 1.1 }], resizeMode: 'cover' }}
+                  >
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.8)']}
+                      style={styles.bentoGradient}
+                    >
+                      <Text style={styles.bentoLabelFloating}>{cat.title.split(':').pop()?.trim()}</Text>
+                    </LinearGradient>
+                  </ImageBackground>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Row 2: Curated Deliveries (Auto-adjusting grid) */}
+            <View style={styles.bentoRow}>
+              {categories.filter(c => c.row === 2).map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.bentoHalf} // Adjusts width automatically in flex-row bentoRow
+                  onPress={() => handleCategoryPress(cat.filter)}
+                >
+                  <ImageBackground
+                    source={{ uri: cat.image }}
+                    style={styles.bentoImageFull}
+                    imageStyle={{ transform: [{ scale: 1.1 }], resizeMode: 'cover' }}
+                  >
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.8)']}
+                      style={styles.bentoGradient}
+                    >
+                      <Text numberOfLines={2} style={[styles.bentoLabelFloating, { fontSize: 10 }]}>{cat.title.split(':').pop()?.trim()}</Text>
+                    </LinearGradient>
+                  </ImageBackground>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Row 3: Core Categories — 4 squares, edge-to-edge */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.bentoSquareRow}
+              style={styles.bentoSquareRowOuter}
+            >
+              {categories.filter(c => c.row === 3).map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.bentoSquareItem}
+                  onPress={() => handleCategoryPress(cat.filter)}
+                >
+                  <ImageBackground
+                    source={typeof cat.image === 'string' ? { uri: cat.image } : cat.image}
+                    style={styles.bentoImageFull}
+                    imageStyle={{ transform: [{ scale: 1.22 }], resizeMode: 'cover' }}
+                  >
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.7)']}
+                      style={styles.bentoGradient}
+                    >
+                      <Text style={[styles.bentoLabelFloating, { fontSize: 10, textAlign: 'center' }]} numberOfLines={2}>
+                        {cat.title}
+                      </Text>
+                    </LinearGradient>
+                  </ImageBackground>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
+          </View>
+        </View>
+      </View>
+
+      {/* Cuisine Sourcing Hub - Circular Gems */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.hitsSection, { backgroundColor: 'transparent' }]}>
+          <View style={[styles.hitsHeader, { paddingHorizontal: 0 }]}>
+            <Text style={styles.hitsTitle}>Cuisine Sourcing Hub</Text>
+            <MaterialCommunityIcons name="earth" size={14} color={colors.primary[500]} />
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.hitsScroll, { paddingHorizontal: 0 }]}
+          >
+            {CUISINES.map((cuisine) => (
+              <TouchableOpacity
+                key={cuisine.id}
+                style={styles.gemContainer}
+                onPress={() => handleCategoryPress(cuisine.id)}
+              >
+                <View style={[styles.gemCircle, { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }]}>
+                  <Image source={{ uri: cuisine.image }} style={styles.gemImage} />
+                </View>
+                <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
+                  {cuisine.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+
+      {/* Best Sellers Section */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.bestsellerSection, { backgroundColor: 'transparent' }]}>
+          <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
+            <Text style={styles.bestsellerTitle}>Best Selling Products</Text>
+            <Feather name="trending-up" size={16} color={colors.primary[400]} />
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.bestsellerHorizContent, { paddingLeft: 0, paddingRight: 0 }]}
+          >
+            {Array.from({ length: Math.ceil(bestsellers.length / 2) }, (_, i) => (
+              <View key={i} style={styles.bestsellerColumn}>
+                {bestsellers.slice(i * 2, i * 2 + 2).map((product) => (
+                  <CompactProductCard
+                    key={product.id}
+                    recipe={product}
+                    style={styles.compactCardHoriz}
+                    onPress={() => navigation.navigate('ProductsTab', {
+                      screen: 'ProductDetail',
+                      params: { product }
+                    })}
+                  />
+                ))}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+
+      {/* Partner Brands Spotlight - Self-Moving Ticker */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.brandsBreaker, { backgroundColor: 'transparent' }]}>
+          <View style={[styles.sectionHeader, { paddingHorizontal: 0, marginBottom: 12 }]}>
+            <Text style={styles.hitsTitle}>Trusted Partners</Text>
+            <MaterialCommunityIcons name="shield-check" size={14} color={colors.primary[500]} />
+          </View>
+          <View style={{ overflow: 'hidden' }}>
+            <Animated.View
+              style={{
+                flexDirection: 'row',
+                transform: [{ translateX: scrollX }],
+                width: totalWidth * 2,
+                paddingLeft: 0,
+              }}
+            >
+              {[...PARTNER_BRANDS, ...PARTNER_BRANDS].map((brand, index) => (
+                <View key={`${brand.id}-${index}`} style={[styles.gemContainer, { width: brandWidth, marginHorizontal: 0 }]}>
+                  <View style={styles.brandBadge}>
+                    <ImageBackground
+                      source={{ uri: brand.bg }}
+                      style={styles.brandBadgeInner}
+                      imageStyle={{ borderRadius: 36, opacity: 1 }}
+                    >
+                      <View style={styles.brandLogoOverlay}>
+                        <Image
+                          source={{ uri: brand.image }}
+                          style={{ width: '70%', height: '70%', resizeMode: 'contain' }}
+                        />
+                      </View>
+                    </ImageBackground>
+                  </View>
+                  <Text numberOfLines={1} style={{ fontSize: 9, color: colors.gray[600], marginTop: 4, fontWeight: '600', textAlign: 'center' }}>
+                    {brand.name}
+                  </Text>
+                </View>
+              ))}
+            </Animated.View>
+          </View>
+        </View>
+      </View>
+
+      {/* Infinite Category Flow */}
+      {categories.filter(c => c.row <= 2).map((category) => {
+        const products = CATEGORY_PRODUCTS[category.id] || CATEGORY_PRODUCTS['frozen'];
+        return (
+          <View key={category.id} style={styles.sectionCard}>
+            <View style={[styles.section, { paddingHorizontal: 0 }]}>
+              <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
+                <Text style={styles.sectionTitle}>{category.title.split(':').pop()?.trim()}</Text>
+                <MaterialCommunityIcons name="lightning-bolt" size={16} color={colors.primary[500]} />
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={[styles.discoveryScroll, { paddingLeft: 0, paddingRight: 0 }]}
+              >
+                {products.map((product) => (
+                  <VerticalProductCard
+                    key={product.id}
+                    width={windowWidth * 0.42}
+                    product={product}
+                    onPress={() => navigation.navigate('ProductsTab', {
+                      screen: 'ProductDetail',
+                      params: { product }
+                    })}
+                  />
+                ))}
+                <TouchableOpacity
+                  style={styles.viewAllCard}
+                  onPress={() => handleCategoryPress(category.id)}
+                >
+                  <View style={styles.viewAllCircle}>
+                    <Feather name="arrow-right" size={24} color={colors.primary[500]} />
+                  </View>
+                  <Text style={styles.viewAllText}>View All</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
           </View>
         );
       })}
+
+      {/* Essential Packaging Hub */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.section, { paddingHorizontal: 0 }]}>
+          <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
+            <Text style={styles.sectionTitle}>Essential Packaging Hub</Text>
+            <MaterialCommunityIcons name="package-variant-closed" size={18} color={colors.primary[500]} />
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={windowWidth * 0.7 + spacing.md}
+            decelerationRate="fast"
+            contentContainerStyle={[styles.cuisineScroll, { paddingLeft: 0, paddingRight: 0 }]}
+          >
+            {PACKAGING_DATA.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.cuisineCard}
+                onPress={() => handleCategoryPress(item.id)}
+                activeOpacity={0.9}
+              >
+                <ImageBackground
+                  source={{ uri: item.image }}
+                  style={styles.cuisineImage}
+                  imageStyle={{ borderRadius: borderRadius.xl }}
+                >
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.85)']}
+                    style={styles.cuisineGradient}
+                  >
+                    <View style={styles.cuisineContent}>
+                      <Text style={styles.cuisineName}>{item.name}</Text>
+                      <Text style={styles.cuisineDescription} numberOfLines={1}>
+                        {item.description}
+                      </Text>
+                      <View style={styles.cuisineBadge}>
+                        <Text style={styles.cuisineBadgeText}>VIEW CATALOG</Text>
+                        <Feather name="arrow-right" size={12} color={colors.white} />
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </ImageBackground>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
 
       <View style={{ height: spacing.xl * 2 }} />
 
@@ -724,7 +867,7 @@ const BENTO_WIDE_WIDTH = BENTO_UNIT * 3 + (BENTO_GAP * 2);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.background.primary, // Reverted to original light teal
   },
   hero: {
     paddingHorizontal: spacing.md,
@@ -802,9 +945,18 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   section: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm, // Reduced from md(16) to sm(8) for even denser layout
+    paddingHorizontal: 0,
+    paddingVertical: 0,
     alignItems: 'flex-start',
+  },
+  sectionCard: {
+    backgroundColor: colors.white,
+    marginHorizontal: 6, // Small gap for "box" look
+    borderRadius: 16,
+    paddingHorizontal: 10, // margin(6) + padding(10) = 16px total
+    paddingVertical: 10,
+    marginBottom: 12, // Gap between boxes
+    ...shadow.soft,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -813,6 +965,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionTitle: {
+    ...textStyles.h3,
+    color: colors.text.primary,
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+  },
+  bestsellerSection: {
+    paddingTop: 0,
+    paddingBottom: spacing.sm,
+    marginVertical: 0,
+    width: '100%',
+  },
+  bestsellerTitle: {
     ...textStyles.h3,
     color: colors.text.primary,
     textAlign: 'left',
@@ -1073,7 +1237,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.medium,
   },
   bentoSection: {
-    paddingHorizontal: BENTO_PADDING,
     paddingVertical: BENTO_GAP,
   },
   bentoGrid: {
@@ -1181,10 +1344,24 @@ const styles = StyleSheet.create({
   bentoScrollRow: {
     gap: BENTO_GAP,
     paddingRight: BENTO_PADDING,
-    marginTop: 2, // Slight separation
+    marginTop: 2,
   },
   bentoScrollItem: {
-    width: BENTO_UNIT * 1.8, // Slightly wider for scrollable look
+    width: BENTO_UNIT * 1.8,
+    height: BENTO_UNIT,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.gray[100],
+    ...shadow.soft,
+  },
+  bentoSquareRowOuter: {
+    marginTop: 0,
+  },
+  bentoSquareRow: {
+    gap: BENTO_GAP,
+  },
+  bentoSquareItem: {
+    width: BENTO_UNIT,
     height: BENTO_UNIT,
     borderRadius: 12,
     overflow: 'hidden',
@@ -1194,8 +1371,7 @@ const styles = StyleSheet.create({
   bentoImageFull: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
-    justifyContent: 'flex-end', // Align content to bottom
+    justifyContent: 'flex-end',
   },
   bentoScrim: {
     ...StyleSheet.absoluteFillObject,
@@ -1208,13 +1384,15 @@ const styles = StyleSheet.create({
   bentoLabelFloating: {
     color: colors.white,
     fontSize: 12,
-    fontWeight: '900',
+    fontWeight: '500', // Semibold
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    padding: 8, // Add padding for the text inside the gradient
+    padding: 8,
+    paddingBottom: 4, // Even closer to bottom
+    textAlign: 'center',
   },
   bentoGradient: {
     flex: 1,
@@ -1272,27 +1450,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     paddingBottom: 20, // Extra space at bottom of SCROLL list
   },
-  bestsellerScrollContainer: {
-    height: 480, // Approximate height for 2x2 rows
-    width: '100%',
-    marginTop: 8,
+  bestsellerHorizContent: {
+    paddingLeft: spacing.md,
+    paddingRight: spacing.md,
+    gap: 8,
+    paddingBottom: 4,
+  },
+  bestsellerColumn: {
+    gap: 8,
+  },
+  compactCardHoriz: {
+    width: (windowWidth - (spacing.md * 2 + 8)) / 2,
   },
   compactCard: {
-    width: (windowWidth - 32 - 12) / 2,
+    width: (windowWidth - (spacing.md * 2 + 8)) / 2,
     backgroundColor: colors.white,
     borderRadius: 16,
-    padding: 8,
+    height: 100,
     ...shadow.soft,
     borderWidth: 1,
     borderColor: colors.gray[100],
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    position: 'relative',
+    overflow: 'hidden',
+    paddingRight: 32,
   },
   compactImageContainer: {
-    width: '100%',
-    height: 100,
-    borderRadius: 12,
+    width: 80,
     backgroundColor: colors.gray[50],
-    overflow: 'hidden',
-    marginBottom: 8,
     position: 'relative',
   },
   compactSaveBadge: {
@@ -1315,12 +1501,18 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   compactContent: {
-    gap: 4,
+    flex: 1,
+    paddingLeft: 12,
+    paddingRight: 4,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    gap: 0,
   },
   compactTitle: {
-    ...textStyles.bodyLarge,
-    fontWeight: '700',
+    fontSize: 12,
+    fontFamily: typography.fontFamily.medium,
     color: colors.text.primary,
+    lineHeight: 15,
   },
   compactMeta: {
     flexDirection: 'row',
@@ -1328,7 +1520,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   compactMetaText: {
-    fontSize: 10,
+    fontSize: 9,
     color: colors.gray[500],
     fontFamily: typography.fontFamily.medium,
   },
@@ -1355,16 +1547,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 2,
   },
   compactPriceStack: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: -2,
   },
   compactPrice: {
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 13,
+    fontFamily: typography.fontFamily.bold,
     color: colors.primary[600],
   },
   compactMrp: {
@@ -1384,17 +1576,51 @@ const styles = StyleSheet.create({
     color: colors.accent[700],
   },
   miniAddBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    position: 'absolute',
+    right: 8,
+    bottom: 8,
+    width: 22,
+    height: 22,
+    borderRadius: 6,
     backgroundColor: colors.primary[500],
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadow.soft,
   },
   // Trending Hits Styles
   hitsSection: {
     paddingVertical: 4, // Reduced from 12
     backgroundColor: colors.background.primary,
+  },
+  brandsBreaker: {
+    paddingTop: 0,
+    paddingBottom: spacing.sm,
+    marginVertical: 0,
+  },
+  brandBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primary[500], // Primary ring
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadow.soft,
+  },
+  brandBadgeInner: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  brandLogoOverlay: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.15)', // Very subtle dark tint to ground the logo without dulling the image
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   hitsHeader: {
     flexDirection: 'row',
@@ -1415,8 +1641,8 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary[500],
   },
   hitsScroll: {
-    paddingHorizontal: 12,
-    gap: 16,
+    paddingHorizontal: 16, // Matched with header padding
+    gap: -2,
   },
   gemContainer: {
     alignItems: 'center',
@@ -1440,9 +1666,10 @@ const styles = StyleSheet.create({
   },
   // Cuisine Sourcing Styles
   cuisineScroll: {
-    paddingRight: windowWidth * 0.1, // Extra space at end
+    paddingLeft: 0,
+    paddingRight: windowWidth * 0.1,
     gap: spacing.md,
-    paddingTop: spacing.sm,
+    paddingTop: 0,
   },
   cuisineCard: {
     width: windowWidth * 0.7,
@@ -1494,10 +1721,10 @@ const styles = StyleSheet.create({
   },
   // Infinite Discovery Section Styles
   discoveryScroll: {
-    paddingLeft: spacing.md,
-    paddingRight: spacing.md,
+    paddingLeft: 0,
+    paddingRight: 16,
     gap: spacing.md,
-    paddingBottom: spacing.sm,
+    paddingBottom: 0,
   },
   viewAllCard: {
     width: 100,
