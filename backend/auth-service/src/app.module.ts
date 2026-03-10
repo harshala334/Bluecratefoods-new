@@ -22,9 +22,7 @@ import { FirebaseService } from './firebase.service';
       database: process.env.DB_NAME || process.env.DB_DATABASE || 'auth_service_db',
       entities: [User],
       synchronize: true, // Auto-create tables (dev only)
-      ssl: process.env.DB_HOST?.includes('ondigitalocean')
-        ? { rejectUnauthorized: false }
-        : false,
+      ssl: false,
     }),
     TypeOrmModule.forFeature([User]),
   ],

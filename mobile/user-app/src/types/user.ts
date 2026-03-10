@@ -9,12 +9,10 @@ export interface User {
   backgroundImage?: string;
   isGuest?: boolean;
   userType: 'individual' | 'business' | 'customer' | 'admin';
-  isVerifiedCreator?: boolean;
-  creatorStatus?: 'none' | 'pending' | 'verified' | 'rejected';
-  creatorApplicationReason?: string;
-  creatorSocialLinks?: string[];
   createdAt: string;
   updatedAt: string;
+  activeOrderId?: string;
+  subscriptionTier?: 'free' | 'premium' | 'enterprise';
 }
 
 export interface Address {

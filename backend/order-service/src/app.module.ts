@@ -14,11 +14,7 @@ import { Order } from './orders/entities/order.entity';
             database: process.env.DB_NAME || 'order_service_db',
             entities: [Order],
             synchronize: true, // Auto-create tables for dev
-            ssl: process.env.DB_HOST?.includes('ondigitalocean')
-                ? {
-                    rejectUnauthorized: false // For simple setup with DO Managed DB without custom CA
-                }
-                : false,
+            ssl: false,
         }),
         OrdersModule,
     ],

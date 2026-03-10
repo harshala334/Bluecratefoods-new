@@ -31,36 +31,6 @@ export class AuthController {
     return this.authService.updateProfile(body.userId, body);
   }
 
-  @Patch('apply-creator')
-  async applyCreator(@Body() body: { userId: string; reason?: string; socialLinks?: string[] }) {
-    return this.authService.applyCreator(body.userId, body.reason, body.socialLinks);
-  }
-
-  @Get('admin/pending-creators')
-  async getPendingCreators() {
-    return this.authService.getPendingCreators();
-  }
-
-  @Patch('admin/approve-creator/:id')
-  async approveCreator(@Param('id') userId: string) {
-    return this.authService.approveCreator(userId);
-  }
-
-  @Patch('admin/reject-creator/:id')
-  async rejectCreator(@Param('id') userId: string) {
-    return this.authService.rejectCreator(userId);
-  }
-
-  @Get('admin/verified-creators')
-  async getVerifiedCreators() {
-    return this.authService.getVerifiedCreators();
-  }
-
-  @Patch('admin/revoke-creator/:id')
-  async revokeCreator(@Param('id') userId: string) {
-    return this.authService.revokeCreator(userId);
-  }
-
   @Post('send-otp')
   async sendOtp(@Body() body: { phone: string }) {
     return this.authService.sendOtp(body.phone);

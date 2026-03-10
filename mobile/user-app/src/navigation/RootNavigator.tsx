@@ -29,11 +29,14 @@ import CommunityScreen from '../screens/community/CommunityScreen';
 import ChatScreen from '../screens/chat/ChatScreen';
 import TrackOrderScreen from '../screens/orders/TrackOrderScreen';
 import { MyOrdersScreen } from '../screens/orders/MyOrdersScreen';
-import AdminRequestsScreen from '../screens/profile/AdminRequestsScreen';
-import CreatorApplicationScreen from '../screens/profile/CreatorApplicationScreen';
 import SubscriptionScreen from '../screens/profile/SubscriptionScreen';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// New Profile Screens
+import DietaryPreferencesScreen from '../screens/profile/DietaryPreferencesScreen';
+import FavoritesScreen from '../screens/profile/FavoritesScreen';
+import ManageAddressesScreen from '../screens/profile/ManageAddressesScreen';
 
 // Onboarding Screens
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
@@ -621,25 +624,48 @@ function RootNavigator() {
             }}
           />
           <Stack.Screen
-            name="AdminRequests"
-            component={AdminRequestsScreen}
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="CreatorApplication"
-            component={CreatorApplicationScreen}
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
             name="Subscription"
             component={SubscriptionScreen}
             options={{
               headerShown: false,
             }}
+          />
+
+          {/* Real Profile Utility Screens */}
+          <Stack.Screen
+            name="Favorites"
+            component={FavoritesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ManageAddresses"
+            component={ManageAddressesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="DietaryPreferences"
+            component={DietaryPreferencesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Payments"
+            component={ComingSoonScreen}
+            options={{ title: 'Payment Methods' }}
+          />
+          <Stack.Screen
+            name="NotificationSettings"
+            component={ComingSoonScreen}
+            options={{ title: 'Notifications' }}
+          />
+          <Stack.Screen
+            name="PrivacySecurity"
+            component={ComingSoonScreen}
+            options={{ title: 'Privacy & Security' }}
+          />
+          <Stack.Screen
+            name="HelpCenter"
+            component={ComingSoonScreen}
+            options={{ title: 'Help & Support' }}
           />
         </>
       )}

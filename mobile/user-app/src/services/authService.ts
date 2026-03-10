@@ -77,35 +77,6 @@ export const authService = {
     }
     throw new Error('Upload failed');
   },
-  // Create application
-  async applyCreator(userId: string, reason?: string, socialLinks?: string[]): Promise<{ success: boolean; message: string }> {
-    return api.patch<{ success: boolean; message: string }>(API_CONFIG.ENDPOINTS.APPLY_CREATOR, { userId, reason, socialLinks });
-  },
-
-  // Admin: Get pending creators
-  async getPendingCreators(): Promise<User[]> {
-    return api.get<User[]>(API_CONFIG.ENDPOINTS.PENDING_CREATORS);
-  },
-
-  // Admin: Approve creator
-  async approveCreator(userId: string): Promise<{ success: boolean; message: string }> {
-    return api.patch<{ success: boolean; message: string }>(API_CONFIG.ENDPOINTS.APPROVE_CREATOR(userId), {});
-  },
-
-  // Admin: Reject creator
-  async rejectCreator(userId: string): Promise<{ success: boolean; message: string }> {
-    return api.patch<{ success: boolean; message: string }>(API_CONFIG.ENDPOINTS.REJECT_CREATOR(userId), {});
-  },
-
-  // Admin: Get all verified creators
-  async getVerifiedCreators(): Promise<User[]> {
-    return api.get<User[]>(API_CONFIG.ENDPOINTS.VERIFIED_CREATORS);
-  },
-
-  // Admin: Revoke creator status
-  async revokeCreator(userId: string): Promise<any> {
-    return api.patch(API_CONFIG.ENDPOINTS.REVOKE_CREATOR(userId), {});
-  },
 
   // OTP Login
   async sendOtp(phone: string): Promise<{ success: boolean; message: string }> {

@@ -30,12 +30,6 @@ export const API_CONFIG = {
     FORGOT_PASSWORD: `${baseUrl}/auth/forgot-password`,
     USER_PROFILE: `${baseUrl}/auth/profile`,
     UPDATE_PROFILE: `${baseUrl}/auth/profile`,
-    APPLY_CREATOR: `${baseUrl}/auth/apply-creator`,
-    PENDING_CREATORS: `${baseUrl}/auth/admin/pending-creators`,
-    APPROVE_CREATOR: (id: string) => `${baseUrl}/auth/admin/approve-creator/${id}`,
-    REJECT_CREATOR: (id: string) => `${baseUrl}/auth/admin/reject-creator/${id}`,
-    VERIFIED_CREATORS: `${baseUrl}/auth/admin/verified-creators`,
-    REVOKE_CREATOR: (id: string) => `${baseUrl}/auth/admin/revoke-creator/${id}`,
 
     // Recipes - Use Default (Prod)
     RECIPES: `${baseUrl}/recipes`,

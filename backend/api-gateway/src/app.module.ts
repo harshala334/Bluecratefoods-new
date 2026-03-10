@@ -41,14 +41,7 @@ import { LocationModule } from './location/location.module';
       database: process.env.DB_NAME || process.env.DB_DATABASE || 'bluecrate_db',
       entities: [Enquiry, Recipe],
       synchronize: true, // Auto-create tables (dev only)
-      ssl: process.env.DB_HOST?.includes('ondigitalocean')
-        ? {
-          rejectUnauthorized: true,
-          ca: process.env.DB_CA_CERT && fs.existsSync(process.env.DB_CA_CERT)
-            ? fs.readFileSync(process.env.DB_CA_CERT).toString()
-            : undefined
-        }
-        : false,
+      ssl: false,
     }),
     EnquiryModule,
     RecipesModule,

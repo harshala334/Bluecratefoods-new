@@ -86,7 +86,7 @@ npm install @react-navigation/native-stack
 - [ ] **Migration**: Upload local assets (e.g., `cat-cheff.png`) to Cloudinary and update file paths.
 - [ ] **User Content**: Enable image uploading for User Avatar and Community Posts.
 
-## 2. API Integration (DigitalOcean)s
+## 2. API Integration (GCP)s
 **Files to create:**
 - `src/screens/auth/LoginScreen.tsx`
 - `src/screens/auth/SignupScreen.tsx`
