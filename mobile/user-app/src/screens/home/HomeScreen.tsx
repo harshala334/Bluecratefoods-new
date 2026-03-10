@@ -48,7 +48,7 @@ export const HomeScreen = ({ navigation }: any) => {
   const isServiceable = location?.toLowerCase().includes('kolkata');
 
   const { items, addItem, updateQuantityByIngredientId } = useCartStore();
-  const { addSearchTerm, getUnifiedFrequentList, addFrequentItem } = useRecipeStore();
+  const { addSearchTerm, getUnifiedFrequentList, addFrequentItem, clearSearchHistory } = useRecipeStore();
   const unifiedFrequent = getUnifiedFrequentList();
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -165,7 +165,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
     // Row 3: Sourcing Categories — 4 squares with local images
     { id: 'veg', title: 'Fresh Vegetables', subtitle: 'Farm to home', image: require('../../../assets/images/vege.jpg'), filter: 'vegetables', row: 3 },
-    { id: 'meat', title: 'Fresh Meat', subtitle: 'Premium cuts', image: require('../../../assets/images/chicken.jpg'), filter: 'meat', row: 3 },
+    { id: 'meat', title: 'Fresh & Frozen Meat', subtitle: 'Premium cuts', image: require('../../../assets/images/chicken.jpg'), filter: 'meat', row: 3 },
     { id: 'kitchen', title: 'Kitchen Essentials', subtitle: 'Pro grade tools', image: require('../../../assets/images/kitchen.jpg'), filter: 'kitchen', row: 3 },
     { id: 'packaging', title: 'Packaging Materials', subtitle: 'Sustainable', image: require('../../../assets/images/packag.jpg'), filter: 'packaging', row: 3 },
   ];
@@ -289,14 +289,14 @@ export const HomeScreen = ({ navigation }: any) => {
   ];
 
   const PARTNER_BRANDS = [
-    { id: 'b1', name: 'Amul', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3b/Amul_logo.svg/200px-Amul_logo.svg.png', bg: 'https://images.unsplash.com/photo-1549466580-df607672db91?w=400&q=80' },
-    { id: 'b2', name: 'Nestle', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Nestl%C3%A9_Logo.svg/1200px-Nestl%C3%A9_Logo.svg.png', bg: 'https://images.unsplash.com/photo-1444837881208-4d46d5c1f127?w=400&q=80' },
-    { id: 'b3', name: 'Britannia', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Britannia_Industries_logo.svg/1024px-Britannia_Industries_logo.svg.png', bg: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80' },
-    { id: 'b4', name: 'Mother Dairy', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Mother_Dairy_logo.svg/1200px-Mother_Dairy_logo.svg.png', bg: 'https://images.unsplash.com/photo-1528498020303-451913008ce5?w=400&q=80' },
-    { id: 'b5', name: 'Parle', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Parle_Products_logo.svg/1200px-Parle_Products_logo.svg.png', bg: 'https://images.unsplash.com/photo-1574944973353-242e85afc7ad?w=400&q=80' },
-    { id: 'b6', name: 'Coca-Cola', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Coca-Cola_logo.svg/2560px-Coca-Cola_logo.svg.png', bg: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?w=400&q=80' },
-    { id: 'b7', name: 'Unilever', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Unilever.svg/1200px-Unilever.svg.png', bg: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=400&q=80' },
-    { id: 'b8', name: 'Pepsi', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Pepsi_logo_2014.svg/1200px-Pepsi_logo_2014.svg.png', bg: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&q=80' },
+    { id: 'b1', name: 'Amul', image: require('../../../assets/images/amul.png') },
+    { id: 'b2', name: 'Nestle', image: require('../../../assets/images/nestle.png') },
+    { id: 'b3', name: 'Britannia', image: require('../../../assets/images/britannia.jpeg') },
+    { id: 'b4', name: 'Mother Dairy', image: require('../../../assets/images/motherdairy.png') },
+    { id: 'b5', name: 'Parle', image: require('../../../assets/images/parle.png') },
+    { id: 'b6', name: 'Coca-Cola', image: require('../../../assets/images/cococola.png') },
+    { id: 'b7', name: 'Unilever', image: require('../../../assets/images/unilever.jpeg') },
+    { id: 'b8', name: 'Pepsi', image: require('../../../assets/images/pepsi.png') },
   ];
 
   // Animation for Brands Ticker
@@ -353,7 +353,7 @@ export const HomeScreen = ({ navigation }: any) => {
           <Image source={{ uri: product.image }} style={styles.compactImage} />
         </View>
         <View style={styles.compactContent}>
-          <Text style={styles.compactTitle} numberOfLines={2}>{product.name}</Text>
+          <Text style={styles.compactTitle}>{product.name}</Text>
           <View style={styles.compactMeta}>
             <Ionicons name="star" size={10} color={colors.yellow[500]} />
             <Text style={styles.compactMetaText}>{product.rating || 4.5}</Text>
@@ -450,7 +450,7 @@ export const HomeScreen = ({ navigation }: any) => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 4, paddingHorizontal: 0, alignItems: 'flex-start' }}
+            contentContainerStyle={{ paddingBottom: 0, paddingHorizontal: 0, alignItems: 'flex-start' }}
           >
             {searchResults.map((product) => (
               <View key={product.id} style={{ marginRight: 8 }}>
@@ -471,9 +471,16 @@ export const HomeScreen = ({ navigation }: any) => {
       {/* Recommended for You Section - Unified */}
       <View style={styles.sectionCard}>
         <View style={[styles.hitsSection, { backgroundColor: 'transparent' }]}>
-          <View style={[styles.hitsHeader, { paddingHorizontal: 0 }]}>
-            <Text style={styles.hitsTitle}>Recommended for You</Text>
-            <Ionicons name="sparkles" size={14} color={colors.primary[500]} />
+          <View style={[styles.hitsHeader, { paddingHorizontal: 0, justifyContent: 'space-between' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.hitsTitle}>Recommended for You</Text>
+              <Ionicons name="sparkles" size={14} color={colors.primary[500]} />
+            </View>
+            {unifiedFrequent.length > 0 && (
+              <TouchableOpacity onPress={() => clearSearchHistory()}>
+                <Text style={{ fontSize: 13, color: colors.primary[600], fontWeight: '700' }}>Clear</Text>
+              </TouchableOpacity>
+            )}
           </View>
           <ScrollView
             horizontal
@@ -516,17 +523,31 @@ export const HomeScreen = ({ navigation }: any) => {
               ))
             ) : (
               // Initial placeholders
-              ['Frozen', 'Vegetables', 'Meat', 'Dairy'].map((item) => (
+              [
+                { title: 'Frozen', image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80', filter: 'frozen' },
+                { title: 'Vegetables', image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&q=80', filter: 'veg' },
+                { title: 'Meat', image: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400&q=80', filter: 'meat' },
+                { title: 'Dairy', image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&q=80', filter: 'grocery' },
+                { title: 'Snacks', image: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400&q=80', filter: 'frozen' },
+                { title: 'Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&q=80', filter: '5min' },
+                { title: 'Groceries', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80', filter: 'grocery' },
+                { title: 'Beverages', image: 'https://images.unsplash.com/photo-1581006852262-e4307cf6283a?w=400&q=80', filter: 'frozen' },
+                { title: 'Fruits', image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=400&q=80', filter: 'veg' },
+                { title: 'Kitchen', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&q=80', filter: 'packaging' },
+              ].map((item) => (
                 <TouchableOpacity
-                  key={item}
+                  key={item.title}
                   style={styles.gemContainer}
-                  onPress={() => { }}
+                  onPress={() => handleCategoryPress(item.filter)}
                 >
-                  <View style={[styles.gemCircle, { backgroundColor: colors.gray[50] }]}>
-                    <Feather name="search" size={24} color={colors.gray[300]} />
+                  <View style={[styles.gemCircle, { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }]}>
+                    <Image
+                      source={{ uri: item.image }}
+                      style={{ width: '100%', height: '100%', borderRadius: 100 }}
+                    />
                   </View>
-                  <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[400], marginTop: 6, width: 70, textAlign: 'center' }}>
-                    {item}
+                  <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
+                    {item.title}
                   </Text>
                 </TouchableOpacity>
               ))
@@ -619,7 +640,7 @@ export const HomeScreen = ({ navigation }: any) => {
                       colors={['transparent', 'rgba(0,0,0,0.8)']}
                       style={styles.bentoGradient}
                     >
-                      <Text numberOfLines={2} style={[styles.bentoLabelFloating, { fontSize: 10 }]}>{cat.title.split(':').pop()?.trim()}</Text>
+                      <Text numberOfLines={2} style={styles.bentoLabelFloating}>{cat.title.split(':').pop()?.trim()}</Text>
                     </LinearGradient>
                   </ImageBackground>
                 </TouchableOpacity>
@@ -648,7 +669,7 @@ export const HomeScreen = ({ navigation }: any) => {
                       colors={['transparent', 'rgba(0,0,0,0.7)']}
                       style={styles.bentoGradient}
                     >
-                      <Text style={[styles.bentoLabelFloating, { fontSize: 10, textAlign: 'center' }]} numberOfLines={2}>
+                      <Text style={[styles.bentoLabelFloating, { textAlign: 'center' }]} numberOfLines={2}>
                         {cat.title}
                       </Text>
                     </LinearGradient>
@@ -740,18 +761,12 @@ export const HomeScreen = ({ navigation }: any) => {
               {[...PARTNER_BRANDS, ...PARTNER_BRANDS].map((brand, index) => (
                 <View key={`${brand.id}-${index}`} style={[styles.gemContainer, { width: brandWidth, marginHorizontal: 0 }]}>
                   <View style={styles.brandBadge}>
-                    <ImageBackground
-                      source={{ uri: brand.bg }}
-                      style={styles.brandBadgeInner}
-                      imageStyle={{ borderRadius: 36, opacity: 1 }}
-                    >
-                      <View style={styles.brandLogoOverlay}>
-                        <Image
-                          source={{ uri: brand.image }}
-                          style={{ width: '70%', height: '70%', resizeMode: 'contain' }}
-                        />
-                      </View>
-                    </ImageBackground>
+                    <View style={styles.brandBadgeInner}>
+                      <Image
+                        source={brand.image}
+                        style={{ width: '85%', height: '85%', resizeMode: 'contain' }}
+                      />
+                    </View>
                   </View>
                   <Text numberOfLines={1} style={{ fontSize: 9, color: colors.gray[600], marginTop: 4, fontWeight: '600', textAlign: 'center' }}>
                     {brand.name}
@@ -955,7 +970,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 10, // margin(6) + padding(10) = 16px total
     paddingVertical: 10,
-    marginBottom: 12, // Gap between boxes
+    marginBottom: 6, // Reduced from 12 to match search bar gap
     ...shadow.soft,
   },
   sectionHeader: {
@@ -972,7 +987,7 @@ const styles = StyleSheet.create({
   },
   bestsellerSection: {
     paddingTop: 0,
-    paddingBottom: spacing.sm,
+    paddingBottom: 0,
     marginVertical: 0,
     width: '100%',
   },
@@ -1237,7 +1252,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.medium,
   },
   bentoSection: {
-    paddingVertical: BENTO_GAP,
+    paddingVertical: 0,
   },
   bentoGrid: {
     gap: BENTO_GAP,
@@ -1383,20 +1398,24 @@ const styles = StyleSheet.create({
   },
   bentoLabelFloating: {
     color: colors.white,
-    fontSize: 12,
-    fontWeight: '500', // Semibold
+    fontSize: 9,
+    fontWeight: '600', // Semibold
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    padding: 8,
-    paddingBottom: 4, // Even closer to bottom
     textAlign: 'center',
+    paddingHorizontal: 4, // Horizontal only for small items
   },
   bentoGradient: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   // New Styles
   searchOverlay: {
@@ -1454,19 +1473,19 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.md,
     paddingRight: spacing.md,
     gap: 8,
-    paddingBottom: 4,
+    paddingBottom: 0,
   },
   bestsellerColumn: {
     gap: 8,
   },
   compactCardHoriz: {
-    width: (windowWidth - (spacing.md * 2 + 8)) / 2,
+    width: (windowWidth - (spacing.md * 2 + 6)) / 2,
   },
   compactCard: {
-    width: (windowWidth - (spacing.md * 2 + 8)) / 2,
+    width: (windowWidth - (spacing.md * 2 + 6)) / 2,
     backgroundColor: colors.white,
     borderRadius: 16,
-    height: 100,
+    height: 80,
     ...shadow.soft,
     borderWidth: 1,
     borderColor: colors.gray[100],
@@ -1474,10 +1493,10 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     position: 'relative',
     overflow: 'hidden',
-    paddingRight: 32,
+    paddingRight: 0,
   },
   compactImageContainer: {
-    width: 80,
+    width: 70,
     backgroundColor: colors.gray[50],
     position: 'relative',
   },
@@ -1502,17 +1521,17 @@ const styles = StyleSheet.create({
   },
   compactContent: {
     flex: 1,
-    paddingLeft: 12,
+    paddingLeft: 8,
     paddingRight: 4,
-    paddingVertical: 10,
-    justifyContent: 'center',
+    paddingVertical: 2,
+    justifyContent: 'flex-start',
     gap: 0,
   },
   compactTitle: {
-    fontSize: 12,
+    fontSize: 10.5,
     fontFamily: typography.fontFamily.medium,
     color: colors.text.primary,
-    lineHeight: 15,
+    lineHeight: 13,
   },
   compactMeta: {
     flexDirection: 'row',
@@ -1547,12 +1566,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 2,
+    marginTop: 0,
   },
   compactPriceStack: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: -2,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
   },
   compactPrice: {
     fontSize: 13,
@@ -1589,12 +1608,12 @@ const styles = StyleSheet.create({
   },
   // Trending Hits Styles
   hitsSection: {
-    paddingVertical: 4, // Reduced from 12
+    paddingVertical: 0,
     backgroundColor: colors.background.primary,
   },
   brandsBreaker: {
     paddingTop: 0,
-    paddingBottom: spacing.sm,
+    paddingBottom: 0,
     marginVertical: 0,
   },
   brandBadge: {
@@ -1668,8 +1687,8 @@ const styles = StyleSheet.create({
   cuisineScroll: {
     paddingLeft: 0,
     paddingRight: windowWidth * 0.1,
-    gap: spacing.md,
     paddingTop: 0,
+    paddingBottom: 0,
   },
   cuisineCard: {
     width: windowWidth * 0.7,

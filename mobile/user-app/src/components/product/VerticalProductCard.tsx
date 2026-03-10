@@ -84,7 +84,6 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
                 ...shadow.soft,
                 borderWidth: 1,
                 borderColor: colors.gray[100],
-                marginBottom: 12,
             }}
         >
             {/* Product Image Area */}

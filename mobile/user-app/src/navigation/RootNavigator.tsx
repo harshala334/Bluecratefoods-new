@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../constants/colors';
@@ -48,6 +48,7 @@ import { useLocationStore } from '../stores/locationStore';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+const { width: windowWidth } = Dimensions.get('window');
 
 
 /**
@@ -318,11 +319,11 @@ const AnimatedAdvs = () => {
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], alignItems: 'flex-start' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
         <Text style={{ fontSize: 10, lineHeight: 12 }}>{current.emoji}</Text>
-        <Text style={{ fontSize: 9, fontWeight: '800', color: '#B45309', letterSpacing: 0.2 }}>
+        <Text style={{ fontSize: 9, fontWeight: '800', color: colors.white, letterSpacing: 0.2, opacity: 0.9 }}>
           {current.line1}
         </Text>
       </View>
-      <Text style={{ fontSize: 11, fontWeight: '900', color: '#78350F', letterSpacing: 0.3, lineHeight: 13 }}>
+      <Text style={{ fontSize: 11, fontWeight: '900', color: colors.white, letterSpacing: 0.3, lineHeight: 13 }}>
         {current.line2}
       </Text>
     </Animated.View>
@@ -343,12 +344,12 @@ const PulsingDot = () => {
     <View style={{ width: 14, height: 14, justifyContent: 'center', alignItems: 'center', position: 'absolute', top: 4, right: 4, zIndex: 10 }}>
       <Animated.View style={{
         width: 10, height: 10, borderRadius: 5,
-        backgroundColor: '#F59E0B',
-        opacity: 0.35,
+        backgroundColor: colors.white,
+        opacity: 0.4,
         transform: [{ scale: pulseAnim }],
         position: 'absolute',
       }} />
-      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#D97706' }} />
+      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.white }} />
     </View>
   );
 };
@@ -357,41 +358,50 @@ const PulsingDot = () => {
 /**
  * Rectangular Advertisement Tab Button (Premium Style)
  */
-const RectTabButton = ({ onPress }: any) => (
-  <TouchableOpacity
-    style={{
-      flex: 1,
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      paddingBottom: 2,
-      marginRight: 6,
-    }}
-    onPress={onPress}
-    activeOpacity={0.8}
-  >
-    <LinearGradient
-      colors={['#FFF7ED', '#FFEDD5']} // Vibrant Orange/Amber background
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+const RectTabButton = ({ onPress }: any) => {
+  const tabWidth = windowWidth / 5;
+  return (
+    <TouchableOpacity
       style={{
-        width: 92,
-        height: 58,
-        borderRadius: 14,
+        flex: 1,
+        justifyContent: 'center',
         alignItems: 'center',
-        justifyContent: 'center', // Center content since dot is absolute
-        paddingHorizontal: 12,
-        borderWidth: 1.5,
-        borderColor: '#FDBA74',
-        ...commonShadow.soft,
+        position: 'relative',
       }}
+      onPress={onPress}
+      activeOpacity={0.8}
     >
-      <PulsingDot />
-      <View style={{ width: '100%', alignItems: 'center' }}>
-        <AnimatedAdvs />
-      </View>
-    </LinearGradient>
-  </TouchableOpacity>
-);
+      <LinearGradient
+        colors={[colors.orange[500], colors.orange[600]]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          position: 'absolute',
+          left: -20, // Extend further into the on-screen area
+          width: 220, // Increased to maintain right-side bleed
+          height: 48,
+          borderTopLeftRadius: 16,
+          borderBottomLeftRadius: 16,
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: 0,
+          borderWidth: 1.5,
+          borderColor: colors.orange[400],
+          borderRightWidth: 0,
+          ...commonShadow.soft,
+          justifyContent: 'center',
+          overflow: 'visible',
+        }}
+      >
+        <View style={{ width: tabWidth, alignItems: 'center', position: 'relative', marginLeft: 6 }}>
+          <View style={{ position: 'absolute', top: -14, right: -12, zIndex: 10 }}>
+            <PulsingDot />
+          </View>
+          <AnimatedAdvs />
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
 
 /**
  * Main Tab Navigator
@@ -407,8 +417,8 @@ function MainTabs() {
         tabBarInactiveTintColor: colors.gray[400],
         tabBarStyle: {
           backgroundColor: 'rgba(255, 255, 255, 0.98)',
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
           height: 80,
           borderTopWidth: 0,
           elevation: 20,

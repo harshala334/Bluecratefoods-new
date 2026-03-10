@@ -45,7 +45,7 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
     ];
     const [dynamicPlaceholder, setDynamicPlaceholder] = useState(placeholderTexts[0]);
 
-    const quickOptions = ['Meal Kits', 'Fresh Veggies', 'Premium Meat', 'Ready to Cook', 'Healthy Recipes', 'Best Sellers', 'New Arrivals'];
+    const quickOptions = ['Best Sellers', 'Frozen Snacks', 'Fresh Veggies', 'Premium Meat', 'Dairy Essentials', 'Ready to Cook', 'Breakfast', 'Ice Creams', 'Organic Fruits', 'Kitchen Needs'];
 
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
