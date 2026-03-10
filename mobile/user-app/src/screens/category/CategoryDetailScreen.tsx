@@ -131,8 +131,8 @@ const PRODUCTS: any = [
 ];
 
 const CategoryDetailScreen = ({ route, navigation }: any) => {
-    const { categoryId = 'veg', categoryTitle = 'Vegetables' } = route.params || {};
-    const [selectedSub, setSelectedSub] = useState(SUBCATEGORIES[categoryId]?.[0]?.id || 'all');
+    const { categoryId = 'veg', categoryTitle = 'Vegetables', selectedSubId } = route.params || {};
+    const [selectedSub, setSelectedSub] = useState(selectedSubId || SUBCATEGORIES[categoryId]?.[0]?.id || 'all');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('popular'); // popular, priceLow, priceHigh, nameAZ
     const [showSortModal, setShowSortModal] = useState(false);
@@ -387,7 +387,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.white,
+        backgroundColor: colors.background.primary,
     },
     mainContent: {
         flex: 1,
