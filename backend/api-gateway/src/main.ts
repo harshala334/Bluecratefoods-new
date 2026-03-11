@@ -9,7 +9,7 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
   app.setGlobalPrefix('api');
   app.enableCors();
-  await app.listen(8000);
+  await app.listen(process.env.PORT || 8000);
   console.log('API Gateway running on port 8000');
 }
 bootstrap();

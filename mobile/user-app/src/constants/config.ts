@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 // API Configuration
 // API Configuration
-export const PROD_URL = 'https://api.bluecratefoods.com/api';
+export const PROD_URL = 'https://api-gateway-441546178642.us-central1.run.app/api';
 // Use LAN IP for Android to support both Emulator and Real Device (via Expo Tunnel)
 // NOTE: 10.0.2.2 is used for Android Emulator to access host machine localhost
 export const LOCAL_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000/api' : 'http://localhost:8000/api';
@@ -10,7 +10,7 @@ export const CDN_URL = 'https://storage.googleapis.com/bluecrate-assets';
 
 // Helper to decide base URL per endpoint
 const getBaseUrl = () => {
-  return LOCAL_URL; // Force local for testing
+  return PROD_URL; // Point to production Cloud Run
 };
 
 const baseUrl = getBaseUrl();
@@ -31,16 +31,16 @@ export const API_CONFIG = {
     USER_PROFILE: `${baseUrl}/auth/profile`,
     UPDATE_PROFILE: `${baseUrl}/auth/profile`,
 
-    // Recipes - Use Default (Prod)
-    RECIPES: `${baseUrl}/recipes`,
-    ADMIN_ALL_RECIPES: `${baseUrl}/recipes/admin/all`,
-    RECIPE_DETAIL: (id: string) => `${baseUrl}/recipes/${id}`,
-    RECIPE_CATEGORIES: `${baseUrl}/recipes/categories`,
-    RECIPE_SEARCH: `${baseUrl}/recipes/search`,
-    PENDING_RECIPES: `${baseUrl}/recipes/admin/pending`,
-    APPROVE_RECIPE: (id: string) => `${baseUrl}/recipes/admin/${id}/approve`,
-    REJECT_RECIPE: (id: string) => `${baseUrl}/recipes/admin/${id}/reject`,
-    REJECT_BY_AUTHOR: (authorId: string) => `${baseUrl}/recipes/admin/reject-by-author/${authorId}`,
+    // Recipes/Products - Consolidated to products prefix
+    RECIPES: `${baseUrl}/products`,
+    RECIPE_DETAIL: (id: string) => `${baseUrl}/products/${id}`,
+    RECIPE_CATEGORIES: `${baseUrl}/products/categories`,
+    RECIPE_SEARCH: `${baseUrl}/products`, // Service should use search param here
+    ADMIN_ALL_RECIPES: `${baseUrl}/products`,
+    PENDING_RECIPES: `${baseUrl}/products`,
+    APPROVE_RECIPE: (id: string) => `${baseUrl}/products/${id}/approve`,
+    REJECT_RECIPE: (id: string) => `${baseUrl}/products/${id}/reject`,
+    REJECT_BY_AUTHOR: (authorId: string) => `${baseUrl}/products/reject-by-author/${authorId}`,
 
     // Cart - Use Prod
     CART: `${baseUrl}/cart`,

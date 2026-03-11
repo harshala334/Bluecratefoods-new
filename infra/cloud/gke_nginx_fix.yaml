@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: bluecrate
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        upstream frontend {
+            # Fix: Changed from nextjs-client:3000 to use k8s service name
+            server nextjs-client.bluecrate.svc.cluster.local:3000;
+        }
+        
+        upstream api {
+            # Fix: Changed to use k8s service name
+            server api-gateway.bluecrate.svc.cluster.local:8000;
+        }
+        
+        server {
+            listen 80;
+            server_name bluecratefoods.com www.bluecratefoods.com;
+            
+            location / {
+                proxy_pass http://frontend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+        
+        server {
+            listen 80;
+            server_name api.bluecratefoods.com;
+            
+            location / {
+                proxy_pass http://api;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+    }

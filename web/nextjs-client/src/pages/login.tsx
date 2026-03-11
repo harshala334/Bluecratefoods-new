@@ -25,18 +25,18 @@ export default function Login() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const endpoint = activeTab === 'login' ? '/api/auth/login' : '/api/auth/signup'
-      const payload = activeTab === 'login' 
+      const payload = activeTab === 'login'
         ? {
-            email: formData.email,
-            password: formData.password,
-            userType: userType,
-          }
+          email: formData.email,
+          password: formData.password,
+          userType: userType,
+        }
         : {
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            userType: userType,
-          }
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          userType: userType,
+        }
 
       const response = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',
@@ -53,9 +53,11 @@ export default function Login() {
         localStorage.setItem('token', data.token)
         localStorage.setItem('userType', userType)
         localStorage.setItem('user', JSON.stringify(data.user))
-        
+
         // Auto-redirect based on user type
-        if (userType === 'individual') {
+        if (data.user.email === 'admin@gmail.com' || data.user.userType === 'admin') {
+          router.push('/admin/dashboard')
+        } else if (userType === 'individual') {
           router.push('/d2c')
         } else if (userType === 'business') {
           router.push('/b2b')
@@ -95,22 +97,20 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('login')}
-                  className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'login'
-                      ? 'bg-white text-primary-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'login'
+                    ? 'bg-white text-primary-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Log In
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('signup')}
-                  className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'signup'
-                      ? 'bg-white text-primary-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'signup'
+                    ? 'bg-white text-primary-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Sign Up
                 </button>
@@ -123,11 +123,10 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setUserType('individual')}
-                    className={`p-4 border-2 rounded-lg text-left transition-all ${
-                      userType === 'individual'
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`p-4 border-2 rounded-lg text-left transition-all ${userType === 'individual'
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                      }`}
                   >
                     <FiUser className={`w-6 h-6 mb-2 ${userType === 'individual' ? 'text-primary-600' : 'text-gray-400'}`} />
                     <div className="font-medium text-sm">Individual</div>
@@ -136,11 +135,10 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setUserType('business')}
-                    className={`p-4 border-2 rounded-lg text-left transition-all ${
-                      userType === 'business'
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`p-4 border-2 rounded-lg text-left transition-all ${userType === 'business'
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                      }`}
                   >
                     <FiBriefcase className={`w-6 h-6 mb-2 ${userType === 'business' ? 'text-primary-600' : 'text-gray-400'}`} />
                     <div className="font-medium text-sm">Business</div>
@@ -235,12 +233,12 @@ export default function Login() {
                 >
                   {activeTab === 'signup' && <FiUserPlus className="w-5 h-5" />}
                   <span>
-                    {isLoading 
-                      ? (activeTab === 'login' ? 'Signing in...' : 'Creating account...') 
-                      : (activeTab === 'login' 
-                          ? `Log in as ${userType === 'individual' ? 'Individual' : 'Business'}` 
-                          : `Sign up as ${userType === 'individual' ? 'Individual' : 'Business'}`
-                        )
+                    {isLoading
+                      ? (activeTab === 'login' ? 'Signing in...' : 'Creating account...')
+                      : (activeTab === 'login'
+                        ? `Log in as ${userType === 'individual' ? 'Individual' : 'Business'}`
+                        : `Sign up as ${userType === 'individual' ? 'Individual' : 'Business'}`
+                      )
                     }
                   </span>
                 </button>
@@ -252,7 +250,7 @@ export default function Login() {
                   {activeTab === 'login' ? (
                     <>
                       Don&apos;t have an account?{' '}
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setActiveTab('signup')}
                         className="text-primary-600 hover:text-primary-700 font-medium"
@@ -263,7 +261,7 @@ export default function Login() {
                   ) : (
                     <>
                       Already have an account?{' '}
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setActiveTab('login')}
                         className="text-primary-600 hover:text-primary-700 font-medium"

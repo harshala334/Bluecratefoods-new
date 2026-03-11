@@ -4,16 +4,13 @@ import axios from 'axios';
 
 @Controller('stores')
 export class StoresProxyController {
-    private serviceUrl = 'http://store-service:8004';
+    private serviceUrl = process.env.STORE_SERVICE_URL || 'https://store-service-hvu2slk4pa-uc.a.run.app';
 
     @All('*')
     async handleProxy(@Req() req: Request, @Res() res: Response) {
         try {
-            // Assume store service also has global prefix
-            let path = req.originalUrl;
-            if (!path.startsWith('/api')) {
-                path = '/api' + path;
-            }
+            // store-service does NOT have global prefix 'api'
+            const path = req.originalUrl.replace(/^\/api/, '');
             const targetUrl = `${this.serviceUrl}${path}`;
 
             console.log(`Proxying Store: ${req.method} ${path} -> ${targetUrl}`);

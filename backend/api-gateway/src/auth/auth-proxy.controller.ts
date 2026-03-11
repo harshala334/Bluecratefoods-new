@@ -4,7 +4,7 @@ import axios from 'axios';
 
 @Controller('auth')
 export class AuthProxyController {
-  private authServiceUrl = 'http://auth-service:8001';
+  private authServiceUrl = process.env.AUTH_SERVICE_URL || 'https://auth-service-hvu2slk4pa-uc.a.run.app';
 
   @All('*')
   async handleAuthProxy(@Req() req: Request, @Res() res: Response) {

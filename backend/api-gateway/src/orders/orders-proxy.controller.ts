@@ -4,7 +4,7 @@ import axios from 'axios';
 
 @Controller('orders')
 export class OrdersProxyController {
-    private orderServiceUrl = 'http://order-service:8003';
+    private orderServiceUrl = process.env.ORDER_SERVICE_URL || 'https://order-service-hvu2slk4pa-uc.a.run.app';
 
     @All('*')
     async handleOrdersProxy(@Req() req: Request, @Res() res: Response) {

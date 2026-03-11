@@ -4,7 +4,7 @@ import axios from 'axios';
 
 @Controller('users')
 export class UsersProxyController {
-    private serviceUrl = 'http://user-service:8002';
+    private serviceUrl = process.env.USER_SERVICE_URL || 'https://user-service-hvu2slk4pa-uc.a.run.app';
 
     @All('*')
     async handleProxy(@Req() req: Request, @Res() res: Response) {

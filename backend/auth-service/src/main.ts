@@ -7,7 +7,7 @@ async function bootstrap(){
   app.setGlobalPrefix('api');
   await AppDataSource.initialize();
   console.log("Database connected");
-  await app.listen(8001);
+  await app.listen(process.env.PORT || 8001);
   console.log('Auth service running on port 8001');
 }
 bootstrap();

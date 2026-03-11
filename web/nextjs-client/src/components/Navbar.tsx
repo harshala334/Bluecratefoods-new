@@ -14,37 +14,18 @@ export default function Navbar() {
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
+  const [user, setUser] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['contacts', 'about-us'] // Check contacts first (reverse order)
-      const scrollPosition = window.scrollY + 200 // Offset for navbar height
-
-      let foundSection = ''
-
-      for (const sectionId of sections) {
-        const element = document.getElementById(sectionId)
-        if (element) {
-          const rect = element.getBoundingClientRect()
-          const elementTop = window.scrollY + rect.top
-          const elementBottom = elementTop + element.offsetHeight
-
-          // Check if top 1/3 of viewport is within this section (triggers earlier)
-          const triggerPoint = scrollPosition + (window.innerHeight / 3)
-
-          if (triggerPoint >= elementTop && triggerPoint < elementBottom) {
-            foundSection = sectionId
-            break
-          }
-        }
+    const userJson = localStorage.getItem('user')
+    if (userJson) {
+      const userData = JSON.parse(userJson)
+      setUser(userData)
+      if (userData.email === 'admin@gmail.com' || userData.userType === 'admin') {
+        setIsAdmin(true)
       }
-
-      setActiveSection(foundSection ? `#${foundSection}` : '')
     }
-
-    window.addEventListener('scroll', handleScroll)
-    handleScroll() // Check initial position
-
-    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const productNavItems = [
@@ -52,12 +33,14 @@ export default function Navbar() {
     { href: '/d2c', label: 'D2C Store', color: 'red' },
   ]
 
+  const adminNavItem = isAdmin ? [{ href: '/admin/dashboard', label: 'Admin', color: 'default' }] : []
+
   const infoNavItems = [
     { href: '/#about-us', label: 'About Us', color: 'default' },
     { href: '/#contacts', label: 'Contact', color: 'default' },
   ]
 
-  const navItems = [...productNavItems, ...infoNavItems]
+  const navItems = [...productNavItems, ...adminNavItem, ...infoNavItems]
 
   const isActive = (href: string) => {
     // Check if it's a page route
@@ -174,10 +157,17 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <Link href="/login" className="hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:-translate-y-1 hover:scale-105">
-              <FiUser />
-              <span>Sign In</span>
-            </Link>
+            {user ? (
+              <Link href={isAdmin ? "/admin/dashboard" : "/profile"} className="hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:-translate-y-1 hover:scale-105">
+                <FiUser />
+                <span>{isAdmin ? 'Admin' : 'Profile'}</span>
+              </Link>
+            ) : (
+              <Link href="/login" className="hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:-translate-y-1 hover:scale-105">
+                <FiUser />
+                <span>Sign In</span>
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -203,10 +193,17 @@ export default function Navbar() {
                   <span>{item.label}</span>
                 </Link>
               ))}
-              <Link href="/login" className="flex items-center justify-center space-x-2 mx-4 mt-2 px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg text-center font-semibold shadow-lg hover:shadow-xl transition-all" onClick={() => setIsMenuOpen(false)}>
-                <FiUser />
-                <span>Sign In</span>
-              </Link>
+              {user ? (
+                <Link href={isAdmin ? "/admin/dashboard" : "/profile"} className="flex items-center justify-center space-x-2 mx-4 mt-2 px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg text-center font-semibold shadow-lg hover:shadow-xl transition-all" onClick={() => setIsMenuOpen(false)}>
+                  <FiUser />
+                  <span>{isAdmin ? 'Admin Dashboard' : 'My Profile'}</span>
+                </Link>
+              ) : (
+                <Link href="/login" className="flex items-center justify-center space-x-2 mx-4 mt-2 px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg text-center font-semibold shadow-lg hover:shadow-xl transition-all" onClick={() => setIsMenuOpen(false)}>
+                  <FiUser />
+                  <span>Sign In</span>
+                </Link>
+              )}
             </div>
           </div>
         )}

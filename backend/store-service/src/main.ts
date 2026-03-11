@@ -5,6 +5,6 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     // Enable CORS
     app.enableCors();
-    await app.listen(8004); // Port 8004 for Store Service
+    await app.listen(process.env.PORT || 8004); // Port 8004 for Store Service
 }
 bootstrap();
