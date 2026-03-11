@@ -204,10 +204,17 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
                                                     <VerticalProductCard
                                                         product={product}
                                                         width={Dimensions.get('window').width * 0.42}
-                                                        onPress={() => navigation.navigate('ProductsTab', {
-                                                            screen: 'ProductDetail',
-                                                            params: { product }
-                                                        })}
+                                                        onPress={() => {
+                                                            const isMeal = ['5min', '10min', '15min'].includes(product.category);
+                                                            if (isMeal) {
+                                                                navigation.navigate('RecipeDetail', { recipeId: product.id });
+                                                            } else {
+                                                                navigation.navigate('ProductsTab', {
+                                                                    screen: 'ProductDetail',
+                                                                    params: { product }
+                                                                });
+                                                            }
+                                                        }}
                                                     />
                                                 </View>
                                             ))}

@@ -187,7 +187,7 @@ const ProductListScreen = ({ navigation }: any) => {
                                     <VerticalProductCard
                                         product={product}
                                         width={160}
-                                        onPress={() => navigation.navigate('ProductDetail', { product })}
+                                        onPress={() => navigation.navigate('RecipeDetail', { recipeId: product.id })}
                                     />
                                 </View>
                             ))}

@@ -37,6 +37,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import DietaryPreferencesScreen from '../screens/profile/DietaryPreferencesScreen';
 import FavoritesScreen from '../screens/profile/FavoritesScreen';
 import ManageAddressesScreen from '../screens/profile/ManageAddressesScreen';
+import RecipeDetailScreen from '../screens/recipes/RecipeDetailScreen';
 
 // Onboarding Screens
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
@@ -126,6 +127,13 @@ function ProductStack() {
       <Stack.Screen
         name="ProductDetail"
         component={ProductDetailScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="RecipeDetail"
+        component={RecipeDetailScreen}
         options={{
           headerShown: false,
         }}

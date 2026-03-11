@@ -6,32 +6,38 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCartStore } from '../../stores/cartStore';
 import { useOrderStore } from '../../stores/orderStore';
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
-import { spacing, borderRadius } from '../../constants/spacing';
+import { spacing, borderRadius, shadow } from '../../constants/spacing';
 import { formatPrice } from '../../utils/formatters';
+
+const { width } = Dimensions.get('window');
 
 /**
  * Checkout Screen
  * Displays order summary and payment options
+ * Refined for premium design consistency
  */
 
 const PAYMENT_METHODS = [
-  { id: 'card', name: 'Credit/Debit Card', icon: '💳', disabled: true },
-  { id: 'upi', name: 'UPI (GPay, PhonePe)', icon: '📱', disabled: true },
-  { id: 'netbanking', name: 'Net Banking', icon: '🏦', disabled: true },
-  { id: 'wallet', name: 'Wallets', icon: '👛', disabled: true },
-  { id: 'cod', name: 'Cash on Delivery', icon: '💵', disabled: false },
+  { id: 'card', name: 'Credit/Debit Card', icon: 'credit-card', provider: 'Feather', disabled: true },
+  { id: 'upi', name: 'UPI (GPay, PhonePe)', icon: 'smartphone', provider: 'Feather', disabled: true },
+  { id: 'netbanking', name: 'Net Banking', icon: 'account-balance', provider: 'Material', disabled: true },
+  { id: 'wallet', name: 'Wallets', icon: 'account-balance-wallet', provider: 'Material', disabled: true },
+  { id: 'cod', name: 'Cash on Delivery', icon: 'dollar-sign', provider: 'Feather', disabled: false },
 ];
 
 export const CheckoutScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const { items, getCartSummary, clearCart } = useCartStore(); // Added items destructuring
-  const { placeOrder } = useOrderStore(); // Hook order store
+  const { items, getCartSummary, clearCart } = useCartStore();
+  const { placeOrder } = useOrderStore();
   const { total } = getCartSummary();
   const [selectedPayment, setSelectedPayment] = useState('cod');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,14 +52,13 @@ export const CheckoutScreen = ({ navigation }: any) => {
 
       setIsProcessing(false);
       Alert.alert(
-        'Order Placed!',
-        'Your order has been sent to the kitchen.',
+        'Order Placed! 🥳',
+        'Your order has been sent to the kitchen and will reach you in 10-15 mins.',
         [
           {
             text: 'Track Order',
             onPress: async () => {
               await clearCart();
-              // Navigate to the new Track Order screen
               navigation.navigate('TrackOrder');
             },
           },
@@ -62,49 +67,73 @@ export const CheckoutScreen = ({ navigation }: any) => {
     }, 1500);
   };
 
+  const renderPaymentIcon = (method: typeof PAYMENT_METHODS[0]) => {
+    if (method.provider === 'Feather') {
+      return <Feather name={method.icon as any} size={20} color={method.disabled ? colors.gray[400] : colors.primary[600]} />;
+    }
+    return <MaterialCommunityIcons name={method.icon as any} size={22} color={method.disabled ? colors.gray[400] : colors.primary[600]} />;
+  };
+
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color={colors.text.primary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Checkout</Text>
+        <View style={{ width: 44 }} />
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Delivery Address Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Address</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Delivery Address</Text>
+          </View>
           <View style={styles.card}>
-            <View style={styles.addressHeader}>
-              <Text style={styles.addressLabel}>Home</Text>
-              <Text style={styles.changeAddressText}>Change</Text>
+            <View style={styles.addressInfo}>
+              <View style={styles.addressIconContainer}>
+                <Feather name="home" size={20} color={colors.primary[600]} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={styles.addressTypeHeader}>
+                  <Text style={styles.addressLabel}>Home (Primary)</Text>
+                  <TouchableOpacity>
+                    <Text style={styles.changeAddressText}>Change</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.addressText}>
+                  123, Green Street, Blue Crate Apartments{"\n"}
+                  Indiranagar, Bangalore - 560038
+                </Text>
+              </View>
             </View>
-            <Text style={styles.addressText}>
-              123, Green Street, Blue Crate Apartments{"\n"}
-              Indiranagar, Bangalore - 560038
-            </Text>
           </View>
         </View>
 
         {/* Payment Options Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          <View style={styles.card}>
-            {PAYMENT_METHODS.map((method) => (
+          <View style={styles.paymentCard}>
+            {PAYMENT_METHODS.map((method, index) => (
               <TouchableOpacity
                 key={method.id}
                 style={[
                   styles.paymentOption,
-                  selectedPayment === method.id && styles.selectedPaymentOption,
+                  index === PAYMENT_METHODS.length - 1 && { borderBottomWidth: 0 },
                   method.disabled && styles.disabledPaymentOption,
                 ]}
                 onPress={() => !method.disabled && setSelectedPayment(method.id)}
                 disabled={method.disabled}
               >
                 <View style={styles.paymentOptionLeft}>
-                  <Text style={[
-                    styles.paymentIcon,
-                    method.disabled && styles.disabledText
-                  ]}>
-                    {method.icon}
-                  </Text>
+                  <View style={[styles.paymentIconContainer, method.disabled && { backgroundColor: colors.gray[50] }]}>
+                    {renderPaymentIcon(method)}
+                  </View>
                   <Text style={[
                     styles.paymentName,
                     method.disabled && styles.disabledText
@@ -113,42 +142,52 @@ export const CheckoutScreen = ({ navigation }: any) => {
                   </Text>
                 </View>
 
-                <View style={styles.radioButton}>
-                  {selectedPayment === method.id && <View style={styles.radioButtonSelected} />}
-                </View>
+                {method.disabled ? (
+                  <Text style={styles.comingSoonText}>Soon</Text>
+                ) : (
+                  <View style={[
+                    styles.radioButton,
+                    selectedPayment === method.id && styles.radioButtonActive
+                  ]}>
+                    {selectedPayment === method.id && <View style={styles.radioButtonInner} />}
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Order Summary Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
-          <View style={styles.card}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <Text style={styles.totalValue}>{formatPrice(total)}</Text>
-            </View>
-          </View>
+        {/* Support Section */}
+        <View style={styles.infoCard}>
+          <Feather name="info" size={18} color={colors.primary[600]} />
+          <Text style={styles.infoText}>
+            Blue Crate ensures all deliveries are contact-less and ingredients are farm-fresh sourced.
+          </Text>
         </View>
       </ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
         <View style={styles.footerContent}>
           <View>
-            <Text style={styles.footerTotalLabel}>Total to Pay</Text>
+            <Text style={styles.footerTotalLabel}>Total Amount</Text>
             <Text style={styles.footerTotalValue}>{formatPrice(total)}</Text>
           </View>
 
           <TouchableOpacity
-            style={[styles.placeOrderButton, isProcessing && styles.placeOrderButtonDisabled]}
+            style={styles.placeOrderButton}
             onPress={handlePlaceOrder}
             disabled={isProcessing}
           >
-            <Text style={styles.placeOrderButtonText}>
-              {isProcessing ? 'Processing...' : 'Place Order'}
-            </Text>
+            <LinearGradient
+              colors={[colors.primary[600], colors.primary[700]]}
+              style={styles.placeOrderGradient}
+            >
+              <Text style={styles.placeOrderButtonText}>
+                {isProcessing ? 'Processing' : 'Place Order'}
+              </Text>
+              <Feather name="check-circle" size={18} color={colors.white} />
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
@@ -161,161 +200,219 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.background.primary,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+    backgroundColor: colors.white,
+    ...shadow.soft,
+  },
+  headerTitle: {
+    fontSize: typography.fontSize.xl,
+    fontFamily: typography.fontFamily.bold,
+    color: colors.text.primary,
+  },
   scrollContent: {
     padding: spacing.lg,
-    paddingBottom: 100, // Space for footer
+    paddingBottom: 150,
   },
   section: {
     marginBottom: spacing.xl,
   },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontFamily: typography.fontFamily.bold,
-    fontWeight: '700',
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-  },
-  // Address Styles
-  addressHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  sectionTitle: {
+    fontSize: typography.fontSize.lg,
+    fontFamily: typography.fontFamily.bold,
+    color: colors.text.primary,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
+    padding: spacing.md,
+    ...shadow.soft,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.02)',
+  },
+  addressInfo: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  addressIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addressTypeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   addressLabel: {
     fontSize: typography.fontSize.base,
     fontFamily: typography.fontFamily.bold,
-    fontWeight: '700',
     color: colors.text.primary,
   },
   changeAddressText: {
     fontSize: typography.fontSize.sm,
     color: colors.primary[600],
-    fontFamily: typography.fontFamily.medium,
+    fontFamily: typography.fontFamily.bold,
   },
   addressText: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray[600],
+    color: colors.gray[500],
     lineHeight: 20,
+    fontFamily: typography.fontFamily.medium,
   },
-  // Payment Styles
+  paymentCard: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
+    ...shadow.soft,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.02)',
+    overflow: 'hidden',
+  },
   paymentOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.md,
+    padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-  },
-  selectedPaymentOption: {
-    // Optional: Add specific style for selected container
+    borderBottomColor: colors.gray[50],
   },
   disabledPaymentOption: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   paymentOptionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
-  paymentIcon: {
-    fontSize: 24,
+  paymentIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.primary[50],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   paymentName: {
     fontSize: typography.fontSize.base,
     color: colors.text.primary,
-    fontFamily: typography.fontFamily.medium,
+    fontFamily: typography.fontFamily.semibold,
+  },
+  comingSoonText: {
+    fontSize: 10,
+    color: colors.gray[400],
+    fontFamily: typography.fontFamily.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    backgroundColor: colors.gray[50],
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   disabledText: {
     color: colors.gray[400],
   },
   radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: colors.primary[500],
+    borderColor: colors.gray[300],
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioButtonSelected: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.primary[500],
+  radioButtonActive: {
+    borderColor: colors.primary[600],
   },
-  // Summary Styles
-  totalRow: {
+  radioButtonInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: colors.primary[600],
+  },
+  infoCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: 'rgba(20, 184, 166, 0.05)',
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(20, 184, 166, 0.1)',
   },
-  totalLabel: {
-    fontSize: typography.fontSize.base,
+  infoText: {
+    fontSize: 12,
+    color: colors.primary[700],
     fontFamily: typography.fontFamily.medium,
-    color: colors.text.primary,
+    flex: 1,
+    lineHeight: 18,
   },
-  totalValue: {
-    fontSize: typography.fontSize.lg,
-    fontFamily: typography.fontFamily.bold,
-    fontWeight: '700',
-    color: colors.text.primary,
-  },
-  // Footer Styles
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: colors.white,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray[200],
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    ...shadow.hard,
+    paddingTop: spacing.lg,
   },
   footerContent: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   footerTotalLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray[600],
+    fontSize: typography.fontSize.xs,
+    color: colors.gray[500],
+    fontFamily: typography.fontFamily.medium,
     marginBottom: 2,
   },
   footerTotalValue: {
-    fontSize: typography.fontSize.xl,
+    fontSize: typography.fontSize['2xl'],
     fontFamily: typography.fontFamily.bold,
-    fontWeight: '700',
     color: colors.text.primary,
   },
   placeOrderButton: {
-    backgroundColor: colors.primary[500],
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.xl,
-    minWidth: 150,
-    alignItems: 'center',
+    flex: 1,
+    marginLeft: spacing.xl,
   },
-  placeOrderButtonDisabled: {
-    backgroundColor: colors.gray[400],
+  placeOrderGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: borderRadius.xl,
+    gap: 8,
+    ...shadow.medium,
   },
   placeOrderButtonText: {
     color: colors.white,
     fontSize: typography.fontSize.lg,
     fontFamily: typography.fontFamily.bold,
-    fontWeight: '700',
   },
 });
 

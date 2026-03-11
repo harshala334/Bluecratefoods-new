@@ -5,6 +5,7 @@ export interface Ingredient {
   unit: string;
   price: number;
   category: string;
+  image?: string;
   isMandatory?: boolean;
 }
 

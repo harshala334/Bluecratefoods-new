@@ -128,6 +128,8 @@ const PRODUCTS: any = [
     { id: '11', name: 'Frozen Green Peas', price: 95, mrp: 120, weight: '500g', unit: '500g', image: 'https://images.unsplash.com/photo-1592119747782-d8c12c2ea2b7?w=300&q=80', subcategory: 'snacks' },
     { id: '12', name: 'Potato Wedges', price: 150, mrp: 180, weight: '400g', unit: '400g', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&q=80', subcategory: 'fries' },
     { id: '13', name: 'Frozen Momos', price: 199, mrp: 250, weight: '12 pcs', unit: '12 pcs', image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=300&q=80', subcategory: 'snacks' },
+    { id: '14', name: 'Avocado Toast Kit', price: 120, mrp: 150, weight: '1 serving', unit: '1 serving', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&q=80', subcategory: 'breakfast', categoryId: '5min' },
+    { id: '15', name: 'Dal Tadka Meal', price: 180, mrp: 220, weight: '1 serving', unit: '1 serving', image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&q=80', subcategory: 'indian', categoryId: '10min' },
 ];
 
 const CategoryDetailScreen = ({ route, navigation }: any) => {
@@ -225,15 +227,25 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         { id: 'nameAZ', label: 'Name: A to Z', icon: 'type' },
     ];
 
-    const renderProduct = ({ item }: { item: any }) => (
-        <View style={styles.productCardWrapper}>
-            <VerticalProductCard
-                product={item}
-                width={(windowWidth - SIDEBAR_WIDTH - 24) / 2}
-                onPress={() => navigation.navigate('ProductDetail', { product: item })}
-            />
-        </View>
-    );
+    const renderProduct = ({ item }: { item: any }) => {
+        const isMeal = ['5min', '10min', '15min'].includes(categoryId);
+
+        return (
+            <View style={styles.productCardWrapper}>
+                <VerticalProductCard
+                    product={item}
+                    width={(windowWidth - SIDEBAR_WIDTH - 24) / 2}
+                    onPress={() => {
+                        if (isMeal) {
+                            navigation.navigate('RecipeDetail', { recipeId: item.id });
+                        } else {
+                            navigation.navigate('ProductDetail', { product: item });
+                        }
+                    }}
+                />
+            </View>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
