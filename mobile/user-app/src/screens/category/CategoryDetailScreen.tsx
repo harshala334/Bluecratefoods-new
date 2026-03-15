@@ -27,6 +27,7 @@ const SIDEBAR_WIDTH = 90;
 // Mock Data for demonstration
 const SUBCATEGORIES: any = {
     veg: [
+        { id: 'all', name: 'All Items', icon: '📦' },
         { id: 'leafy', name: 'Leafy Greens', icon: '🥬' },
         { id: 'roots', name: 'Root Veggies', icon: '🥕' },
         { id: 'exotic', name: 'Exotic Veg', icon: '🥑' },
@@ -34,34 +35,40 @@ const SUBCATEGORIES: any = {
         { id: 'organic', name: 'Organic', icon: '🌿' },
     ],
     frozen: [
+        { id: 'all', name: 'All Items', icon: '📦' },
         { id: 'snacks', name: 'Snacks', icon: '🥟' },
         { id: 'desserts', name: 'Desserts', icon: '🍦' },
         { id: 'meals', name: 'Quick Meals', icon: '🥡' },
         { id: 'fries', name: 'Fries & Sides', icon: '🍟' },
     ],
     '5min': [
+        { id: 'all', name: 'All Items', icon: '📦' },
         { id: 'breakfast', name: 'Breakfast', icon: '🥣' },
         { id: 'noodles', name: 'Noodles', icon: '🍜' },
         { id: 'soups', name: 'Soups', icon: '🍲' },
     ],
     '10min': [
+        { id: 'all', name: 'All Items', icon: '📦' },
         { id: 'indian', name: 'Indian Meals', icon: '🍛' },
         { id: 'pasta', name: 'Pastas', icon: '🍝' },
         { id: 'biryani', name: 'Biryanis', icon: '🥘' },
     ],
     meat: [
+        { id: 'all', name: 'All Items', icon: '📦' },
         { id: 'chicken', name: 'Chicken', icon: '🍗' },
         { id: 'mutton', name: 'Mutton', icon: '🍖' },
         { id: 'fish', name: 'Fish & Seafood', icon: '🐟' },
         { id: 'eggs', name: 'Eggs', icon: '🥚' },
     ],
     grocery: [
+        { id: 'all', name: 'All Items', icon: '📦' },
         { id: 'flour', name: 'Flour & Rice', icon: '🍚' },
         { id: 'oil', name: 'Oils & Ghee', icon: '🍶' },
         { id: 'spices', name: 'Spices', icon: '🧂' },
         { id: 'dairy', name: 'Dairy & Bread', icon: '🍞' },
     ],
     packaging: [
+        { id: 'all', name: 'All Items', icon: '📦' },
         { id: 'boxes', name: 'Boxes', icon: '📦' },
         { id: 'bags', name: 'Bags', icon: '🛍️' },
         { id: 'containers', name: 'Containers', icon: '🍱' },
@@ -134,7 +141,7 @@ const PRODUCTS: any = [
 
 const CategoryDetailScreen = ({ route, navigation }: any) => {
     const { categoryId = 'veg', categoryTitle = 'Vegetables', selectedSubId } = route.params || {};
-    const [selectedSub, setSelectedSub] = useState(selectedSubId || SUBCATEGORIES[categoryId]?.[0]?.id || 'all');
+    const [selectedSub, setSelectedSub] = useState(selectedSubId || 'all');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('popular'); // popular, priceLow, priceHigh, nameAZ
     const [showSortModal, setShowSortModal] = useState(false);
@@ -148,9 +155,11 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
-                const results = await recipeService.searchRecipes(categoryId);
+                // Use getRecipes with category filter instead of searchRecipes
+                const { recipes: results } = await recipeService.getRecipes({ category: categoryId });
                 setProducts(results);
             } catch (error) {
+                console.warn("Failed to fetch products for category:", categoryId, error);
                 setProducts(PRODUCTS); // Fallback to local mock if service fails
             }
             setLoading(false);
@@ -164,8 +173,8 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         const ingredient = {
             id: product.id,
             name: product.name,
-            price: product.price,
-            unit: product.weight,
+            price: product.basePrice || product.price,
+            unit: product.unit || product.weight,
             image: product.image,
             category: categoryId,
         };
@@ -181,8 +190,8 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
             const ingredient = {
                 id: product.id,
                 name: product.name,
-                price: product.price,
-                unit: product.weight,
+                price: product.basePrice || product.price,
+                unit: product.unit || product.weight,
                 image: product.image,
                 category: categoryId,
             };
@@ -193,7 +202,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
     };
 
     const getSortedProducts = () => {
-        let items = [...PRODUCTS];
+        let items = [...products]; // Use the products state, not the hardcoded PRODUCTS
 
         // Filter by search
         if (searchQuery) {
@@ -202,15 +211,19 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
 
         // Filter by subcategory
         if (selectedSub !== 'all') {
-            items = items.filter(p => p.subcategory === selectedSub);
+            items = items.filter(p =>
+                p.subcategory === selectedSub ||
+                p.category === selectedSub ||
+                (Array.isArray(p.tags) && p.tags.includes(selectedSub))
+            );
         }
 
         // Sort items
         switch (sortBy) {
             case 'priceLow':
-                return items.sort((a, b) => a.price - b.price);
+                return items.sort((a, b) => (a.basePrice || a.price) - (b.basePrice || b.price));
             case 'priceHigh':
-                return items.sort((a, b) => b.price - a.price);
+                return items.sort((a, b) => (b.basePrice || b.price) - (a.basePrice || a.price));
             case 'nameAZ':
                 return items.sort((a, b) => a.name.localeCompare(b.name));
             default:

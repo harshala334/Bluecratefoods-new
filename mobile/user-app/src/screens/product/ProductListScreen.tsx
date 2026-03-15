@@ -151,49 +151,48 @@ const ProductListScreen = ({ navigation }: any) => {
 
     return (
         <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                stickyHeaderIndices={[1]}
-                contentContainerStyle={{ paddingBottom: 100 }}
-            >
+            {/* Fixed Header Section */}
+            <View style={{ backgroundColor: colors.background.primary, paddingTop: insets.top + spacing.md }}>
                 {/* Hero / Welcome */}
-                <View style={[styles.hero, { marginTop: insets.top + spacing.md }]}>
+                <View style={styles.hero}>
                     <View style={styles.welcomeTextGroup}>
                         <Text style={styles.welcomeText}>Explore our premium</Text>
                         <Text style={styles.brandText}>Storefront</Text>
                     </View>
                 </View>
 
-                {/* Search Bar - Sticky */}
-                <View style={styles.searchContainer}>
-                    <KittyChatSearchBar
-                        navigation={navigation}
-                        onSearchResults={(results) => setSearchResults(results)}
-                    />
-                </View>
-
-                {/* Search Results Overlay */}
-                {searchResults.length > 0 && (
-                    <View style={styles.resultsOverlay}>
-                        <View style={styles.resultsHeader}>
-                            <Text style={styles.resultsTitle}>Found {searchResults.length} items</Text>
-                            <TouchableOpacity onPress={() => setSearchResults([])}>
-                                <Ionicons name="close-circle" size={24} color={colors.gray[400]} />
-                            </TouchableOpacity>
-                        </View>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.resultsScroll}>
-                            {searchResults.map((product) => (
-                                <View key={product.id} style={{ marginRight: 12 }}>
-                                    <VerticalProductCard
-                                        product={product}
-                                        width={160}
-                                        onPress={() => navigation.navigate('RecipeDetail', { recipeId: product.id })}
-                                    />
-                                </View>
-                            ))}
-                        </ScrollView>
+                {/* Search Container - Fixed wrapper for bar and results */}
+                <View style={styles.stickySearchWrapper}>
+                    <View style={styles.searchContainer}>
+                        <KittyChatSearchBar
+                            navigation={navigation}
+                            onSearchResults={(results) => setSearchResults(results)}
+                        />
                     </View>
-                )}
+
+                    {/* Search Results Overlay */}
+                    {searchResults.length > 0 && (
+                        <View style={styles.resultsOverlay}>
+                            <View style={styles.resultsHeader}>
+                                <Text style={styles.resultsTitle}>Found {searchResults.length} items</Text>
+                                <TouchableOpacity onPress={() => setSearchResults([])}>
+                                    <Ionicons name="close-circle" size={24} color={colors.gray[400]} />
+                                </TouchableOpacity>
+                            </View>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.resultsScroll}>
+                                {searchResults.map((product) => (
+                                    <View key={product.id} style={{ marginRight: 12 }}>
+                                        <VerticalProductCard
+                                            product={product}
+                                            width={160}
+                                            onPress={() => navigation.navigate('RecipeDetail', { recipeId: product.id })}
+                                        />
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    )}
+                </View>
 
                 {/* Promo Banner */}
                 <View style={styles.bannerContainer}>
@@ -210,9 +209,16 @@ const ProductListScreen = ({ navigation }: any) => {
                         <MaterialCommunityIcons name="basket-outline" size={40} color="rgba(255,255,255,0.3)" />
                     </LinearGradient>
                 </View>
+            </View>
 
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* Main Sections */}
-                {SECTIONS.map(renderSection)}
+                <View style={{ marginTop: spacing.sm }}>
+                    {SECTIONS.map(renderSection)}
+                </View>
 
                 {/* Bottom Trust Section */}
                 <View style={styles.trustSection}>
@@ -250,7 +256,7 @@ const styles = StyleSheet.create({
     },
     hero: {
         paddingHorizontal: spacing.lg,
-        paddingBottom: spacing.sm,
+        paddingBottom: spacing.xs,
     },
     welcomeTextGroup: {
         marginBottom: spacing.xs,
@@ -271,6 +277,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
         paddingVertical: spacing.xs,
         paddingBottom: spacing.sm,
+    },
+    stickySearchWrapper: {
+        backgroundColor: colors.background.primary,
+        zIndex: 10,
     },
     resultsOverlay: {
         backgroundColor: colors.white,

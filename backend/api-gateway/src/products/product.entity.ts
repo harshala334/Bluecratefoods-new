@@ -62,6 +62,12 @@ export class Product {
     @Column({ nullable: true })
     unit: string;
 
+    @Column('float', { nullable: true })
+    mrp: number;
+
+    @Column({ nullable: true })
+    weight: string;
+
     @Column({ nullable: true })
     authorName: string;
 

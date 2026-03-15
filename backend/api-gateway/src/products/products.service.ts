@@ -19,7 +19,7 @@ export class ProductsService {
 
         if (query?.search) {
             const searchLower = `%${query.search.toLowerCase()}%`;
-            qb.andWhere('(LOWER(product.name) LIKE :search OR LOWER(product.description) LIKE :search)', { search: searchLower });
+            qb.andWhere('(LOWER(product.name) LIKE :search OR LOWER(product.description) LIKE :search OR LOWER(product.category) LIKE :search)', { search: searchLower });
         }
 
         qb.andWhere('product.isApproved = :isApproved', { isApproved: true });

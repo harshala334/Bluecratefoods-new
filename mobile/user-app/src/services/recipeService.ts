@@ -14,6 +14,7 @@ const MOCK_PRODUCTS: Recipe[] = [
     category: 'veg',
     image: 'https://images.unsplash.com/photo-1518977676601-b53f02bad673?w=500&q=80',
     basePrice: 40,
+    unit: '500g',
     rating: 4.8,
     reviews: 150,
     time: '10 min',
@@ -31,6 +32,7 @@ const MOCK_PRODUCTS: Recipe[] = [
     category: 'frozen',
     image: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7ea?w=500&q=80',
     basePrice: 120,
+    unit: 'pack of 12',
     rating: 4.5,
     reviews: 85,
     time: '15 min',
@@ -48,6 +50,7 @@ const MOCK_PRODUCTS: Recipe[] = [
     category: '5min',
     image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&q=80',
     basePrice: 30,
+    unit: '1 serving',
     rating: 4.2,
     reviews: 200,
     time: '5 min',
@@ -65,6 +68,7 @@ const MOCK_PRODUCTS: Recipe[] = [
     category: 'meat',
     image: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=500&q=80',
     basePrice: 250,
+    unit: '500g',
     rating: 4.9,
     reviews: 60,
     time: '20 min',
@@ -82,6 +86,7 @@ const MOCK_PRODUCTS: Recipe[] = [
     category: 'grocery',
     image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&q=80',
     basePrice: 450,
+    unit: '5kg',
     rating: 4.7,
     reviews: 120,
     time: '25 min',
@@ -220,6 +225,7 @@ export const recipeService = {
   // Get all recipes/products
   async getRecipes(params?: {
     timeCategory?: string;
+    category?: string;
     difficulty?: string;
     search?: string;
     page?: number;

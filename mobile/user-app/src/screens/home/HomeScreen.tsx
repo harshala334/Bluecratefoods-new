@@ -113,47 +113,42 @@ export const HomeScreen = ({ navigation }: any) => {
     }
   };
 
+  const [bestsellers, setBestsellers] = useState<any[]>([]);
+
+  const [liveProducts, setLiveProducts] = useState<Record<string, any[]>>({});
+  const [loadingLive, setLoadingLive] = useState(true);
+
+  useEffect(() => {
+    const fetchHomeProducts = async () => {
+      setLoadingLive(true);
+      const featuredCategories = categories.filter(c => c.row <= 3).map(c => c.id);
+      const productMap: Record<string, any[]> = {};
+
+      try {
+        // Fetch category products
+        await Promise.all(featuredCategories.map(async (catId) => {
+          const { recipes } = await recipeService.getRecipes({ category: catId, limit: 5 });
+          if (recipes && recipes.length > 0) {
+            productMap[catId] = recipes;
+          }
+        }));
+        setLiveProducts(productMap);
+
+        // Fetch bestsellers (recent items for now)
+        const { recipes: recentProducts } = await recipeService.getRecipes({ limit: 10 });
+        setBestsellers(recentProducts);
+      } catch (error) {
+        console.warn("Failed to fetch home products:", error);
+      } finally {
+        setLoadingLive(false);
+      }
+    };
+    fetchHomeProducts();
+  }, []);
 
 
 
-  const trendingHits = [
-    {
-      id: 'hit-1',
-      title: 'Fresh Spinach',
-      image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200&q=80',
-      product: { id: '1', name: 'Fresh Spinach', price: 40, mrp: 50, weight: '250g', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300&q=80' }
-    },
-    {
-      id: 'hit-2',
-      title: 'Carrots',
-      image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=200&q=80',
-      product: { id: '2', name: 'Carrots (Ooty)', price: 65, mrp: 80, weight: '500g', image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=300&q=80' }
-    },
-    {
-      id: 'hit-3',
-      title: 'Avocado',
-      image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=200&q=80',
-      product: { id: '3', name: 'Avocado (Haas)', price: 280, mrp: 350, weight: '1 pc', image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=300&q=80' }
-    },
-    {
-      id: 'hit-4',
-      title: 'Red Onions',
-      image: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=200&q=80',
-      product: { id: '4', name: 'Red Onions', price: 35, mrp: 45, weight: '1kg', image: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=300&q=80' }
-    },
-    {
-      id: 'hit-5',
-      title: 'Eggs',
-      image: 'https://images.unsplash.com/photo-1506084868730-342b1f852e0d?w=200&q=80',
-      product: { id: 'eggs-1', name: 'Organic Eggs', price: 90, mrp: 110, weight: '6 pcs', image: 'https://images.unsplash.com/photo-1506084868730-342b1f852e0d?w=300&q=80' }
-    },
-    {
-      id: 'hit-6',
-      title: 'Salmon',
-      image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=200&q=80',
-      product: { id: 'fish-1', name: 'Fresh Salmon', price: 850, mrp: 1000, weight: '250g', image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300&q=80' }
-    },
-  ];
+
 
   const categories = [
     // Row 1: Vertical/Bento (Next to Promo)
@@ -172,102 +167,6 @@ export const HomeScreen = ({ navigation }: any) => {
 
 
 
-  const bestsellers = [
-    {
-      id: '1',
-      name: 'Fresh Chicken Curry Cut',
-      image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&h=300&fit=crop',
-      rating: 4.8,
-      reviews: 124,
-      xp: 20,
-      basePrice: 249,
-      mrp: 299,
-      unit: '500g',
-      badge: 'BESTSELLER',
-      bulkTiers: [
-        { quantity: '2 kg', price: 940 },
-        { quantity: '5 kg', price: 2200 }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Atlantic Salmon Fillet',
-      image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop',
-      rating: 4.9,
-      reviews: 86,
-      xp: 35,
-      basePrice: 899,
-      mrp: 1099,
-      unit: '250g',
-      badge: 'PREMIUM',
-      bulkTiers: [
-        { quantity: '1 kg', price: 3400 },
-        { quantity: '5 kg', price: 16000 }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Tender Mutton Chops',
-      image: 'https://images.unsplash.com/photo-1603360946369-39c9f458d7e1?w=400&h=300&fit=crop',
-      rating: 4.7,
-      reviews: 52,
-      xp: 40,
-      basePrice: 549,
-      mrp: 599,
-      unit: '500g',
-      bulkTiers: [
-        { quantity: '2 kg', price: 2000 },
-        { quantity: '5 kg', price: 4800 }
-      ]
-    },
-    {
-      id: '4',
-      name: 'Fresh Tiger Prawns',
-      image: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=400&h=300&fit=crop',
-      rating: 4.6,
-      reviews: 42,
-      xp: 30,
-      basePrice: 429,
-      mrp: 499,
-      unit: '250g',
-      badge: 'HOT DEAL',
-      bulkTiers: [
-        { quantity: '1 kg', price: 1600 },
-        { quantity: '3 kg', price: 4500 }
-      ]
-    },
-    {
-      id: '5',
-      name: 'Farm Fresh Broiler',
-      image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&h=300&fit=crop',
-      rating: 4.5,
-      reviews: 98,
-      xp: 15,
-      basePrice: 199,
-      mrp: 249,
-      unit: '1kg',
-      bulkTiers: [
-        { quantity: '5 kg', price: 900 },
-        { quantity: '10 kg', price: 1700 }
-      ]
-    },
-    {
-      id: '6',
-      name: 'Australian Lamb Rack',
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop',
-      rating: 4.9,
-      reviews: 32,
-      xp: 50,
-      basePrice: 1299,
-      mrp: 1499,
-      unit: '500g',
-      badge: 'IMPORTED',
-      bulkTiers: [
-        { quantity: '2 kg', price: 5000 },
-        { quantity: '5 kg', price: 12000 }
-      ]
-    },
-  ];
 
   const CUISINES = [
     { id: 'chinese', name: 'Chinese', image: 'https://images.unsplash.com/photo-1552611052-33e04de081de?w=600&q=80' },
@@ -319,29 +218,6 @@ export const HomeScreen = ({ navigation }: any) => {
     };
     startAnimation();
   }, [totalWidth]);
-
-  const CATEGORY_PRODUCTS: Record<string, any[]> = {
-    frozen: [
-      { id: 'f-1', name: 'Veggie Pizza', price: 299, mrp: 399, unit: '450g', rating: 4.8, image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80', bulkTiers: [{ quantity: '5 pcs', price: 1350 }, { quantity: '10 pcs', price: 2500 }] },
-      { id: 'f-2', name: 'Chicken Nuggets', price: 199, mrp: 249, unit: '250g', rating: 4.5, image: 'https://images.unsplash.com/photo-1562967914-6c82c6ca0d27?w=400&q=80', bulkTiers: [{ quantity: '1 kg', price: 750 }, { quantity: '2 kg', price: 1400 }] },
-    ],
-    meat: [
-      { id: 'm-1', name: 'Ribeye Steak', price: 1499, mrp: 1699, unit: '500g', rating: 4.9, image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80', bulkTiers: [{ quantity: '2 kg', price: 5600 }, { quantity: '5 kg', price: 13500 }] },
-      { id: 'm-2', name: 'Duck Breast', price: 899, mrp: 999, unit: '300g', rating: 4.7, image: 'https://images.unsplash.com/photo-1516100882582-76c9a4440592?w=400&q=80', bulkTiers: [{ quantity: '1 kg', price: 2800 }, { quantity: '2 kg', price: 5400 }] },
-    ],
-    veg: [
-      { id: 'v-1', name: 'Cherry Tomatoes', price: 80, mrp: 100, unit: '250g', rating: 4.6, image: 'https://images.unsplash.com/photo-1518977676601-b53f02ac6d31?w=400&q=80', bulkTiers: [{ quantity: '1 kg', price: 300 }, { quantity: '5 kg', price: 1400 }] },
-      { id: 'v-2', name: 'Asparagus', price: 150, mrp: 180, unit: 'bundle', rating: 4.4, image: 'https://images.unsplash.com/photo-1515471204579-2baeba324d27?w=400&q=80', bulkTiers: [{ quantity: '10 bun', price: 1350 }] },
-    ],
-    japanese: [
-      { id: 'j-1', name: 'Miso Paste', price: 350, mrp: 450, unit: '400g', rating: 4.9, image: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=400&q=80', bulkTiers: [{ quantity: '1 kg', price: 800 }, { quantity: '5 kg', price: 3800 }] },
-      { id: 'j-2', name: 'Ramen Noodles', price: 120, mrp: 150, unit: '200g', rating: 4.7, image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&q=80', bulkTiers: [{ quantity: '1 kg', price: 550 }, { quantity: '5 kg', price: 2500 }] },
-    ],
-    spices: [
-      { id: 's-1', name: 'Saffron Threads', price: 499, mrp: 599, unit: '1g', rating: 5.0, image: 'https://images.unsplash.com/photo-1601004890684-d8cbf3439a39?w=400&q=80', bulkTiers: [{ quantity: '10g', price: 4500 }] },
-      { id: 's-2', name: 'Smoked Paprika', price: 210, mrp: 260, unit: '50g', rating: 4.8, image: 'https://images.unsplash.com/photo-1615485500704-a1a9d2590341?w=400&q=80', bulkTiers: [{ quantity: '500g', price: 1800 }] },
-    ]
-  };
 
   const CompactProductCard = ({ recipe: product, onPress, style }: any) => {
     const { addItem } = useCartStore();
@@ -712,35 +588,37 @@ export const HomeScreen = ({ navigation }: any) => {
       </View>
 
       {/* Best Sellers Section */}
-      <View style={styles.sectionCard}>
-        <View style={[styles.bestsellerSection, { backgroundColor: 'transparent' }]}>
-          <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
-            <Text style={styles.bestsellerTitle}>Best Selling Products</Text>
-            <Feather name="trending-up" size={16} color={colors.primary[400]} />
+      {bestsellers.length > 0 && (
+        <View style={styles.sectionCard}>
+          <View style={[styles.bestsellerSection, { backgroundColor: 'transparent' }]}>
+            <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
+              <Text style={styles.bestsellerTitle}>Best Selling Products</Text>
+              <Feather name="trending-up" size={16} color={colors.primary[400]} />
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={[styles.bestsellerHorizContent, { paddingLeft: 0, paddingRight: 0 }]}
+            >
+              {Array.from({ length: Math.ceil(bestsellers.length / 2) }, (_, i) => (
+                <View key={i} style={styles.bestsellerColumn}>
+                  {bestsellers.slice(i * 2, i * 2 + 2).map((product) => (
+                    <CompactProductCard
+                      key={product.id}
+                      recipe={product}
+                      style={styles.compactCardHoriz}
+                      onPress={() => navigation.navigate('ProductsTab', {
+                        screen: 'ProductDetail',
+                        params: { product }
+                      })}
+                    />
+                  ))}
+                </View>
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[styles.bestsellerHorizContent, { paddingLeft: 0, paddingRight: 0 }]}
-          >
-            {Array.from({ length: Math.ceil(bestsellers.length / 2) }, (_, i) => (
-              <View key={i} style={styles.bestsellerColumn}>
-                {bestsellers.slice(i * 2, i * 2 + 2).map((product) => (
-                  <CompactProductCard
-                    key={product.id}
-                    recipe={product}
-                    style={styles.compactCardHoriz}
-                    onPress={() => navigation.navigate('ProductsTab', {
-                      screen: 'ProductDetail',
-                      params: { product }
-                    })}
-                  />
-                ))}
-              </View>
-            ))}
-          </ScrollView>
         </View>
-      </View>
+      )}
 
       {/* Partner Brands Spotlight - Self-Moving Ticker */}
       <View style={styles.sectionCard}>
@@ -779,8 +657,9 @@ export const HomeScreen = ({ navigation }: any) => {
       </View>
 
       {/* Infinite Category Flow */}
-      {categories.filter(c => c.row <= 2).map((category) => {
-        const products = CATEGORY_PRODUCTS[category.id] || CATEGORY_PRODUCTS['frozen'];
+      {categories.filter(c => c.row <= 3).map((category) => {
+        const products = liveProducts[category.id];
+        if (!products || products.length === 0) return null; // Don't show empty categories
         return (
           <View key={category.id} style={styles.sectionCard}>
             <View style={[styles.section, { paddingHorizontal: 0 }]}>

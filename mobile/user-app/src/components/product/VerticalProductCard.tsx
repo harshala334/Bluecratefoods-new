@@ -138,69 +138,69 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
                     {product.name}
                 </Text>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 1 }}>
+                <View style={{ height: 14, justifyContent: 'center', marginBottom: 2 }}>
                     <Text style={{ fontSize: 9, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
-                        {product.unit || product.weight || 'per unit'}
+                        {product.unit || product.weight || ' '}
                     </Text>
                 </View>
 
-                {product.bulkTiers && (
-                    <View style={{
-                        flexDirection: 'column',
-                        gap: 2,
-                        marginBottom: 4,
-                        backgroundColor: colors.gray[50],
-                        padding: 2,
-                        borderRadius: 4,
-                    }}>
-                        {product.bulkTiers.map((tier: any, idx: number) => {
-                            const qtyNum = parseInt(tier.quantity) || 1;
-                            const unitPrice = Math.round(tier.price / qtyNum);
-                            return (
-                                <View key={idx} style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    paddingVertical: 1,
-                                }}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[600] }}>
-                                            {tier.quantity}: <Text style={{ color: colors.primary[600] }}>₹{tier.price}</Text>
-                                        </Text>
-                                        <Text style={{ fontSize: 7, color: colors.gray[400], fontFamily: typography.fontFamily.medium }}>
-                                            ₹{unitPrice} / unit
-                                        </Text>
-                                    </View>
-                                    <TouchableOpacity
-                                        style={{
-                                            backgroundColor: colors.white,
-                                            borderWidth: 1,
-                                            borderColor: colors.primary[200],
-                                            paddingHorizontal: 6,
-                                            paddingVertical: 2,
-                                            borderRadius: 4,
-                                        }}
-                                        onPress={(e) => handleAddBulk(e, tier.quantity)}
-                                    >
-                                        <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>ADD</Text>
-                                    </TouchableOpacity>
+                <View style={{
+                    height: 52,
+                    marginBottom: 6,
+                    backgroundColor: product.bulkTiers ? colors.gray[50] : 'transparent',
+                    padding: product.bulkTiers ? 2 : 0,
+                    borderRadius: 4,
+                    justifyContent: 'center'
+                }}>
+                    {product.bulkTiers && product.bulkTiers.map((tier: any, idx: number) => {
+                        const qtyNum = parseInt(tier.quantity) || 1;
+                        const unitPrice = Math.round(tier.price / qtyNum);
+                        return (
+                            <View key={idx} style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                paddingVertical: 1,
+                            }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[600] }}>
+                                        {tier.quantity}: <Text style={{ color: colors.primary[600] }}>₹{tier.price}</Text>
+                                    </Text>
+                                    <Text style={{ fontSize: 7, color: colors.gray[400], fontFamily: typography.fontFamily.medium }}>
+                                        ₹{unitPrice} / unit
+                                    </Text>
                                 </View>
-                            );
-                        })}
-                    </View>
-                )}
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: colors.white,
+                                        borderWidth: 1,
+                                        borderColor: colors.primary[200],
+                                        paddingHorizontal: 6,
+                                        paddingVertical: 2,
+                                        borderRadius: 4,
+                                    }}
+                                    onPress={(e) => handleAddBulk(e, tier.quantity)}
+                                >
+                                    <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>ADD</Text>
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    })}
+                </View>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View>
-                        <View style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
+                        <View style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end', height: 32 }}>
                             <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
                                 ₹{product.basePrice || product.price}
                             </Text>
-                            {product.mrp && product.mrp > (product.basePrice || product.price) && (
-                                <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
-                                    ₹{product.mrp}
-                                </Text>
-                            )}
+                            <View style={{ height: 12 }}>
+                                {product.mrp && product.mrp > (product.basePrice || product.price) ? (
+                                    <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
+                                        ₹{product.mrp}
+                                    </Text>
+                                ) : null}
+                            </View>
                         </View>
                     </View>
 

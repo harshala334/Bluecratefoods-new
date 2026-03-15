@@ -20,8 +20,12 @@ export default function AdminProducts() {
         name: '',
         category: 'frozen',
         basePrice: '',
+        mrp: '',
+        unit: '',
+        weight: '',
         description: '',
-        image: 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg'
+        image: 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg',
+        bulkTiers: ''
     })
 
     const fetchProducts = async () => {
@@ -75,13 +79,17 @@ export default function AdminProducts() {
             // Map CSV to Product Entity structure
             const formattedProducts = jsonData.map(item => ({
                 name: item.Size && item.Size !== '-' ? `${item.Name} - ${item.Size}` : item.Name,
-                description: `${item.Category} | ${item['Sub-Category']} | Weight: ${item.Weight} | Pack Size: ${item['UnitPack']}`,
+                description: `${item.Category} | ${item['Sub-Category']}`,
                 image: 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg',
                 category: (item.Tags || '').toLowerCase().includes('fresh meat') ? 'meat' :
                     (item.Tags || '').toLowerCase().includes('5 min') ? '5min' :
-                        (item.Tags || '').toLowerCase().includes('10 min') ? '10min' : 'frozen',
+                        (item.Tags || '').toLowerCase().includes('10 min') ? '10min' :
+                            (item.Tags || '').toLowerCase().includes('vegetables') ? 'veg' :
+                                (item.Tags || '').toLowerCase().includes('grocery') ? 'grocery' :
+                                    (item.Tags || '').toLowerCase().includes('packaging') ? 'packaging' : 'frozen',
                 basePrice: parseFloat(item.PackPricing) || 0,
                 unit: item.UnitPack,
+                weight: item.Weight,
                 tags: [item.Storage, item.Category, item['Sub-Category']],
                 isApproved: true,
                 status: 'approved'
@@ -144,8 +152,12 @@ export default function AdminProducts() {
                 name: product.name,
                 category: product.category,
                 basePrice: product.basePrice.toString(),
+                mrp: product.mrp?.toString() || '',
+                unit: product.unit || '',
+                weight: product.weight || '',
                 description: product.description || '',
-                image: product.image
+                image: product.image,
+                bulkTiers: product.bulkTiers ? JSON.stringify(product.bulkTiers, null, 2) : ''
             })
         } else {
             setIsEditing(false)
@@ -154,8 +166,12 @@ export default function AdminProducts() {
                 name: '',
                 category: 'frozen',
                 basePrice: '',
+                mrp: '',
+                unit: '',
+                weight: '',
                 description: '',
-                image: 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg'
+                image: 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg',
+                bulkTiers: ''
             })
         }
         setIsModalOpen(true)
@@ -170,6 +186,8 @@ export default function AdminProducts() {
         const payload = {
             ...formData,
             basePrice: parseFloat(formData.basePrice) || 0,
+            mrp: parseFloat(formData.mrp) || null,
+            bulkTiers: formData.bulkTiers ? JSON.parse(formData.bulkTiers) : null,
             isApproved: true,
             status: 'approved'
         }
@@ -359,6 +377,9 @@ export default function AdminProducts() {
                                             <option value="5min">5 Mins</option>
                                             <option value="10min">10 Mins</option>
                                             <option value="meat">Meat</option>
+                                            <option value="veg">Vegetables</option>
+                                            <option value="grocery">Grocery</option>
+                                            <option value="packaging">Packaging Materials</option>
                                             <option value="dessert">Dessert</option>
                                         </select>
                                     </div>
@@ -371,6 +392,38 @@ export default function AdminProducts() {
                                             placeholder="0.00"
                                             value={formData.basePrice}
                                             onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">MRP (₹)</label>
+                                        <input
+                                            type="number"
+                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            placeholder="0.00"
+                                            value={formData.mrp}
+                                            onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Unit (e.g. 500g, Pack of 6)</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            placeholder="Unit"
+                                            value={formData.unit}
+                                            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Weight (e.g. 500g)</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            placeholder="Weight"
+                                            value={formData.weight}
+                                            onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                                         />
                                     </div>
                                 </div>
@@ -393,6 +446,17 @@ export default function AdminProducts() {
                                         value={formData.image}
                                         onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Bulk Tiers (JSON)</label>
+                                    <textarea
+                                        rows={4}
+                                        className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500 font-mono text-xs"
+                                        placeholder='[{"quantity":"5 kg","price":180},{"quantity":"10 kg","price":340}]'
+                                        value={formData.bulkTiers}
+                                        onChange={(e) => setFormData({ ...formData, bulkTiers: e.target.value })}
+                                    />
+                                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">Must be valid JSON array of objects with quantity and price</p>
                                 </div>
                                 <div className="pt-4 flex space-x-3">
                                     <button

@@ -20,11 +20,19 @@ export class AuthService implements OnModuleInit {
   }
 
   async seedAdmin() {
-    const adminEmail = 'admin@gmail.com';
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      console.warn('⚠️ Skipping Admin Seeding: ADMIN_EMAIL or ADMIN_PASSWORD not set in environment variables');
+      return;
+    }
+
     let admin = await this.userRepository.findOne({ where: { email: adminEmail } });
 
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
     if (!admin) {
-      const hashedPassword = await bcrypt.hash('admin123', 10);
       admin = this.userRepository.create({
         name: 'admin',
         email: adminEmail,
@@ -35,14 +43,14 @@ export class AuthService implements OnModuleInit {
       });
       await this.userRepository.save(admin);
       console.log('Admin user created successfully');
-    } else if (admin.userType !== 'admin') {
+    } else {
+      // Always update password and roles to ensure they are correct
+      admin.password = hashedPassword;
       admin.userType = 'admin';
       admin.isVerifiedCreator = true;
       admin.creatorStatus = 'verified';
       await this.userRepository.save(admin);
-      console.log('Admin user role updated to admin');
-    } else {
-      console.log('Admin user already exists with correct role');
+      console.log('Admin user credentials reset/updated successfully');
     }
   }
 
