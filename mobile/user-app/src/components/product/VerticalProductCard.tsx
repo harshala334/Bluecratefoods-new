@@ -22,7 +22,9 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
     const { items, addItem, updateQuantityByIngredientId } = useCartStore();
     const { addFrequentItem } = useRecipeStore();
 
-    const savings = product.mrp ? Math.round(((product.mrp - (product.basePrice || product.price)) / product.mrp) * 100) : 0;
+    const currentPrice = Number(product.price || product.basePrice || 0);
+    const mrp = Number(product.mrp || 0);
+    const savings = mrp > currentPrice ? Math.round(((mrp - currentPrice) / mrp) * 100) : 0;
 
     const cartItem = items.find(i => i.ingredient.id === product.id);
     const quantity = cartItem?.quantity || 0;
@@ -32,8 +34,8 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
         const ingredient = {
             id: product.id,
             name: product.name,
-            price: product.basePrice || product.price,
-            unit: product.unit || product.weight,
+            price: currentPrice,
+            unit: product.unit || product.weight || '',
             image: product.image,
             category: product.category || 'general'
         };
@@ -60,8 +62,8 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
             const ingredient = {
                 id: product.id,
                 name: product.name,
-                price: product.basePrice || product.price,
-                unit: product.unit || product.weight,
+                price: currentPrice,
+                unit: product.unit || product.weight || '',
                 image: product.image,
                 category: product.category || 'general'
             };
@@ -135,26 +137,28 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
                     marginBottom: 1,
                     height: 26,
                 }} numberOfLines={2}>
-                    {product.name}
+                    {product.name || 'Product'}
                 </Text>
 
                 <View style={{ height: 14, justifyContent: 'center', marginBottom: 2 }}>
                     <Text style={{ fontSize: 9, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
-                        {product.unit || product.weight || ' '}
+                        {product.unit || product.weight || ''}
                     </Text>
                 </View>
 
                 <View style={{
                     height: 52,
                     marginBottom: 6,
-                    backgroundColor: product.bulkTiers ? colors.gray[50] : 'transparent',
-                    padding: product.bulkTiers ? 2 : 0,
+                    backgroundColor: Array.isArray(product.bulkTiers) && product.bulkTiers.length > 0 ? colors.gray[50] : 'transparent',
+                    padding: Array.isArray(product.bulkTiers) && product.bulkTiers.length > 0 ? 2 : 0,
                     borderRadius: 4,
                     justifyContent: 'center'
                 }}>
-                    {product.bulkTiers && product.bulkTiers.map((tier: any, idx: number) => {
+                    {Array.isArray(product.bulkTiers) && product.bulkTiers.map((tier: any, idx: number) => {
+                        if (!tier) return null;
                         const qtyNum = parseInt(tier.quantity) || 1;
-                        const unitPrice = Math.round(tier.price / qtyNum);
+                        const tierPrice = tier.price || 0;
+                        const unitPrice = qtyNum > 0 ? Math.round(tierPrice / qtyNum) : tierPrice;
                         return (
                             <View key={idx} style={{
                                 flexDirection: 'row',
@@ -192,12 +196,12 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
                     <View>
                         <View style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end', height: 32 }}>
                             <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
-                                ₹{product.basePrice || product.price}
+                                ₹{currentPrice}
                             </Text>
                             <View style={{ height: 12 }}>
-                                {product.mrp && product.mrp > (product.basePrice || product.price) ? (
+                                {mrp > currentPrice ? (
                                     <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
-                                        ₹{product.mrp}
+                                        ₹{Math.round(mrp)}
                                     </Text>
                                 ) : null}
                             </View>

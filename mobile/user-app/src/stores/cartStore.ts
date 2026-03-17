@@ -23,17 +23,22 @@ interface CartState extends Cart {
 
 // Helper function to calculate totals
 const calculateTotals = (items: CartItem[]) => {
-  const subtotal = items.reduce((sum, item) => sum + (item.ingredient.price * item.quantity), 0);
-  const deliveryFee = subtotal > 50 ? 0 : 5.99; // Free delivery over ₹50 (adjust threshold if needed)
-  const tax = subtotal * 0.08; // 8% tax
+  const subtotal = items.reduce((sum, item) => {
+    const price = item.ingredient?.price || 0;
+    const qty = item.quantity || 0;
+    return sum + (price * qty);
+  }, 0);
+
+  const deliveryFee = subtotal > 50 || subtotal === 0 ? 0 : 5.99;
+  const tax = subtotal * 0.08;
   const total = subtotal + deliveryFee + tax;
 
   return {
-    subtotal,
-    deliveryFee,
-    tax,
+    subtotal: isNaN(subtotal) ? 0 : subtotal,
+    deliveryFee: isNaN(deliveryFee) ? 0 : deliveryFee,
+    tax: isNaN(tax) ? 0 : tax,
     discount: 0,
-    total,
+    total: isNaN(total) ? 0 : total,
   };
 };
 

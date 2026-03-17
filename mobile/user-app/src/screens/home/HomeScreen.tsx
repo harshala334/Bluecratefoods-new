@@ -239,10 +239,10 @@ export const HomeScreen = ({ navigation }: any) => {
 
           <View style={styles.compactPriceRow}>
             <View style={styles.compactPriceStack}>
-              {product.mrp && product.mrp > (product.basePrice || product.price) && (
+              {product.mrp && product.mrp > (product.price || product.basePrice || 0) && (
                 <Text style={styles.compactMrp}>₹{product.mrp}</Text>
               )}
-              <Text style={styles.compactPrice}>₹{product.basePrice || product.price}</Text>
+              <Text style={styles.compactPrice}>₹{product.price || product.basePrice || 0}</Text>
             </View>
           </View>
         </View>
@@ -254,8 +254,8 @@ export const HomeScreen = ({ navigation }: any) => {
             const ingredient = {
               id: product.id,
               name: product.name,
-              price: product.basePrice || product.price,
-              unit: product.unit || product.weight,
+              price: product.price || product.basePrice || 0,
+              unit: product.unit || product.weight || '',
               image: product.image,
               category: product.category || 'general'
             };

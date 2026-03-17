@@ -173,8 +173,8 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         const ingredient = {
             id: product.id,
             name: product.name,
-            price: product.basePrice || product.price,
-            unit: product.unit || product.weight,
+            price: product.price || product.basePrice || 0,
+            unit: product.unit || product.weight || '',
             image: product.image,
             category: categoryId,
         };
@@ -190,8 +190,8 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
             const ingredient = {
                 id: product.id,
                 name: product.name,
-                price: product.basePrice || product.price,
-                unit: product.unit || product.weight,
+                price: product.price || product.basePrice || 0,
+                unit: product.unit || product.weight || '',
                 image: product.image,
                 category: categoryId,
             };
@@ -221,9 +221,9 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         // Sort items
         switch (sortBy) {
             case 'priceLow':
-                return items.sort((a, b) => (a.basePrice || a.price) - (b.basePrice || b.price));
+                return items.sort((a, b) => (a.price || a.basePrice || 0) - (b.price || b.basePrice || 0));
             case 'priceHigh':
-                return items.sort((a, b) => (b.basePrice || b.price) - (a.basePrice || a.price));
+                return items.sort((a, b) => (b.price || b.basePrice || 0) - (a.price || a.basePrice || 0));
             case 'nameAZ':
                 return items.sort((a, b) => a.name.localeCompare(b.name));
             default:

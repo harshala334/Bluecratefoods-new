@@ -5,6 +5,7 @@ import { Order, OrderStatus } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 import { OrdersGateway } from './orders.gateway';
+import { ShipdayService } from './shipday.service';
 
 @Injectable()
 export class OrdersService {
@@ -12,6 +13,7 @@ export class OrdersService {
         @InjectRepository(Order)
         private ordersRepository: Repository<Order>,
         private ordersGateway: OrdersGateway,
+        private shipdayService: ShipdayService,
     ) { }
 
     async create(createOrderDto: CreateOrderDto, userId: string): Promise<Order> {
@@ -48,8 +50,13 @@ export class OrdersService {
         order.status = status;
         const savedOrder = await this.ordersRepository.save(order);
 
-        // We could also notify the user here via a similar gateway method if needed
-        // this.ordersGateway.notifyOrderStatusUpdate(savedOrder.userId, savedOrder);
+        // Notify Store
+        this.ordersGateway.notifyNewOrder(savedOrder.storeId, savedOrder);
+
+        // If order is CONFIRMED, sync to Shipday for delivery
+        if (status === OrderStatus.CONFIRMED) {
+            this.shipdayService.createOrder(savedOrder);
+        }
 
         return savedOrder;
     }

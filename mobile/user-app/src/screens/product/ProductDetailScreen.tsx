@@ -20,22 +20,54 @@ import useCartStore from '../../stores/cartStore';
 const { width } = Dimensions.get('window');
 
 const ProductDetailScreen = ({ route, navigation }: any) => {
-    const { product } = route.params;
+    const product = route.params?.product;
     const insets = useSafeAreaInsets();
     const [quantity, setQuantity] = useState(1);
     const { addItem } = useCartStore();
 
+    if (!product) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text>Product information missing</Text>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 20 }}>
+                    <Text style={{ color: colors.primary[600] }}>Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    const currentPrice = Number(product.price || product.basePrice || 0);
+
     const handleAddToCart = () => {
-        const ingredient = {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            unit: product.weight,
-            image: product.image,
-            category: product.category || 'general',
-        };
-        addItem(ingredient as any, quantity);
-        navigation.goBack();
+        try {
+            const ingredient = {
+                id: product.id || `unknown-${Date.now()}`,
+                name: String(product.name || 'Product'),
+                price: currentPrice,
+                unit: String(product.weight || product.unit || ''),
+                image: String(product.image || ''),
+                category: String(product.category || 'general'),
+            };
+            addItem(ingredient as any, quantity);
+            navigation.goBack();
+        } catch (error) {
+            console.error('Add to cart error:', error);
+            navigation.goBack();
+        }
+    };
+
+    const handleBack = () => {
+        const state = navigation.getState();
+        const routes = state?.routes || [];
+        const previousRoute = routes.length > 1 ? routes[routes.length - 2] : null;
+
+        // If previous screen was part of the product flow, go back normally
+        if (previousRoute && (previousRoute.name === 'CategoryDetail' || previousRoute.name === 'ProductList')) {
+            navigation.goBack();
+        } else {
+            // Force navigation to the Product Category list
+            navigation.navigate('ProductsTab', { screen: 'ProductList' });
+        }
     };
 
     return (
@@ -44,7 +76,13 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
                 {/* Hero Image Section */}
                 <View style={styles.imageContainer}>
-                    <Image source={{ uri: product.image }} style={styles.image} />
+                    {product.image ? (
+                        <Image source={{ uri: product.image }} style={styles.image} />
+                    ) : (
+                        <View style={[styles.image, { backgroundColor: colors.gray[100], justifyContent: 'center', alignItems: 'center' }]}>
+                            <Feather name="package" size={60} color={colors.gray[300]} />
+                        </View>
+                    )}
                     <LinearGradient
                         colors={['rgba(0,0,0,0.1)', 'transparent', 'transparent']}
                         style={StyleSheet.absoluteFill}
@@ -53,7 +91,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                     {/* Floating Header Actions */}
                     <View style={[styles.headerActions, { top: insets.top + 10 }]}>
                         <TouchableOpacity
-                            onPress={() => navigation.goBack()}
+                            onPress={handleBack}
                             style={styles.actionButton}
                         >
                             <Feather name="arrow-left" size={24} color={colors.text.primary} />
@@ -73,40 +111,51 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                                 <Feather name="heart" size={24} color={colors.gray[400]} />
                             </TouchableOpacity>
                         </View>
-                        <Text style={styles.weight}>{product.weight}</Text>
+                        <Text style={styles.weight}>{product.weight || product.unit || ''}</Text>
 
                         <View style={styles.priceRow}>
                             <View style={styles.priceStack}>
-                                <Text style={styles.price}>₹{product.price || product.basePrice}</Text>
-                                {(product.mrp || (product.price * 1.2)) > (product.price || product.basePrice) && (
-                                    <Text style={styles.mrpText}>₹{Math.round(product.mrp || (product.price * 1.2))}</Text>
+                                <Text style={styles.price}>₹{currentPrice}</Text>
+                                {(product.mrp || (currentPrice * 1.2)) > currentPrice && (
+                                    <Text style={styles.mrpText}>₹{Math.round(product.mrp || (currentPrice * 1.2))}</Text>
                                 )}
                             </View>
                             <View style={styles.discountBadge}>
                                 <Text style={styles.discountText}>
-                                    {product.mrp
-                                        ? Math.round(((product.mrp - (product.price || product.basePrice)) / product.mrp) * 100)
+                                    {product.mrp && product.mrp > currentPrice
+                                        ? Math.round(((product.mrp - currentPrice) / product.mrp) * 100)
                                         : 20}% OFF
                                 </Text>
                             </View>
                         </View>
 
-                        {product.bulkTiers && (
+                        {Array.isArray(product.bulkTiers) && product.bulkTiers.length > 0 && (
                             <View style={styles.bulkSection}>
                                 <Text style={styles.bulkTitle}>Bulk Pricing for Businesses</Text>
                                 <View style={styles.bulkTiersGrid}>
-                                    {product.bulkTiers.map((tier: any, idx: number) => (
-                                        <View key={idx} style={styles.bulkTierCard}>
-                                            <View style={styles.tierHeader}>
-                                                <Text style={styles.tierQty}>{tier.quantity}</Text>
-                                                <View style={styles.savingsPill}>
-                                                    <Text style={styles.savingsText}>Save {Math.round((1 - (tier.price / (product.price * (parseInt(tier.quantity) || 1)))) * 100)}%</Text>
+                                    {product.bulkTiers.map((tier: any, idx: number) => {
+                                        if (!tier) return null;
+                                        const qtyNum = parseInt(String(tier.quantity)) || 1;
+                                        const tierPrice = Number(tier.price) || 0;
+                                        const unitPrice = qtyNum > 0 ? Math.round(tierPrice / qtyNum) : 0;
+                                        const basePriceForCalc = currentPrice || 1; // Avoid div by zero
+                                        const savingsPercent = Math.round((1 - (tierPrice / (basePriceForCalc * qtyNum))) * 100);
+
+                                        return (
+                                            <View key={idx} style={styles.bulkTierCard}>
+                                                <View style={styles.tierHeader}>
+                                                    <Text style={styles.tierQty}>{tier.quantity || 'Unit'}</Text>
+                                                    {isFinite(savingsPercent) && savingsPercent > 0 && (
+                                                        <View style={styles.savingsPill}>
+                                                            <Text style={styles.savingsText}>Save {savingsPercent}%</Text>
+                                                        </View>
+                                                    )}
                                                 </View>
+                                                <Text style={styles.tierPrice}>₹{tierPrice}</Text>
+                                                <Text style={styles.unitPrice}>₹{unitPrice} / unit</Text>
                                             </View>
-                                            <Text style={styles.tierPrice}>₹{tier.price}</Text>
-                                            <Text style={styles.unitPrice}>₹{Math.round(tier.price / (parseInt(tier.quantity) || 1))} / unit</Text>
-                                        </View>
-                                    ))}
+                                        );
+                                    })}
                                 </View>
                             </View>
                         )}
@@ -131,7 +180,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Product Description</Text>
                         <Text style={styles.description}>
-                            This is a premium quality {product.name.toLowerCase()} sourced directly from the finest local farms.
+                            This is a premium quality {(product.name || 'product').toLowerCase()} sourced directly from the finest local farms.
                             Our products undergo rigorous quality checks to ensure you receive the freshest produce every time.
                             Perfect for your daily meals and healthy lifestyle.
                         </Text>
@@ -143,10 +192,10 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Nutritional Value (per 100g)</Text>
                         <View style={styles.nutritionTable}>
-                            <NutritionRow label="Calories" value="45 kcal" />
-                            <NutritionRow label="Total Fat" value="0.5g" />
-                            <NutritionRow label="Carbohydrates" value="9.2g" />
-                            <NutritionRow label="Protein" value="1.1g" />
+                            <NutritionRow label="Calories" value={product.nutrition?.calories || '45 kcal'} />
+                            <NutritionRow label="Total Fat" value={product.nutrition?.fat || '0.5g'} />
+                            <NutritionRow label="Carbohydrates" value={product.nutrition?.carbs || '9.2g'} />
+                            <NutritionRow label="Protein" value={product.nutrition?.protein || '1.1g'} />
                         </View>
                     </View>
 
@@ -172,7 +221,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity style={styles.addBtn} onPress={handleAddToCart}>
-                    <Text style={styles.addBtnText}>Add to Cart • ₹{product.price * quantity}</Text>
+                    <Text style={styles.addBtnText}>Add to Cart • ₹{currentPrice * quantity}</Text>
                 </TouchableOpacity>
             </View>
         </View>

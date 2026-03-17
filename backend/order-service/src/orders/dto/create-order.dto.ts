@@ -7,4 +7,8 @@ export class CreateOrderDto {
         price: number;
     }[];
     totalAmount: number;
+    customerName?: string;
+    address?: string;
+    phone?: string;
+    userEmail?: string;
 }

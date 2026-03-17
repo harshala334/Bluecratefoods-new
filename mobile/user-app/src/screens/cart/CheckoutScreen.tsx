@@ -48,7 +48,12 @@ export const CheckoutScreen = ({ navigation }: any) => {
     // Simulate API call
     setTimeout(async () => {
       // Create the order in our OrderStore (Database)
-      await placeOrder(items, total);
+      await placeOrder(items, total, {
+        name: 'Guest User',
+        address: '123, Green Street, Blue Crate Apartments, Indiranagar, Bangalore - 560038',
+        phone: '9876543210',
+        email: 'guest@example.com'
+      });
 
       setIsProcessing(false);
       Alert.alert(

@@ -13,6 +13,8 @@ import { join } from 'path';
 import { UploadModule } from './upload/upload.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { Recipe } from './recipes/recipe.entity';
+import { DeliveryModule } from './delivery/delivery.module';
+import { DriverApplication } from './delivery/driver-application.entity';
 
 import { OrdersProxyController } from './orders/orders-proxy.controller';
 
@@ -42,13 +44,14 @@ import { Product as ProductEntity } from './products/product.entity';
       username: process.env.DB_USER || 'bluecrate',
       password: process.env.DB_PASS || process.env.DB_PASSWORD || 'bluecratepass',
       database: process.env.DB_NAME || 'bluecrate_db',
-      entities: [Enquiry, Recipe, ProductEntity],
+      entities: [Enquiry, Recipe, ProductEntity, DriverApplication],
       synchronize: true, // Auto-create tables (dev only)
       ssl: false,
     }),
     EnquiryModule,
     RecipesModule,
     ProductsModule,
+    DeliveryModule,
     /*
     ClientsModule.register([
       {

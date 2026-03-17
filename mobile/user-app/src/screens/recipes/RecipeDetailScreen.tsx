@@ -137,28 +137,25 @@ const RecipeDetailScreen = ({ route, navigation }: any) => {
   // Best to use a separate component or checks inside.
   // For simplicity, I will modify the component structure slightly or use effects.
 
+  if (!recipe) return null;
+
   return <RecipeDetailContent recipe={recipe} navigation={navigation} addItem={addItem} isServiceable={isServiceable} />;
 };
 
-// Extracted for cleaner state management after load
 const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { recipe: Recipe, navigation: any, addItem: any, isServiceable: boolean }) => {
+  // Ensure basic arrays exist
+  const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+  const steps = Array.isArray(recipe.steps) ? recipe.steps : [];
+  const servings = Number(recipe.servings || 1);
+  const currentServings = servings; // Use as default
 
-  const [servings, setServings] = useState(recipe.servings);
+  const [localServings, setLocalServings] = useState(servings);
   const [spiceLevel, setSpiceLevel] = useState(recipe.spiceLevel || 0);
-
-  const getSpiceLevelLabel = (level: number) => {
-    if (level <= 0) return 'None';
-    if (level <= 1) return 'Mild';
-    if (level <= 2) return 'Medium';
-    if (level <= 3) return 'Spicy';
-    if (level <= 4) return 'Hot';
-    return 'Extra Hot';
-  };
 
   // Initialize selectedIngredients with mandatory items
   const [selectedIngredients, setSelectedIngredients] = useState<Set<number>>(() => {
     const initial = new Set<number>();
-    recipe.ingredients.forEach(ing => {
+    ingredients.forEach(ing => {
       if (ing.isMandatory) initial.add(ing.id);
     });
     return initial;
@@ -182,7 +179,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   // ... (rest of the logic functions same as before)
-  const servingRatio = servings / recipe.servings;
+  const servingRatio = servings > 0 ? localServings / servings : 1;
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -200,17 +197,19 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
   const showVideo = !!(recipe.videoUrl && videoId);
 
   const handleStartStepByStep = () => {
-    setCurrentStepIndex(0);
-    setTimerSeconds(recipe.steps[0].timerSeconds || recipe.steps[0].time * 60);
+    const firstStep = steps[0];
+    if (!firstStep) return;
+    setTimerSeconds(firstStep.timerSeconds || (firstStep.time || 0) * 60);
     setIsTimerRunning(false);
     setIsStepByStepVisible(true);
   };
 
   const handleNextStep = () => {
-    if (currentStepIndex < recipe.steps.length - 1) {
+    if (currentStepIndex < steps.length - 1) {
       const nextIndex = currentStepIndex + 1;
+      const nextStep = steps[nextIndex];
       setCurrentStepIndex(nextIndex);
-      setTimerSeconds(recipe.steps[nextIndex].timerSeconds || recipe.steps[nextIndex].time * 60);
+      setTimerSeconds(nextStep.timerSeconds || (nextStep.time || 0) * 60);
       setIsTimerRunning(false);
     } else {
       setIsStepByStepVisible(false);
@@ -221,8 +220,9 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
       const prevIndex = currentStepIndex - 1;
+      const prevStep = steps[prevIndex];
       setCurrentStepIndex(prevIndex);
-      setTimerSeconds(recipe.steps[prevIndex].timerSeconds || recipe.steps[prevIndex].time * 60);
+      setTimerSeconds(prevStep.timerSeconds || (prevStep.time || 0) * 60);
       setIsTimerRunning(false);
     }
   };
@@ -249,7 +249,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
   };
 
   const toggleIngredient = (id: number) => {
-    const ingredient = recipe.ingredients.find(i => i.id === id);
+    const ingredient = ingredients.find(i => i.id === id);
     if (ingredient?.isMandatory) return; // Cannot toggle mandatory items
 
     const newSelected = new Set(selectedIngredients);
@@ -262,21 +262,21 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
   };
 
   const selectAllIngredients = () => {
-    if (selectedIngredients.size === recipe.ingredients.length) {
+    if (selectedIngredients.size === ingredients.length) {
       // Deselect all except mandatory
       const mandatory = new Set<number>();
-      recipe.ingredients.forEach(ing => {
+      ingredients.forEach(ing => {
         if (ing.isMandatory) mandatory.add(ing.id);
       });
       setSelectedIngredients(mandatory);
     } else {
       // Select all
-      setSelectedIngredients(new Set(recipe.ingredients.map(i => i.id)));
+      setSelectedIngredients(new Set(ingredients.map(i => i.id)));
     }
   };
 
   const addToCart = async () => {
-    const selectedItems = recipe.ingredients.filter(ing => selectedIngredients.has(ing.id));
+    const selectedItems = ingredients.filter(ing => selectedIngredients.has(ing.id));
 
     if (selectedItems.length === 0) {
       Alert.alert('No Ingredients Selected', 'Please select at least one ingredient');
@@ -285,20 +285,21 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
 
     // Add each selected ingredient to cart
     for (const ingredient of selectedItems) {
-      const adjustedAmount = Math.ceil(ingredient.amount * servingRatio);
+      if (!ingredient || !ingredient.id) continue;
+      const adjustedAmount = Math.ceil((Number(ingredient.amount) || 0) * servingRatio);
       await addItem(
         {
-          id: ingredient.id.toString(),
-          name: ingredient.name,
-          price: ingredient.price,
+          id: String(ingredient.id),
+          name: String(ingredient.name || 'Ingredient'),
+          price: Number(ingredient.price || 0),
           quantity: 1,
-          unit: ingredient.unit,
-          image: recipe.image,
+          unit: String(ingredient.unit || ''),
+          image: String(recipe.image || ''),
           isAvailable: true,
         },
         adjustedAmount,
-        recipe.id.toString(),
-        recipe.name
+        String(recipe.id || ''),
+        String(recipe.name || '')
       );
     }
 
@@ -315,9 +316,9 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
     );
   };
 
-  const totalCost = recipe.ingredients
+  const totalCost = ingredients
     .filter(ing => selectedIngredients.has(ing.id))
-    .reduce((sum, ing) => sum + ing.price, 0);
+    .reduce((sum, ing) => sum + (ing.price || 0), 0);
 
   const getDifficultyColor = () => {
     switch (recipe.difficulty) {
@@ -494,14 +495,14 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                   <View style={styles.servingsControls}>
                     <TouchableOpacity
                       style={styles.servingsButton}
-                      onPress={() => setServings(Math.max(1, servings - 1))}
+                      onPress={() => setLocalServings(Math.max(1, localServings - 1))}
                     >
                       <Text style={styles.servingsButtonText}>−</Text>
                     </TouchableOpacity>
-                    <Text style={styles.servingsValue}>{servings}</Text>
+                    <Text style={styles.servingsValue}>{localServings}</Text>
                     <TouchableOpacity
                       style={styles.servingsButton}
-                      onPress={() => setServings(servings + 1)}
+                      onPress={() => setLocalServings(localServings + 1)}
                     >
                       <Text style={styles.servingsButtonText}>+</Text>
                     </TouchableOpacity>
@@ -684,7 +685,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                     </View>
                     <View style={styles.summaryRow}>
                       <Text style={styles.summaryLabel}>Servings:</Text>
-                      <Text style={styles.summaryValue}>{servings}</Text>
+                      <Text style={styles.summaryValue}>{localServings}</Text>
                     </View>
                     <View style={[styles.summaryRow, styles.totalRow]}>
                       <Text style={styles.totalLabel}>Total:</Text>

@@ -45,6 +45,7 @@ export default function Footer() {
               <li><Link href="/recipes?time=10min" className="hover:text-primary-400 transition">Quick Meals</Link></li>
               {/* <li><Link href="/how-it-works" className="hover:text-primary-400 transition">How It Works</Link></li> */}
               <li><Link href="/#about-us" className="hover:text-primary-400 transition">About Us</Link></li>
+              <li><Link href="/partner" className="hover:text-primary-400 transition">Partner with Us</Link></li>
             </ul>
           </div>
 

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { FiBox, FiHome, FiBarChart2, FiUsers, FiLogOut, FiMenu, FiX } from 'react-icons/fi'
+import { FiBox, FiHome, FiBarChart2, FiUsers, FiLogOut, FiMenu, FiX, FiTruck } from 'react-icons/fi'
 import { useState } from 'react'
 
 interface AdminLayoutProps {
@@ -13,9 +13,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
     const menuItems = [
         { name: 'Dashboard', icon: FiHome, href: '/admin/dashboard' },
+        { name: 'Orders', icon: FiBox, href: '/admin/orders' },
         { name: 'Products', icon: FiBox, href: '/admin/products' },
         { name: 'Analytics', icon: FiBarChart2, href: '/admin/analytics' },
         { name: 'Users', icon: FiUsers, href: '/admin/users' },
+        { name: 'Delivery Partners', icon: FiTruck, href: '/admin/delivery' },
     ]
 
     const handleLogout = () => {

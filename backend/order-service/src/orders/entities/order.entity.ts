@@ -28,6 +28,18 @@ export class Order {
     @Column('decimal', { precision: 10, scale: 2 })
     totalAmount: number;
 
+    @Column({ nullable: true })
+    customerName: string;
+
+    @Column({ type: 'text', nullable: true })
+    address: string;
+
+    @Column({ nullable: true })
+    phone: string;
+
+    @Column({ nullable: true })
+    userEmail: string;
+
     @Column({
         type: 'enum',
         enum: OrderStatus,
