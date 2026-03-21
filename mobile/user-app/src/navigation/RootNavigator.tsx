@@ -391,7 +391,7 @@ const RectTabButton = ({ onPress }: any) => {
         end={{ x: 1, y: 1 }}
         style={{
           position: 'absolute',
-          left: -20, // Extend further into the on-screen area
+          left: -5, // Extend further into the on-screen area (shifted right)
           width: 220, // Increased to maintain right-side bleed
           height: 48,
           borderTopLeftRadius: 16,
@@ -404,6 +404,7 @@ const RectTabButton = ({ onPress }: any) => {
           ...commonShadow.soft,
           justifyContent: 'center',
           overflow: 'visible',
+          transform: [{ translateY: -6 }],
         }}
       >
         <View style={{ width: tabWidth, alignItems: 'center', position: 'relative', marginLeft: 6 }}>
@@ -459,6 +460,10 @@ function MainTabs() {
           tabBarLabel: 'Home',
           tabBarIcon: ({ color }) => <Feather name="home" size={24} color={color} />,
           headerShown: false,
+          tabBarItemStyle: {
+            paddingVertical: 10,
+            transform: [{ translateX: 20 }]
+          }
         }}
       />
       <Tab.Screen
@@ -468,6 +473,10 @@ function MainTabs() {
           tabBarLabel: 'Products',
           tabBarIcon: ({ color }) => <Feather name="package" size={24} color={color} />,
           headerShown: false,
+          tabBarItemStyle: {
+            paddingVertical: 10,
+            transform: [{ translateX: 3 }]
+          }
         }}
       />
 
@@ -502,6 +511,10 @@ function MainTabs() {
             textAlign: 'center',
           },
           headerShown: false,
+          tabBarItemStyle: {
+            paddingVertical: 10,
+            transform: [{ translateX: -4 }]
+          }
         }}
       />
 
