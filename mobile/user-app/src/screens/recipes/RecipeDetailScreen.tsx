@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { WebView } from 'react-native-webview';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCartStore } from '../../stores/cartStore';
 import { useLocationStore } from '../../stores/locationStore';
 import { colors } from '../../constants/colors';
@@ -77,6 +78,7 @@ export const getYoutubeId = (url: string | undefined | null) => {
 };
 
 const RecipeDetailScreen = ({ route, navigation }: any) => {
+  const insets = useSafeAreaInsets();
   const { recipeId } = route.params || {};
   const { addItem } = useCartStore();
   const { location } = useLocationStore();
@@ -151,10 +153,10 @@ const RecipeDetailScreen = ({ route, navigation }: any) => {
 
   if (!recipe) return null;
 
-  return <RecipeDetailContent recipe={recipe} navigation={navigation} addItem={addItem} isServiceable={isServiceable} />;
+  return <RecipeDetailContent recipe={recipe} navigation={navigation} addItem={addItem} isServiceable={isServiceable} insets={insets} />;
 };
 
-const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { recipe: Recipe, navigation: any, addItem: any, isServiceable: boolean }) => {
+const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable, insets }: { recipe: Recipe, navigation: any, addItem: any, isServiceable: boolean, insets: any }) => {
   // Ensure basic arrays exist
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
   const steps = Array.isArray(recipe.steps) ? recipe.steps : [];
@@ -386,11 +388,14 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
           )}
           <View style={styles.heroOverlay} />
 
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={[styles.backButton, { top: insets.top + spacing.sm }]}
+            onPress={() => navigation.goBack()}
+          >
             <Ionicons name="arrow-back" size={24} color={colors.white} />
           </TouchableOpacity>
 
-          <View style={styles.headerActions}>
+          <View style={[styles.headerActions, { top: insets.top + spacing.sm }]}>
             <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Ionicons name="share-social-outline" size={24} color={colors.white} />
             </TouchableOpacity>
@@ -920,12 +925,12 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
         >
           <View style={styles.stepModalContainer}>
             {/* Header */}
-            <View style={styles.stepModalHeader}>
+            <View style={[styles.stepModalHeader, { paddingTop: insets.top + spacing.sm }]}>
               <TouchableOpacity onPress={() => setIsStepByStepVisible(false)}>
                 <Ionicons name="close" size={28} color={colors.text.primary} />
               </TouchableOpacity>
               <Text style={styles.stepProgressText}>
-                Step {currentStepIndex + 1} of {recipe.steps.length}
+                Step {currentStepIndex + 1} of {steps.length}
               </Text>
               <View style={{ width: 28 }} />
             </View>
@@ -935,7 +940,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
               <View
                 style={[
                   styles.progressBarFill,
-                  { width: `${((currentStepIndex + 1) / recipe.steps.length) * 100}%` }
+                  { width: `${((currentStepIndex + 1) / (steps.length || 1)) * 100}%` }
                 ]}
               />
             </View>
@@ -972,8 +977,8 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
             <ScrollView style={styles.stepModalContent}>
 
               {/* Step Content */}
-              <Text style={styles.stepModalTitle}>{recipe.steps[currentStepIndex].title}</Text>
-              <Text style={styles.stepModalDescription}>{recipe.steps[currentStepIndex].description}</Text>
+              <Text style={styles.stepModalTitle}>{steps[currentStepIndex]?.title || 'Step'}</Text>
+              <Text style={styles.stepModalDescription}>{steps[currentStepIndex]?.description || ''}</Text>
 
               {/* Timer */}
               <View style={styles.timerContainer}>
@@ -994,7 +999,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                     style={styles.timerButton}
                     onPress={() => {
                       setIsTimerRunning(false);
-                      setTimerSeconds(recipe.steps[currentStepIndex].timerSeconds || recipe.steps[currentStepIndex].time * 60);
+                      setTimerSeconds(steps[currentStepIndex]?.timerSeconds || (steps[currentStepIndex]?.time || 0) * 60);
                     }}
                   >
                     <Ionicons name="refresh" size={24} color={colors.gray[600]} />
@@ -1003,11 +1008,11 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
               </View>
 
               {/* Tip */}
-              {recipe.steps[currentStepIndex].tip && (
+              {steps[currentStepIndex]?.tip && (
                 <View style={styles.tipContainer}>
                   <Text style={styles.tipText}>
                     <Text style={styles.tipLabel}>💡 Pro Tip: </Text>
-                    {recipe.steps[currentStepIndex].tip}
+                    {steps[currentStepIndex].tip}
                   </Text>
                 </View>
               )}
@@ -1028,9 +1033,9 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                 onPress={handleNextStep}
               >
                 <Text style={styles.nextButtonText}>
-                  {currentStepIndex === recipe.steps.length - 1 ? 'Finish' : 'Next Step'}
+                  {currentStepIndex === steps.length - 1 ? 'Finish' : 'Next Step'}
                 </Text>
-                {currentStepIndex < recipe.steps.length - 1 && (
+                {currentStepIndex < steps.length - 1 && (
                   <Ionicons name="arrow-forward" size={20} color={colors.white} />
                 )}
               </TouchableOpacity>

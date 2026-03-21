@@ -16,7 +16,8 @@ import {
   ImageBackground,
   BackHandler,
   Animated,
-  Easing
+  Easing,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { API_CONFIG, CDN_URL } from '../../constants/config';
@@ -229,7 +230,7 @@ export const HomeScreen = ({ navigation }: any) => {
           <Image source={{ uri: product.image }} style={styles.compactImage} />
         </View>
         <View style={styles.compactContent}>
-          <Text style={styles.compactTitle}>{product.name}</Text>
+          <Text style={styles.compactTitle} numberOfLines={2}>{product.name}</Text>
           <View style={styles.compactMeta}>
             <Ionicons name="star" size={10} color={colors.yellow[500]} />
             <Text style={styles.compactMetaText}>{product.rating || 4.5}</Text>
@@ -657,46 +658,64 @@ export const HomeScreen = ({ navigation }: any) => {
       </View>
 
       {/* Infinite Category Flow */}
-      {categories.filter(c => c.row <= 3).map((category) => {
-        const products = liveProducts[category.id];
-        if (!products || products.length === 0) return null; // Don't show empty categories
-        return (
-          <View key={category.id} style={styles.sectionCard}>
-            <View style={[styles.section, { paddingHorizontal: 0 }]}>
-              <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
-                <Text style={styles.sectionTitle}>{category.title.split(':').pop()?.trim()}</Text>
-                <MaterialCommunityIcons name="lightning-bolt" size={16} color={colors.primary[500]} />
-              </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[styles.discoveryScroll, { paddingLeft: 0, paddingRight: 0 }]}
-              >
-                {products.map((product) => (
-                  <VerticalProductCard
-                    key={product.id}
-                    width={windowWidth * 0.42}
-                    product={product}
-                    onPress={() => navigation.navigate('ProductsTab', {
-                      screen: 'ProductDetail',
-                      params: { product }
-                    })}
-                  />
-                ))}
-                <TouchableOpacity
-                  style={styles.viewAllCard}
-                  onPress={() => handleCategoryPress(category.id)}
-                >
-                  <View style={styles.viewAllCircle}>
-                    <Feather name="arrow-right" size={24} color={colors.primary[500]} />
-                  </View>
-                  <Text style={styles.viewAllText}>View All</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </View>
+      {loadingLive ? (
+        <View style={styles.sectionCard}>
+          <View style={styles.loadingSection}>
+            <ActivityIndicator size="small" color={colors.primary[500]} />
+            <Text style={styles.loadingSectionText}>Loading fresh selections...</Text>
           </View>
-        );
-      })}
+        </View>
+      ) : (
+        categories.filter(c => c.row <= 3).map((category) => {
+          const products = liveProducts[category.id];
+          if (!products || products.length === 0) return null; // Don't show empty categories
+          return (
+            <View key={category.id} style={styles.sectionCard}>
+              <View style={[styles.section, { paddingHorizontal: 0 }]}>
+                <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
+                  <Text style={styles.sectionTitle}>{category.title.split(':').pop()?.trim()}</Text>
+                  <MaterialCommunityIcons name="lightning-bolt" size={16} color={colors.primary[500]} />
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={[styles.discoveryScroll, { paddingLeft: 0, paddingRight: 0 }]}
+                >
+                  {products.map((product) => {
+                    const isMeal = ['5min', '10min', '15min'].includes(category.id);
+                    return (
+                      <VerticalProductCard
+                        key={product.id}
+                        width={windowWidth * 0.42}
+                        product={product}
+                        onPress={() => {
+                          if (isMeal) {
+                            navigation.navigate('RecipeDetail', { recipeId: product.id });
+                          } else {
+                            navigation.navigate('ProductsTab', {
+                              screen: 'ProductDetail',
+                              params: { product }
+                            });
+                          }
+                        }}
+                      />
+                    );
+                  })}
+                  <TouchableOpacity
+                    style={styles.viewAllCard}
+                    onPress={() => handleCategoryPress(category.id)}
+                  >
+                    <View style={styles.viewAllCircle}>
+                      <Feather name="arrow-right" size={24} color={colors.primary[500]} />
+                    </View>
+                    <Text style={styles.viewAllText}>View All</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            </View>
+          );
+        })
+      )}
 
       {/* Essential Packaging Hub */}
       <View style={styles.sectionCard}>
@@ -1626,8 +1645,8 @@ const styles = StyleSheet.create({
   },
   viewAllCard: {
     width: 100,
-    height: 160, // Match VerticalProductCard approximate height
-    backgroundColor: 'rgba(20, 184, 166, 0.05)', // Primary alpha
+    height: 160,
+    backgroundColor: 'rgba(20, 184, 166, 0.05)',
     borderRadius: borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1644,12 +1663,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.soft,
+    shadowColor: colors.gray[400],
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   viewAllText: {
     fontSize: 12,
     fontWeight: '700',
     color: colors.primary[600],
+  },
+  loadingSection: {
+    padding: spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  loadingSectionText: {
+    marginLeft: 12,
+    fontSize: 14,
+    color: colors.gray[500],
+    fontFamily: typography.fontFamily.body,
   },
 });
 

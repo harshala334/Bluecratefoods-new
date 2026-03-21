@@ -48,6 +48,7 @@ import ProfileSetupScreen from '../screens/onboarding/ProfileSetupScreen';
 import LocationPermissionScreen from '../screens/onboarding/LocationPermissionScreen';
 import useAuthStore from '../stores/authStore';
 import { useLocationStore } from '../stores/locationStore';
+import useCartStore from '../stores/cartStore';
 
 
 const Stack = createStackNavigator();
@@ -418,6 +419,7 @@ const RectTabButton = ({ onPress }: any) => {
  * Main Tab Navigator
  */
 function MainTabs() {
+  const { totalItems } = useCartStore();
   const { location } = useLocationStore();
   const isServiceable = location?.toLowerCase().includes('kolkata');
 
@@ -486,6 +488,17 @@ function MainTabs() {
         options={{
           tabBarLabel: 'Cart',
           tabBarIcon: ({ color }) => <Feather name="shopping-cart" size={24} color={color} />,
+          tabBarBadge: totalItems > 0 ? totalItems : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: colors.primary[500],
+            color: colors.white,
+            fontSize: 8,
+            minWidth: 14,
+            height: 14,
+            borderRadius: 7,
+            lineHeight: 13,
+            textAlign: 'center',
+          },
           headerShown: false,
         }}
       />

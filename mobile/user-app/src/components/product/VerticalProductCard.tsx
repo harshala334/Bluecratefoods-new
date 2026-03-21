@@ -18,7 +18,7 @@ interface VerticalProductCardProps {
     width: number;
 }
 
-export const VerticalProductCard = ({ product, onPress, width }: VerticalProductCardProps) => {
+export const VerticalProductCard = React.memo(({ product, onPress, width }: VerticalProductCardProps) => {
     const { items, addItem, updateQuantityByIngredientId } = useCartStore();
     const { addFrequentItem } = useRecipeStore();
 
@@ -134,69 +134,104 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
             </View>
 
             {/* Content Area */}
-            <View style={{ padding: 4 }}>
-                <Text style={{
-                    fontSize: 11,
-                    fontFamily: typography.fontFamily.semibold,
-                    color: colors.gray[800],
-                    marginBottom: 1,
-                    height: 26,
-                }} numberOfLines={2}>
-                    {product.name || 'Product'}
-                </Text>
-
-                <View style={{ height: 14, justifyContent: 'center', marginBottom: 2 }}>
-                    <Text style={{ fontSize: 9, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
-                        {product.unit || product.weight || ''}
+            <View style={{ padding: 6 }}>
+                <View style={{ height: 32, marginBottom: 2, justifyContent: 'center' }}>
+                    <Text style={{
+                        fontSize: 11,
+                        fontFamily: typography.fontFamily.semibold,
+                        color: colors.gray[800],
+                        lineHeight: 14,
+                    }} numberOfLines={2}>
+                        {product.name || 'Product'}
                     </Text>
                 </View>
 
+                <View style={{ height: 14, justifyContent: 'center', marginBottom: 4 }}>
+                    <Text style={{ fontSize: 9, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
+                        {product.unit || product.weight || ' '}
+                    </Text>
+                </View>
+
+                {/* Generous fixed height bulk section for alignment and headers */}
                 <View style={{
-                    height: 52,
-                    marginBottom: 6,
-                    backgroundColor: Array.isArray(product.bulkTiers) && product.bulkTiers.length > 0 ? colors.gray[50] : 'transparent',
-                    padding: Array.isArray(product.bulkTiers) && product.bulkTiers.length > 0 ? 2 : 0,
-                    borderRadius: 4,
-                    justifyContent: 'center'
+                    height: 90,
+                    marginBottom: 10,
+                    backgroundColor: colors.gray[50],
+                    padding: 6,
+                    borderRadius: 8,
                 }}>
-                    {Array.isArray(product.bulkTiers) && product.bulkTiers.map((tier: any, idx: number) => {
-                        if (!tier) return null;
-                        const qtyNum = parseInt(tier.quantity) || 1;
-                        const tierPrice = tier.price || 0;
-                        const unitPrice = qtyNum > 0 ? Math.round(tierPrice / qtyNum) : tierPrice;
-                        return (
-                            <View key={idx} style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                paddingVertical: 1,
-                            }}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[600] }}>
-                                        {tier.quantity}: <Text style={{ color: colors.primary[600] }}>₹{tier.price}</Text>
-                                    </Text>
-                                    <Text style={{ fontSize: 7, color: colors.gray[400], fontFamily: typography.fontFamily.medium }}>
-                                        ₹{unitPrice} / unit
-                                    </Text>
+                    <Text style={{ fontSize: 7, fontFamily: typography.fontFamily.bold, color: colors.primary[600], marginBottom: 2, letterSpacing: 0.5 }}>
+                        BULK SAVINGS
+                    </Text>
+                    {[0, 1].map((idx) => {
+                        const tier = Array.isArray(product.bulkTiers) ? product.bulkTiers[idx] : null;
+                        if (tier) {
+                            const qtyNum = parseInt(tier.quantity) || 1;
+                            const tierPrice = tier.price || 0;
+                            const unitPrice = qtyNum > 0 ? Math.round(tierPrice / qtyNum) : tierPrice;
+                            return (
+                                <View key={idx} style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    paddingVertical: 1,
+                                }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[700] }}>
+                                            {tier.quantity}: <Text style={{ color: colors.primary[600] }}>₹{tier.price}</Text>
+                                        </Text>
+                                        <Text style={{ fontSize: 7, color: colors.gray[400], fontFamily: typography.fontFamily.medium }}>
+                                            ₹{unitPrice} / unit
+                                        </Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        style={{
+                                            backgroundColor: isOutOfStock ? colors.gray[100] : colors.white,
+                                            borderWidth: 1,
+                                            borderColor: isOutOfStock ? colors.gray[300] : colors.primary[200],
+                                            paddingHorizontal: 6,
+                                            paddingVertical: 2,
+                                            borderRadius: 4,
+                                        }}
+                                        onPress={(e) => handleAddBulk(e, tier.quantity)}
+                                        disabled={isOutOfStock}
+                                    >
+                                        <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: isOutOfStock ? colors.gray[400] : colors.primary[600] }}>
+                                            {isOutOfStock ? 'OUT' : 'ADD'}
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity
-                                    style={{
-                                        backgroundColor: isOutOfStock ? colors.gray[100] : colors.white,
+                            );
+                        } else {
+                            return (
+                                <View key={idx} style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    paddingVertical: 1,
+                                    opacity: 0.3
+                                }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.medium, color: colors.gray[400] }}>
+                                            Bulk Price {idx + 1}: —
+                                        </Text>
+                                        <Text style={{ fontSize: 7, color: colors.gray[300], fontFamily: typography.fontFamily.medium }}>
+                                            Best unit value
+                                        </Text>
+                                    </View>
+                                    <View style={{
+                                        backgroundColor: colors.gray[100],
                                         borderWidth: 1,
-                                        borderColor: isOutOfStock ? colors.gray[300] : colors.primary[200],
+                                        borderColor: colors.gray[200],
                                         paddingHorizontal: 6,
                                         paddingVertical: 2,
                                         borderRadius: 4,
-                                    }}
-                                    onPress={(e) => handleAddBulk(e, tier.quantity)}
-                                    disabled={isOutOfStock}
-                                >
-                                    <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: isOutOfStock ? colors.gray[400] : colors.primary[600] }}>
-                                        {isOutOfStock ? 'OUT' : 'ADD'}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        );
+                                    }}>
+                                        <Text style={{ fontSize: 8, color: colors.gray[300] }}>ADD</Text>
+                                    </View>
+                                </View>
+                            );
+                        }
                     })}
                 </View>
 
@@ -285,4 +320,4 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
             </View>
         </TouchableOpacity>
     );
-};
+});

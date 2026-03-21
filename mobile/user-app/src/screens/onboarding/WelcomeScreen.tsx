@@ -9,7 +9,7 @@ import {
     Dimensions,
     StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
@@ -17,6 +17,7 @@ import { typography } from '../../constants/typography';
 const { width, height } = Dimensions.get('window');
 
 const WelcomeScreen = ({ navigation }: any) => {
+    const insets = useSafeAreaInsets();
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
@@ -28,7 +29,10 @@ const WelcomeScreen = ({ navigation }: any) => {
                     colors={['transparent', 'rgba(0,0,0,0.8)', 'black']}
                     style={styles.gradient}
                 >
-                    <SafeAreaView style={styles.content}>
+                    <View style={[styles.content, { 
+                        paddingTop: Math.max(insets.top, 24),
+                        paddingBottom: Math.max(insets.bottom, 24)
+                    }]}>
                         <View style={styles.header}>
                             <Text style={styles.brandName}>Blue Crate</Text>
                             <Text style={styles.tagline}>Ready-to-Cook. Ready-to-Love.</Text>
@@ -39,20 +43,23 @@ const WelcomeScreen = ({ navigation }: any) => {
                             />
                         </View>
 
-                        <Image
-                            source={require('../../../assets/images/kitty_with_cart-removebg-preview.png')}
-                            style={styles.kittyMascot}
-                            resizeMode="contain"
-                        />
-
                         <View style={styles.footer}>
-                            <TouchableOpacity
-                                style={styles.button}
-                                onPress={() => navigation.navigate('AuthMethod')}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={styles.buttonText}>Get Started</Text>
-                            </TouchableOpacity>
+                            <View style={styles.buttonContainer}>
+                                <View style={styles.kittyWrapper} pointerEvents="none">
+                                    <Image
+                                        source={require('../../../assets/images/kitty_with_cart-removebg-preview.png')}
+                                        style={styles.kittyMascot}
+                                        resizeMode="contain"
+                                    />
+                                </View>
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    onPress={() => navigation.navigate('AuthMethod')}
+                                    activeOpacity={0.8}
+                                >
+                                    <Text style={styles.buttonText}>Get Started</Text>
+                                </TouchableOpacity>
+                            </View>
 
                             <TouchableOpacity
                                 style={styles.loginLink}
@@ -63,7 +70,7 @@ const WelcomeScreen = ({ navigation }: any) => {
                                 </Text>
                             </TouchableOpacity>
                         </View>
-                    </SafeAreaView>
+                    </View>
                 </LinearGradient>
             </ImageBackground>
         </View>
@@ -93,14 +100,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 40,
     },
-    kittyMascot: {
+    buttonContainer: {
+        position: 'relative',
+        width: '100%',
+    },
+    kittyWrapper: {
         position: 'absolute',
-        top: 520,
-        left: -20,
-        width: 260,
-        height: 260,
-        opacity: 0.9,
-        zIndex: -1, // Bring forward to overlap slightly
+        bottom: 54,        // Button height is 58, this sits Kitty on its top edge
+        left: -5,
+        zIndex: 10,
+        elevation: 10,
+    },
+    kittyMascot: {
+        width: 220,
+        height: 220,
     },
     welcomeLogo: {
         position: 'absolute',

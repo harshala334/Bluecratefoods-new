@@ -10,6 +10,7 @@ import {
     Keyboard,
     FlatList,
     Dimensions,
+    ActivityIndicator,
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
@@ -239,8 +240,9 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
                     </TouchableOpacity>
                     {isSearching ? (
                         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 13, color: colors.gray[500], fontStyle: 'italic' }}>
-                                Searching for "{searchingText}"...
+                            <ActivityIndicator size="small" color={colors.primary[500]} style={{ marginRight: 8 }} />
+                            <Text style={{ fontSize: 13, color: colors.gray[500], fontStyle: 'italic' }} numberOfLines={1}>
+                                Searching "{searchingText}"...
                             </Text>
                         </View>
                     ) : (

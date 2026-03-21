@@ -10,6 +10,7 @@ import {
     TextInput,
     Modal,
     ScrollView,
+    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -265,10 +266,19 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
             <View style={styles.mainContent}>
                 {/* Sidebar */}
                 <View style={styles.sidebar}>
+                    {/* Move back button here */}
+                    <TouchableOpacity
+                        style={styles.sidebarBackButton}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Feather name="arrow-left" size={20} color={colors.primary[600]} />
+                    </TouchableOpacity>
+
                     <FlatList
                         data={subcategories}
                         keyExtractor={(item) => item.id}
                         showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingTop: spacing.sm }}
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 onPress={() => setSelectedSub(item.id)}
@@ -298,15 +308,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
                 <View style={styles.productContent}>
                     <View style={styles.listHeader}>
                         <View style={styles.headerTitleGroup}>
-                            <TouchableOpacity
-                                style={styles.backButton}
-                                onPress={() => navigation.goBack()}
-                            >
-                                <Feather name="arrow-left" size={20} color={colors.primary[600]} />
-                            </TouchableOpacity>
-                            <Text style={styles.listTitle} numberOfLines={1}>
-                                {subcategories.find((s: any) => s.id === selectedSub)?.name || 'Items'}
-                            </Text>
+                            {/* Title removed as requested - context is in sidebar */}
                         </View>
                         <TouchableOpacity
                             style={styles.filterButton}
@@ -318,15 +320,32 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
                             <Ionicons name="options-outline" size={16} color={colors.primary[500]} />
                         </TouchableOpacity>
                     </View>
-                    <FlatList
-                        data={sortedProducts}
-                        numColumns={2}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderProduct}
-                        contentContainerStyle={styles.gridContent}
-                        showsVerticalScrollIndicator={false}
-                        columnWrapperStyle={styles.columnWrapper}
-                    />
+                    {loading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color={colors.primary[500]} />
+                            <Text style={styles.loadingText}>Fetching fresh items...</Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={sortedProducts}
+                            numColumns={2}
+                            keyExtractor={(item) => item.id}
+                            renderItem={renderProduct}
+                            contentContainerStyle={styles.gridContent}
+                            showsVerticalScrollIndicator={false}
+                            columnWrapperStyle={styles.columnWrapper}
+                            initialNumToRender={8}
+                            maxToRenderPerBatch={10}
+                            windowSize={5}
+                            removeClippedSubviews={true}
+                            ListEmptyComponent={
+                                <View style={styles.emptyContainer}>
+                                    <Feather name="search" size={48} color={colors.gray[300]} />
+                                    <Text style={styles.emptyText}>No products found in this category</Text>
+                                </View>
+                            }
+                        />
+                    )}
                 </View>
             </View>
 
@@ -421,9 +440,7 @@ const styles = StyleSheet.create({
     },
     sidebar: {
         width: SIDEBAR_WIDTH,
-        backgroundColor: colors.background.primary,
-        borderRightWidth: 1,
-        borderRightColor: colors.gray[100],
+        backgroundColor: colors.primary[500], // Strong primary brand color
         paddingTop: spacing.xs,
     },
     sidebarItem: {
@@ -433,22 +450,20 @@ const styles = StyleSheet.create({
         paddingHorizontal: 6,
     },
     sidebarItemActive: {
-        backgroundColor: colors.white,
+        // Removed white square background
     },
     iconContainer: {
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: colors.white,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)', // Subtlest white for inactive circles
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 6,
-        ...shadow.soft,
     },
     iconContainerActive: {
-        backgroundColor: colors.primary[50],
-        borderWidth: 1.5,
-        borderColor: colors.primary[500],
+        backgroundColor: colors.white, // Pop white for active icon
+        borderWidth: 0,
     },
     subIcon: {
         fontSize: 20,
@@ -456,13 +471,26 @@ const styles = StyleSheet.create({
     sidebarLabel: {
         fontSize: 10,
         fontWeight: '600',
-        color: colors.gray[500],
+        color: 'rgba(255, 255, 255, 0.6)',
         textAlign: 'center',
         paddingHorizontal: 2,
+        marginTop: 2,
+    },
+    sidebarBackButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: colors.white,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: spacing.sm,
+        alignSelf: 'center', // Center in sidebar
+        marginBottom: spacing.xs,
+        ...shadow.soft,
     },
     sidebarLabelActive: {
-        color: colors.primary[700],
-        fontWeight: '700',
+        color: colors.white,
+        fontWeight: '800',
     },
     productContent: {
         flex: 1,
@@ -515,7 +543,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     gridContent: {
-        paddingBottom: 20,
+        paddingBottom: 120, // Increased to avoid overlap with floating cart bar
     },
     columnWrapper: {
         justifyContent: 'space-between',
@@ -525,9 +553,9 @@ const styles = StyleSheet.create({
     },
     cartBar: {
         position: 'absolute',
-        bottom: 20,
-        left: spacing.md,
-        right: spacing.md,
+        bottom: 15,
+        left: spacing.sm,
+        right: spacing.sm,
         backgroundColor: colors.primary[600],
         borderRadius: borderRadius.lg,
         padding: 12,
@@ -611,6 +639,29 @@ const styles = StyleSheet.create({
     },
     sortOptionLabelActive: {
         color: colors.primary[700],
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 14,
+        fontFamily: typography.fontFamily.body,
+        color: colors.gray[500],
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: 100,
+    },
+    emptyText: {
+        marginTop: 12,
+        fontSize: 16,
+        fontFamily: typography.fontFamily.body,
+        color: colors.gray[400],
     },
 });
 
