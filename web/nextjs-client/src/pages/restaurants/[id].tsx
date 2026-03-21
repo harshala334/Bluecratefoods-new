@@ -114,6 +114,7 @@ export default function RestaurantDetail() {
       <div className="bg-gray-50 min-h-screen">
         {/* Restaurant Header */}
         <div className="relative h-64 md:h-80">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={restaurant.image}
             alt={restaurant.name}
@@ -186,6 +187,7 @@ export default function RestaurantDetail() {
             {filteredItems.map((item) => (
               <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="flex">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.image}
                     alt={item.name}

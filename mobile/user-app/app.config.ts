@@ -6,7 +6,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     slug: "bluecratefoods",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
+    icon: "./assets/images/new_logo.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     jsEngine: "hermes",
@@ -32,9 +32,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         "expo-video"
     ],
     splash: {
-        image: "./assets/splash-icon.png",
+        image: "./assets/images/new_logo.png",
         resizeMode: "contain",
-        backgroundColor: "#28b7b5"
+        backgroundColor: "#ffffff"
     },
     ios: {
         supportsTablet: true,
@@ -43,8 +43,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     android: {
         adaptiveIcon: {
-            foregroundImage: "./assets/adaptive-icon.png",
-            backgroundColor: "#28b7b5"
+            foregroundImage: "./assets/images/new_logo.png",
+            backgroundColor: "#ffffff"
         },
         package: "com.bluecratefoods.app",
         googleServicesFile: "./google-services.json",
@@ -57,7 +57,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         }
     },
     web: {
-        favicon: "./assets/favicon.png"
+        favicon: "./assets/images/new_logo.png"
     },
     extra: {
         eas: {

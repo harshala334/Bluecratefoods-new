@@ -14,13 +14,14 @@ export class AdminGuard implements CanActivate {
         }
 
         // Check for admin email or admin role
-        const isAdmin =
+        const isAdminOrVendor =
             user.email === 'admin@gmail.com' ||
             user.userType === 'admin' ||
+            user.userType === 'vendor' ||
             user.role === 'admin';
 
-        if (!isAdmin) {
-            throw new ForbiddenException('Admin access required');
+        if (!isAdminOrVendor) {
+            throw new ForbiddenException('Admin or Vendor access required');
         }
 
         return true;

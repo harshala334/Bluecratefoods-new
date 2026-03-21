@@ -207,6 +207,7 @@ export default function RecipesPage() {
             {filteredRecipes.map((recipe) => (
               <Link key={recipe.id} href={`/recipes/${recipe.id}`} className="card group">
                 <div className="relative overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={recipe.image}
                     alt={recipe.name}

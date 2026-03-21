@@ -60,6 +60,9 @@ export class Product {
     spiceLevel: number;
 
     @Column({ nullable: true })
+    badge: string;
+
+    @Column({ nullable: true })
     unit: string;
 
     @Column('float', { nullable: true })
@@ -86,6 +89,18 @@ export class Product {
 
     @Column({ default: false })
     isApproved: boolean;
+
+    @Column({ default: true })
+    isActive: boolean;
+
+    @Column({ default: true })
+    inStock: boolean;
+
+    @Column('float', { default: 0 })
+    stockQuantity: number;
+
+    @Column('jsonb', { nullable: true, default: [] })
+    secondaryCategories: string[];
 
     @CreateDateColumn()
     createdAt: Date;

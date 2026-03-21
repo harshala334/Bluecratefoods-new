@@ -63,11 +63,14 @@ export default function Cart() {
                 <div className="space-y-4">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-4 pb-4 border-b last:border-b-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
+                      <div className="relative w-24 h-24 flex-shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg mb-1">{item.name}</h3>
                         <p className="text-gray-600 text-sm mb-2">{item.restaurantName}</p>

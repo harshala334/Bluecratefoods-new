@@ -217,7 +217,7 @@ const MOCK_PRODUCTS: Recipe[] = [
     category: 'frozen',
     image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=300&q=80',
     basePrice: 199,
-    price: 199,
+    price: 15.99,
     rating: 4.7,
     reviews: 320,
     time: '10 min',
@@ -248,8 +248,10 @@ export const recipeService = {
       const recipes = await api.get<Recipe[]>(API_CONFIG.ENDPOINTS.RECIPES, { params });
       return { recipes, total: recipes.length };
     } catch (error) {
-      console.warn("RecipeService: Backend fetch failed, falling back to mock data.", error);
-      return { recipes: MOCK_PRODUCTS, total: MOCK_PRODUCTS.length };
+      console.warn("RecipeService: Backend fetch failed.", error);
+      // Fallback commented out per user request
+      // return { recipes: MOCK_PRODUCTS, total: MOCK_PRODUCTS.length };
+      return { recipes: [], total: 0 };
     }
   },
 
@@ -258,10 +260,10 @@ export const recipeService = {
     try {
       return await api.get<Recipe>(API_CONFIG.ENDPOINTS.RECIPE_DETAIL(id.toString()));
     } catch (error) {
-      // Ensure numerical ID check
-      const numId = typeof id === 'string' ? parseInt(id, 10) : id;
-      const found = MOCK_PRODUCTS.find(p => p.id === numId);
-      if (found) return found;
+      // Fallback commented out per user request
+      // const numId = typeof id === 'string' ? parseInt(id, 10) : id;
+      // const found = MOCK_PRODUCTS.find(p => p.id === numId);
+      // if (found) return found;
       throw error;
     }
   },
@@ -278,16 +280,12 @@ export const recipeService = {
         params: { search: query },
       });
     } catch (error) {
-      console.warn("RecipeService: Backend search failed, falling back to local mock data.", error);
-      const lowerQuery = query.toLowerCase();
-      // If no query, return a selection of mock products
-      if (!lowerQuery) return MOCK_PRODUCTS.slice(0, 5);
-
-      return MOCK_PRODUCTS.filter(product =>
-        product.name.toLowerCase().includes(lowerQuery) ||
-        product.category.toLowerCase().includes(lowerQuery) ||
-        (product.description && product.description.toLowerCase().includes(lowerQuery))
-      );
+      console.warn("RecipeService: Backend search failed.", error);
+      // Fallback commented out per user request
+      // const lowerQuery = query.toLowerCase();
+      // if (!lowerQuery) return MOCK_PRODUCTS.slice(0, 5);
+      // return MOCK_PRODUCTS.filter(product => ...);
+      return [];
     }
   },
 

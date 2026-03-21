@@ -150,6 +150,7 @@ export default function RecipeDetailPage() {
 
       {/* Hero Section */}
       <section className="relative h-[500px] bg-gray-900">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={recipe.image}
           alt={recipe.name}

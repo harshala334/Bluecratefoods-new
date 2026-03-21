@@ -3,9 +3,13 @@ export interface Ingredient {
   name: string;
   amount: number;
   unit: string;
+  spiciness?: number;
   price: number;
   category: string;
+  secondaryCategories?: string[];
   image?: string;
+  utensils?: Utensil[];
+  steps?: Step[];
   isMandatory?: boolean;
 }
 
@@ -44,8 +48,11 @@ export interface Recipe {
   id: number;
   name: string;
   image: string;
-  time: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  badge?: string;
+  isActive?: boolean;
+  inStock?: boolean;
+  time?: string;
+  difficulty?: string;
   servings: number;
   rating: number;
   reviews: number;
@@ -55,6 +62,7 @@ export interface Recipe {
   nutrition: Nutrition;
   category: string;
   basePrice: number;
+  price?: number; // Added price
   utensils?: Utensil[];
   userReviews?: UserReview[];
   authorName?: string; // Added for User Profile tag

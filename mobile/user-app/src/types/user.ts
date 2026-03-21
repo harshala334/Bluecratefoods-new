@@ -8,6 +8,7 @@ export interface User {
   profileImage?: string;
   backgroundImage?: string;
   isGuest?: boolean;
+  isVerifiedCreator?: boolean;
   userType: 'individual' | 'business' | 'customer' | 'admin';
   createdAt: string;
   updatedAt: string;

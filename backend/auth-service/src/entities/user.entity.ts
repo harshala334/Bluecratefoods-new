@@ -45,6 +45,9 @@ export class User {
   @Column({ type: 'jsonb', default: [] })
   creatorSocialLinks: string[];
 
+  @Column({ nullable: true })
+  vendorCategory: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

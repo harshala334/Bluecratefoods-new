@@ -4,14 +4,14 @@ import AdminLayout from '@/components/admin/AdminLayout'
 import ProtectedRoute from '@/components/admin/ProtectedRoute'
 import { FiPlus, FiDownload, FiUpload, FiSearch, FiEdit2, FiTrash2, FiClock, FiCheckCircle, FiX } from 'react-icons/fi'
 import toast from 'react-hot-toast'
-import Image from 'next/image'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-441546178642.us-central1.run.app'
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 export default function AdminProducts() {
     const [products, setProducts] = useState<any[]>([])
+    const [categories, setCategories] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
+    const [filterCategory, setFilterCategory] = useState('')
+    const [filterStock, setFilterStock] = useState('')
     const [isUploading, setIsUploading] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
@@ -25,13 +25,29 @@ export default function AdminProducts() {
         weight: '',
         description: '',
         image: 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg',
-        bulkTiers: ''
+        badge: '',
+        isActive: true,
+        inStock: true,
+        stockQuantity: '',
+        secondaryCategories: [] as string[],
+        bulkTiers: [
+            { quantity: '', price: '' },
+            { quantity: '', price: '' },
+            { quantity: '', price: '' }
+        ]
     })
 
     const fetchProducts = async () => {
         setIsLoading(true)
         try {
-            const response = await fetch(`${API_URL}/api/products`)
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}/api/products?admin=true&_cb=${Date.now()}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
             const data = await response.json()
             setProducts(data)
         } catch (error) {
@@ -42,8 +58,30 @@ export default function AdminProducts() {
         }
     }
 
+    const fetchCategories = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const response = await fetch(`${API_URL}/api/products/categories`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            const data = await response.json()
+            setCategories(data)
+        } catch (error) {
+            console.error('Fetch categories error:', error)
+        }
+    }
+
+    // Get user from localStorage
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const user = userStr ? JSON.parse(userStr) : null;
+    const userType = user?.userType || 'admin';
+    const vendorCategory = user?.vendorCategory || null;
+
     useEffect(() => {
         fetchProducts()
+        fetchCategories()
     }, [])
 
     const handleDownloadTemplate = async () => {
@@ -126,6 +164,7 @@ export default function AdminProducts() {
 
         try {
             const token = localStorage.getItem('token')
+            console.log('[AdminProducts] Token found in localStorage:', token ? (token.substring(0, 20) + '...') : 'NULL');
             const response = await fetch(`${API_URL}/api/products/${id}`, {
                 method: 'DELETE',
                 headers: {
@@ -144,6 +183,38 @@ export default function AdminProducts() {
         }
     }
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        setIsUploading(true)
+        const uploadData = new FormData()
+        uploadData.append('file', file)
+
+        try {
+            const token = localStorage.getItem('token')
+            const response = await fetch(`${API_URL}/api/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: uploadData,
+            })
+            const data = await response.json()
+            if (data.success && data.url) {
+                setFormData({ ...formData, image: data.url })
+                toast.success('Image uploaded securely!')
+            } else {
+                toast.error('Upload failed: ' + (data.error || 'Unknown error'))
+            }
+        } catch (error) {
+            console.error('Upload error', error)
+            toast.error('An error occurred during upload.')
+        } finally {
+            setIsUploading(false)
+        }
+    }
+
     const handleOpenModal = (product: any = null) => {
         if (product) {
             setIsEditing(true)
@@ -157,21 +228,39 @@ export default function AdminProducts() {
                 weight: product.weight || '',
                 description: product.description || '',
                 image: product.image,
-                bulkTiers: product.bulkTiers ? JSON.stringify(product.bulkTiers, null, 2) : ''
+                badge: product.badge || '',
+                isActive: product.isActive !== false, // default true
+                inStock: product.inStock !== false,   // default true
+                stockQuantity: product.stockQuantity?.toString() || '0',
+                secondaryCategories: product.secondaryCategories || [],
+                bulkTiers: [
+                    product.bulkTiers?.[0] || { quantity: '', price: '' },
+                    product.bulkTiers?.[1] || { quantity: '', price: '' },
+                    product.bulkTiers?.[2] || { quantity: '', price: '' }
+                ]
             })
         } else {
             setIsEditing(false)
             setCurrentProduct(null)
             setFormData({
                 name: '',
-                category: 'frozen',
+                category: vendorCategory || 'frozen',
                 basePrice: '',
                 mrp: '',
                 unit: '',
                 weight: '',
                 description: '',
                 image: 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg',
-                bulkTiers: ''
+                badge: '',
+                isActive: true,
+                inStock: true,
+                stockQuantity: '0',
+                secondaryCategories: [],
+                bulkTiers: [
+                    { quantity: '', price: '' },
+                    { quantity: '', price: '' },
+                    { quantity: '', price: '' }
+                ]
             })
         }
         setIsModalOpen(true)
@@ -183,11 +272,17 @@ export default function AdminProducts() {
         const method = isEditing ? 'PUT' : 'POST'
         const url = isEditing ? `${API_URL}/api/products/${currentProduct.id}` : `${API_URL}/api/products`
 
+        // Filter out empty bulk tiers
+        const formattedBulkTiers = formData.bulkTiers
+            .filter(t => t.quantity && t.price)
+            .map(t => ({ quantity: t.quantity, price: parseFloat(t.price) || 0 }));
+
         const payload = {
             ...formData,
             basePrice: parseFloat(formData.basePrice) || 0,
             mrp: parseFloat(formData.mrp) || null,
-            bulkTiers: formData.bulkTiers ? JSON.parse(formData.bulkTiers) : null,
+            stockQuantity: parseFloat(formData.stockQuantity) || 0,
+            bulkTiers: formattedBulkTiers.length > 0 ? formattedBulkTiers : null,
             isApproved: true,
             status: 'approved'
         }
@@ -214,10 +309,23 @@ export default function AdminProducts() {
         }
     }
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredProducts = products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.id.toString().includes(searchTerm) ||
+            p.category.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCategory = filterCategory === '' || p.category === filterCategory;
+
+        let matchesStock = true;
+        if (filterStock === 'in_stock') matchesStock = p.inStock === true;
+        if (filterStock === 'out_of_stock') matchesStock = p.inStock === false;
+        if (filterStock === 'active') matchesStock = p.isActive === true;
+        if (filterStock === 'inactive') matchesStock = p.isActive === false;
+
+        return matchesSearch && matchesCategory && matchesStock;
+    })
+
+    // Categories are now fetched from API
 
     return (
         <ProtectedRoute>
@@ -232,18 +340,20 @@ export default function AdminProducts() {
                         <p className="text-gray-600 mt-1 text-left">View and manage all {products.length} items in your catalog.</p>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                        <button
-                            onClick={handleDownloadTemplate}
-                            className="btn-secondary flex items-center space-x-2 px-4"
-                        >
-                            <FiDownload />
-                            <span>Template</span>
-                        </button>
-                        <label className="btn-secondary flex items-center space-x-2 px-4 cursor-pointer">
-                            <FiUpload />
-                            <span>{isUploading ? 'Uploading...' : 'Bulk Upload'}</span>
-                            <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isUploading} />
-                        </label>
+                        {userType === 'admin' && (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleDownloadTemplate}
+                                    className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    <FiDownload className="mr-2" /> Template
+                                </button>
+                                <label className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 cursor-pointer transition-colors">
+                                    <FiUpload className="mr-2" /> Bulk Upload
+                                    <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
+                                </label>
+                            </div>
+                        )}
                         <button onClick={() => handleOpenModal()} className="btn-primary flex items-center space-x-2">
                             <FiPlus />
                             <span>Add Product</span>
@@ -252,8 +362,8 @@ export default function AdminProducts() {
                 </div>
 
                 {/* Search and Filters */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex items-center">
-                    <div className="relative flex-grow">
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-center">
+                    <div className="relative flex-grow w-full">
                         <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
@@ -263,68 +373,135 @@ export default function AdminProducts() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+                    <div className="flex gap-4 w-full md:w-auto">
+                        <select
+                            className="px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-700 min-w-[150px]"
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                        >
+                            <option value="">All Categories</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                        <select
+                            className="px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-700 min-w-[150px]"
+                            value={filterStock}
+                            onChange={(e) => setFilterStock(e.target.value)}
+                        >
+                            <option value="">All Status</option>
+                            <option value="active">Active Only</option>
+                            <option value="inactive">Inactive Only</option>
+                            <option value="in_stock">In Stock Only</option>
+                            <option value="out_of_stock">Out of Stock Only</option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* Products Table */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-[calc(100vh-240px)]">
                     {isLoading ? (
                         <div className="p-20 text-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
                             <p className="mt-4 text-gray-500">Loading inventory...</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Product</th>
+                        <div className="overflow-auto flex-1 relative border border-gray-200 rounded-b-xl border-t-0">
+                            <table className="w-full text-left border-collapse whitespace-nowrap min-w-max">
+                                <thead className="bg-gray-50 sticky top-0 z-30 shadow-sm border-b border-gray-200">
+                                    <tr className="divide-x divide-gray-200">
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 sticky left-0 bg-gray-50 z-40 shadow-[1px_0_0_0_#e5e7eb] border-r border-gray-200">Product</th>
                                         <th className="px-6 py-4 text-sm font-semibold text-gray-600">Category</th>
-                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Price</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Secondary Cats</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Base Price</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">MRP</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Wgt/Vol</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Pack Qty</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Bulk Tier 1</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Bulk Tier 2</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Bulk Tier 3</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Badge</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Stock Qty</th>
                                         <th className="px-6 py-4 text-sm font-semibold text-gray-600">Stock/Status</th>
-                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 text-right">Actions</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 text-right sticky right-0 bg-gray-50 z-40 shadow-[-1px_0_0_0_#e5e7eb] border-l border-gray-200">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
+                                <tbody className="divide-y divide-gray-200 border-b border-gray-200">
                                     {filteredProducts.map((product) => (
-                                        <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
+                                        <tr key={product.id} className="hover:bg-gray-50 transition-colors group bg-white divide-x divide-gray-200">
+                                            <td className="px-6 py-4 sticky left-0 bg-white group-hover:bg-gray-50 z-20 shadow-[1px_0_0_0_#e5e7eb] border-r border-gray-200">
+                                                <div className="flex items-center min-w-[200px]">
                                                     <div className="h-12 w-12 rounded-lg bg-gray-100 flex-shrink-0 relative overflow-hidden">
-                                                        <Image src={product.image} alt={product.name} fill className="object-cover" />
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                                                     </div>
-                                                    <div className="ml-4">
-                                                        <div className="text-sm font-bold text-gray-900">{product.name}</div>
+                                                    <div className="ml-4 truncate max-w-[220px]">
+                                                        <div className="text-sm font-bold text-gray-900 truncate" title={product.name}>{product.name}</div>
                                                         <div className="text-xs text-gray-500">ID: BCF-{product.id.toString().padStart(3, '0')}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-md text-xs font-medium ${product.category === 'meat' ? 'bg-red-100 text-red-700' :
+                                                <span className={`px-2 py-1 rounded-md text-xs font-medium uppercase tracking-wider ${product.category === 'meat' ? 'bg-red-100 text-red-700' :
                                                     product.category === 'frozen' ? 'bg-blue-100 text-blue-700' :
                                                         'bg-green-100 text-green-700'
                                                     }`}>
                                                     {product.category}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                                {product.secondaryCategories?.length ? product.secondaryCategories.join(', ') : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 font-bold text-gray-900">
                                                 ₹{product.basePrice}
                                             </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500 line-through">
+                                                {product.mrp ? `₹${product.mrp}` : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-700">
+                                                {product.weight || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-700">
+                                                {product.unit || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-xs text-gray-600">
+                                                {product.bulkTiers?.[0]?.quantity ? `${product.bulkTiers[0].quantity} @ ₹${product.bulkTiers[0].price}` : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-xs text-gray-600">
+                                                {product.bulkTiers?.[1]?.quantity ? `${product.bulkTiers[1].quantity} @ ₹${product.bulkTiers[1].price}` : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-xs text-gray-600">
+                                                {product.bulkTiers?.[2]?.quantity ? `${product.bulkTiers[2].quantity} @ ₹${product.bulkTiers[2].price}` : '-'}
+                                            </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center text-sm text-green-600 font-medium">
-                                                    <FiCheckCircle className="mr-2" />
-                                                    <span>Active</span>
+                                                {product.badge ? (
+                                                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs font-bold">{product.badge}</span>
+                                                ) : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 font-bold text-gray-900">
+                                                {product.stockQuantity || 0}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <div className={`flex items-center text-xs font-bold ${product.isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                                                        {product.isActive ? <FiCheckCircle className="mr-1.5" /> : <FiX className="mr-1.5" />}
+                                                        <span>{product.isActive ? 'Active' : 'Inactive'}</span>
+                                                    </div>
+                                                    <div className={`flex items-center text-xs font-bold ${product.inStock ? 'text-blue-600' : 'text-red-500'}`}>
+                                                        <span>{product.inStock ? 'In Stock' : 'Out of Stock'}</span>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                            <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap sticky right-0 bg-white group-hover:bg-gray-50 z-20 shadow-[-1px_0_0_0_#e5e7eb] border-l border-gray-200">
                                                 <button
                                                     onClick={() => handleOpenModal(product)}
-                                                    className="p-2 text-gray-400 hover:text-primary-600 transition-colors"
+                                                    className="p-2 text-gray-400 hover:text-primary-600 bg-white hover:bg-primary-50 rounded-lg transition-colors border border-transparent hover:border-primary-100"
                                                 >
                                                     <FiEdit2 size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(product.id)}
-                                                    className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                                                    className="p-2 text-gray-400 hover:text-red-600 bg-white hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
                                                 >
                                                     <FiTrash2 size={18} />
                                                 </button>
@@ -344,8 +521,8 @@ export default function AdminProducts() {
                 {/* Product Modal */}
                 {isModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
                                 <h2 className="text-xl font-bold text-gray-900">
                                     {isEditing ? 'Edit Product' : 'Add New Product'}
                                 </h2>
@@ -353,7 +530,7 @@ export default function AdminProducts() {
                                     <FiX className="w-6 h-6" />
                                 </button>
                             </div>
-                            <form onSubmit={handleSaveProduct} className="p-6 space-y-4">
+                            <form onSubmit={handleSaveProduct} className="p-6 space-y-4 overflow-y-auto flex-1">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Product Name</label>
                                     <input
@@ -367,24 +544,43 @@ export default function AdminProducts() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Category</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Primary Category</label>
                                         <select
-                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            disabled={userType === 'vendor'}
+                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
                                             value={formData.category}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                         >
-                                            <option value="frozen">Frozen</option>
-                                            <option value="5min">5 Mins</option>
-                                            <option value="10min">10 Mins</option>
-                                            <option value="meat">Meat</option>
-                                            <option value="veg">Vegetables</option>
-                                            <option value="grocery">Grocery</option>
-                                            <option value="packaging">Packaging Materials</option>
-                                            <option value="dessert">Dessert</option>
+                                            {categories.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Price (₹)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Secondary Categories</label>
+                                        <div className="w-full px-4 py-2 bg-gray-50 border-none rounded-lg max-h-24 overflow-y-auto space-y-1">
+                                            {['frozen', '5min', '10min', 'meat', 'veg', 'grocery', 'packaging', 'dessert'].map(cat => (
+                                                <label key={cat} className="flex items-center space-x-2 text-sm text-gray-700">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded text-primary-600 focus:ring-primary-500"
+                                                        checked={formData.secondaryCategories.includes(cat)}
+                                                        onChange={(e) => {
+                                                            const newCats = e.target.checked
+                                                                ? [...formData.secondaryCategories, cat]
+                                                                : formData.secondaryCategories.filter(c => c !== cat);
+                                                            setFormData({ ...formData, secondaryCategories: newCats });
+                                                        }}
+                                                    />
+                                                    <span>{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Base Price (₹)</label>
                                         <input
                                             type="number"
                                             required
@@ -395,7 +591,7 @@ export default function AdminProducts() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">MRP (₹)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">MRP (Strikethrough)</label>
                                         <input
                                             type="number"
                                             className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
@@ -404,10 +600,20 @@ export default function AdminProducts() {
                                             onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
                                         />
                                     </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Badge (e.g. New)</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            placeholder="Badge Text"
+                                            value={formData.badge}
+                                            onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Unit (e.g. 500g, Pack of 6)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Pack/Unit Qty (e.g. Pack of 6)</label>
                                         <input
                                             type="text"
                                             className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
@@ -417,13 +623,32 @@ export default function AdminProducts() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Weight (e.g. 500g)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Weight/Volume (e.g. 500g, 1L)</label>
                                         <input
                                             type="text"
                                             className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
                                             placeholder="Weight"
                                             value={formData.weight}
                                             onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left font-bold text-primary-600">Stock Quantity/Weight (Current)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            className="w-full px-4 py-3 bg-primary-50 border-primary-100 rounded-lg focus:ring-2 focus:ring-primary-500 font-bold"
+                                            placeholder="0.00"
+                                            value={formData.stockQuantity}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                const qty = parseFloat(val) || 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    stockQuantity: val,
+                                                    inStock: qty > 0 ? true : formData.inStock
+                                                });
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -437,26 +662,84 @@ export default function AdminProducts() {
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Image URL</label>
+                                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex flex-col items-center">
+                                    <label className="block text-sm font-bold text-gray-900 mb-2 underline decoration-gray-300">Product Image Upload</label>
+                                    {formData.image && formData.image !== 'https://storage.googleapis.com/bluecrate-assets/placeholders/coming-soon.jpg' && (
+                                        <div className="mb-4 relative w-32 h-32">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={formData.image} alt="Preview" className="w-full h-full object-cover rounded-md shadow-sm border border-gray-200 bg-white" />
+                                        </div>
+                                    )}
                                     <input
-                                        type="url"
-                                        className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
-                                        placeholder="https://..."
-                                        value={formData.image}
-                                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        disabled={isUploading}
+                                        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 disabled:opacity-50"
                                     />
+                                    {isUploading && <span className="text-xs text-primary-600 mt-2 font-bold animate-pulse">Uploading image to secure storage...</span>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Bulk Tiers (JSON)</label>
-                                    <textarea
-                                        rows={4}
-                                        className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500 font-mono text-xs"
-                                        placeholder='[{"quantity":"5 kg","price":180},{"quantity":"10 kg","price":340}]'
-                                        value={formData.bulkTiers}
-                                        onChange={(e) => setFormData({ ...formData, bulkTiers: e.target.value })}
-                                    />
-                                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">Must be valid JSON array of objects with quantity and price</p>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Status Toggles</label>
+                                    <div className="flex gap-6">
+                                        <label className="flex items-center space-x-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
+                                                checked={formData.isActive}
+                                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                            />
+                                            <span className="text-sm font-medium text-gray-700">Active (Visible)</span>
+                                        </label>
+                                        <label className="flex items-center space-x-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
+                                                checked={formData.inStock}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    setFormData({
+                                                        ...formData,
+                                                        inStock: checked,
+                                                        stockQuantity: checked ? formData.stockQuantity : '0'
+                                                    });
+                                                }}
+                                            />
+                                            <span className="text-sm font-medium text-gray-700">In Stock</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <label className="block text-sm font-bold text-gray-900 mb-3 text-left">3-Tier Bulk Pricing (Optional)</label>
+                                    <div className="space-y-3">
+                                        {[0, 1, 2].map((tierIndex) => (
+                                            <div key={tierIndex} className="flex gap-3 items-center">
+                                                <span className="text-xs font-bold text-gray-400 w-12">TIER {tierIndex + 1}</span>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Qty (e.g. '5 kg')"
+                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                                                    value={formData.bulkTiers[tierIndex].quantity}
+                                                    onChange={(e) => {
+                                                        const newTiers = [...formData.bulkTiers];
+                                                        newTiers[tierIndex].quantity = e.target.value;
+                                                        setFormData({ ...formData, bulkTiers: newTiers });
+                                                    }}
+                                                />
+                                                <input
+                                                    type="number"
+                                                    placeholder="Price (₹)"
+                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                                                    value={formData.bulkTiers[tierIndex].price}
+                                                    onChange={(e) => {
+                                                        const newTiers = [...formData.bulkTiers];
+                                                        newTiers[tierIndex].price = e.target.value;
+                                                        setFormData({ ...formData, bulkTiers: newTiers });
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="pt-4 flex space-x-3">
                                     <button

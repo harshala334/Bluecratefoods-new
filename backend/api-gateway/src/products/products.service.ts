@@ -10,11 +10,16 @@ export class ProductsService {
         private productsRepository: Repository<Product>,
     ) { }
 
-    async findAll(query?: any): Promise<Product[]> {
+    async findAll(query?: any, user?: any): Promise<Product[]> {
+        console.log(`[ProductsService.findAll] Incoming request. User: ${user ? user.email : 'ANONYMOUS'}, Query: ${JSON.stringify(query)}`);
         const qb = this.productsRepository.createQueryBuilder('product');
 
         if (query?.category) {
-            qb.andWhere('product.category = :category', { category: query.category });
+            const category = query.category.toLowerCase();
+            qb.andWhere('(LOWER(product.category) = :category OR product.secondaryCategories @> :jsonCategory)', { 
+                category,
+                jsonCategory: JSON.stringify([category])
+            });
         }
 
         if (query?.search) {
@@ -22,7 +27,22 @@ export class ProductsService {
             qb.andWhere('(LOWER(product.name) LIKE :search OR LOWER(product.description) LIKE :search OR LOWER(product.category) LIKE :search)', { search: searchLower });
         }
 
+        // If user is a vendor, restrict to their category
+        if (user && user.userType === 'vendor' && user.vendorCategory) {
+            console.log(`[ProductsService] Filtering for vendor: ${user.email}, Category: ${user.vendorCategory}`);
+            qb.andWhere('product.category = :vendorCat', { vendorCat: user.vendorCategory });
+        } else if (user && user.userType === 'vendor') {
+            console.warn(`[ProductsService] Vendor user ${user.email} has NO vendorCategory!`);
+            // To be safe, if a vendor has no category assigned, they should see NO products
+            qb.andWhere('1=0');
+        }
+
         qb.andWhere('product.isApproved = :isApproved', { isApproved: true });
+
+        // Hide inactive products unless admin parameter is provided
+        if (query?.admin !== 'true') {
+            qb.andWhere('product.isActive = :isActive', { isActive: true });
+        }
 
         return qb.orderBy('product.createdAt', 'DESC').getMany();
     }
@@ -31,12 +51,34 @@ export class ProductsService {
         return this.productsRepository.findOne({ where: { id } });
     }
 
-    async create(createProductDto: any): Promise<Product> {
+    async create(createProductDto: any, user?: any): Promise<Product> {
+        // Force category for vendors
+        if (user && user.userType === 'vendor' && user.vendorCategory) {
+            createProductDto.category = user.vendorCategory;
+        }
+
+        if (createProductDto.stockQuantity !== undefined && createProductDto.stockQuantity <= 0) {
+            createProductDto.inStock = false;
+        }
+        if (createProductDto.inStock === false) {
+            createProductDto.stockQuantity = 0;
+        }
         const product = this.productsRepository.create(createProductDto as object);
         return this.productsRepository.save(product as any);
     }
 
-    async update(id: number, updateProductDto: any): Promise<Product> {
+    async update(id: number, updateProductDto: any, user?: any): Promise<Product> {
+        // Prevent vendors from changing category to something else
+        if (user && user.userType === 'vendor' && user.vendorCategory) {
+            updateProductDto.category = user.vendorCategory;
+        }
+
+        if (updateProductDto.stockQuantity !== undefined && updateProductDto.stockQuantity <= 0) {
+            updateProductDto.inStock = false;
+        }
+        if (updateProductDto.inStock === false) {
+            updateProductDto.stockQuantity = 0;
+        }
         await this.productsRepository.update(id, updateProductDto);
         return this.findOne(id);
     }

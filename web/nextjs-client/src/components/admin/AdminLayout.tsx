@@ -11,14 +11,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const router = useRouter()
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
-    const menuItems = [
-        { name: 'Dashboard', icon: FiHome, href: '/admin/dashboard' },
-        { name: 'Orders', icon: FiBox, href: '/admin/orders' },
-        { name: 'Products', icon: FiBox, href: '/admin/products' },
-        { name: 'Analytics', icon: FiBarChart2, href: '/admin/analytics' },
-        { name: 'Users', icon: FiUsers, href: '/admin/users' },
-        { name: 'Delivery Partners', icon: FiTruck, href: '/admin/delivery' },
+    // Get user from localStorage
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const user = userStr ? JSON.parse(userStr) : null;
+    const userType = user?.userType || 'admin';
+
+    const allMenuItems = [
+        { name: 'Dashboard', icon: FiHome, href: '/admin/dashboard', roles: ['admin', 'vendor'] },
+        { name: 'Orders', icon: FiBox, href: '/admin/orders', roles: ['admin'] },
+        { name: 'Products', icon: FiBox, href: '/admin/products', roles: ['admin', 'vendor'] },
+        { name: 'Analytics', icon: FiBarChart2, href: '/admin/analytics', roles: ['admin'] },
+        { name: 'Users', icon: FiUsers, href: '/admin/users', roles: ['admin'] },
+        { name: 'Delivery Partners', icon: FiTruck, href: '/admin/delivery', roles: ['admin'] },
     ]
+
+    const menuItems = allMenuItems.filter(item => item.roles.includes(userType))
 
     const handleLogout = () => {
         localStorage.removeItem('token')

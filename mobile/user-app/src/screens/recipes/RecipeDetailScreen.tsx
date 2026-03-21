@@ -34,7 +34,19 @@ import { Recipe } from '../../types/recipe';
 
 // ...
 
-export const getYoutubeId = (url: string) => {
+export const getSpiceLevelLabel = (level: number) => {
+  switch (level) {
+    case 0: return 'None';
+    case 1: return 'Mild';
+    case 2: return 'Medium';
+    case 3: return 'Spicy';
+    case 4: return 'Very Spicy';
+    case 5: return 'Extra Hot';
+    default: return 'None';
+  }
+};
+
+export const getYoutubeId = (url: string | undefined | null) => {
   if (!url) {
     return null;
   }
@@ -365,10 +377,16 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Hero Image */}
         <View style={styles.heroSection}>
-          <Image source={{ uri: recipe.image }} style={styles.heroImage} resizeMode="cover" />
+          {recipe.image ? (
+            <Image source={{ uri: recipe.image }} style={styles.heroImage} resizeMode="cover" />
+          ) : (
+            <View style={[styles.heroImage, { backgroundColor: colors.gray[100], justifyContent: 'center', alignItems: 'center' }]}>
+              <Feather name="image" size={50} color={colors.gray[300]} />
+            </View>
+          )}
           <View style={styles.heroOverlay} />
 
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('RecipeList')}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color={colors.white} />
           </TouchableOpacity>
 
@@ -386,7 +404,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
           </View>
 
           <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>{recipe.name}</Text>
+            <Text style={styles.heroTitle}>{recipe.name || 'Recipe'}</Text>
 
             {/* Added by User Tag */}
             <View style={styles.authorRow}>
@@ -402,29 +420,29 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                 <View style={styles.unifiedMetaItem}>
                   <Ionicons name="star" size={16} color={colors.yellow[500]} />
                   <Text style={styles.unifiedMetaText}>
-                    {recipe.rating} <Text style={styles.unifiedMetaSubtext}>({recipe.reviews})</Text>
+                    {recipe.rating || 5} <Text style={styles.unifiedMetaSubtext}>({recipe.reviews || 0})</Text>
                   </Text>
                 </View>
                 <View style={styles.unifiedMetaDivider} />
                 <View style={styles.unifiedMetaItem}>
                   <Ionicons name="time-outline" size={16} color={colors.white} />
-                  <Text style={styles.unifiedMetaText}>{recipe.time}</Text>
+                  <Text style={styles.unifiedMetaText}>{recipe.time || '20 min'}</Text>
                 </View>
                 <View style={styles.unifiedMetaDivider} />
                 <View style={styles.unifiedMetaItem}>
                   <Ionicons name="restaurant-outline" size={16} color={colors.white} />
-                  <Text style={styles.unifiedMetaText}>{recipe.servings} servings</Text>
+                  <Text style={styles.unifiedMetaText}>{recipe.servings || 1} servings</Text>
                 </View>
               </View>
 
               {/* Tags Row */}
               <View style={styles.heroTagsRow}>
                 <View style={[styles.statusTag, { backgroundColor: getDifficultyColor() }]}>
-                  <Text style={styles.statusTagText}>{recipe.difficulty}</Text>
+                  <Text style={styles.statusTagText}>{recipe.difficulty || 'Easy'}</Text>
                 </View>
                 <View style={styles.priceTag}>
                   <Text style={styles.priceTagText}>
-                    from <Text style={styles.priceTagValue}>{formatPrice(recipe.basePrice)}</Text>
+                    from <Text style={styles.priceTagValue}>{formatPrice(recipe.basePrice || 0)}</Text>
                   </Text>
                 </View>
               </View>
@@ -641,7 +659,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                         <Ionicons name="flame" size={20} color={colors.orange[500]} />
                       </View>
                       <View>
-                        <Text style={styles.nutritionValue}>{recipe.nutrition.calories}</Text>
+                        <Text style={styles.nutritionValue}>{recipe.nutrition?.calories || 0}</Text>
                         <Text style={styles.nutritionLabel}>Calories</Text>
                       </View>
                     </View>
@@ -650,7 +668,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                         <Ionicons name="barbell" size={20} color={colors.accent[500]} />
                       </View>
                       <View>
-                        <Text style={styles.nutritionValue}>{recipe.nutrition.protein}g</Text>
+                        <Text style={styles.nutritionValue}>{recipe.nutrition?.protein || 0}g</Text>
                         <Text style={styles.nutritionLabel}>Protein</Text>
                       </View>
                     </View>
@@ -659,7 +677,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                         <Ionicons name="restaurant" size={20} color={colors.green[500]} />
                       </View>
                       <View>
-                        <Text style={styles.nutritionValue}>{recipe.nutrition.carbs}g</Text>
+                        <Text style={styles.nutritionValue}>{recipe.nutrition?.carbs || 0}g</Text>
                         <Text style={styles.nutritionLabel}>Carbs</Text>
                       </View>
                     </View>
@@ -668,7 +686,7 @@ const RecipeDetailContent = ({ recipe, navigation, addItem, isServiceable }: { r
                         <Ionicons name="water" size={20} color={colors.yellow[500]} />
                       </View>
                       <View>
-                        <Text style={styles.nutritionValue}>{recipe.nutrition.fat}g</Text>
+                        <Text style={styles.nutritionValue}>{recipe.nutrition?.fat || 0}g</Text>
                         <Text style={styles.nutritionLabel}>Fat</Text>
                       </View>
                     </View>

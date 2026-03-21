@@ -56,19 +56,28 @@ export const RecipeListScreen = ({ route, navigation }: any) => {
     try {
       setLoading(true);
       const data = await recipeService.getRecipes();
-      // Fallback to mock if API returns empty array (e.g. empty DB) or fails
       if (!data?.recipes || data.recipes.length === 0) throw new Error('No recipes found');
       setRecipes(data.recipes);
     } catch (error) {
       console.error('Failed to load recipes', error);
-      // TODO: Remove this mock fallback after backend endpoint is fixed
-      // Hardcoded fallback logic
       const mockRecipes = require('../../data/recipes').recipes;
-      console.log('Using mock recipes fallback');
       setRecipes(mockRecipes);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getYoutubeId = (url: string | undefined | null) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) return match[2];
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname === 'youtu.be') return urlObj.pathname.slice(1);
+      if (urlObj.searchParams.has('v')) return urlObj.searchParams.get('v');
+    } catch (e) {}
+    return null;
   };
 
   const timeFilters = [
@@ -80,7 +89,8 @@ export const RecipeListScreen = ({ route, navigation }: any) => {
 
   const difficultyFilters = ['All', 'Easy', 'Medium', 'Hard'];
 
-  const parseTime = (timeStr: string): number => {
+  const parseTime = (timeStr: string | undefined): number => {
+    if (!timeStr) return 0;
     const match = timeStr.match(/(\d+)/);
     return match ? parseInt(match[0], 10) : 0;
   };
@@ -91,7 +101,7 @@ export const RecipeListScreen = ({ route, navigation }: any) => {
 
     let matchesTime = true;
     if (selectedTime !== null) {
-      const recipeMinutes = parseTime(recipe.time);
+      const recipeMinutes = parseTime(recipe.time || '');
       if (selectedTime === 60) {
         // For 1 hour filter, show recipes between 10 and 60 minutes
         matchesTime = recipeMinutes <= 60 && recipeMinutes > 10;

@@ -14,7 +14,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         const userJson = localStorage.getItem('user')
         const user = userJson ? JSON.parse(userJson) : null
 
-        if (!token || !user || (user.email !== 'admin@gmail.com' && user.userType !== 'admin')) {
+        if (!token || !user || (user.email !== 'admin@gmail.com' && user.userType !== 'admin' && user.userType !== 'vendor')) {
             router.push('/login')
         } else {
             setIsAuthorized(true)

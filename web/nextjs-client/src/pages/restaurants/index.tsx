@@ -150,6 +150,7 @@ export default function Restaurants() {
               <Link href={`/restaurants/${restaurant.id}`} key={restaurant.id}>
                 <div className="card cursor-pointer">
                   <div className="relative h-48">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={restaurant.image}
                       alt={restaurant.name}

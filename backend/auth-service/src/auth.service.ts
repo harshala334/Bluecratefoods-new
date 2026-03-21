@@ -17,6 +17,7 @@ export class AuthService implements OnModuleInit {
 
   async onModuleInit() {
     await this.seedAdmin();
+    await this.seedVendor();
   }
 
   async seedAdmin() {
@@ -51,6 +52,32 @@ export class AuthService implements OnModuleInit {
       admin.creatorStatus = 'verified';
       await this.userRepository.save(admin);
       console.log('Admin user credentials reset/updated successfully');
+    }
+  }
+  
+  async seedVendor() {
+    const vendorEmail = 'vendor@bluecrate.com';
+    const vendorPassword = process.env.VENDOR_PASSWORD || 'vendorpass123';
+    
+    let vendor = await this.userRepository.findOne({ where: { email: vendorEmail } });
+    const hashedPassword = await bcrypt.hash(vendorPassword, 10);
+    
+    if (!vendor) {
+      vendor = this.userRepository.create({
+        name: 'Packaging Vendor',
+        email: vendorEmail,
+        password: hashedPassword,
+        userType: 'vendor',
+        vendorCategory: 'packaging'
+      });
+      await this.userRepository.save(vendor);
+      console.log('Vendor user created successfully');
+    } else {
+      vendor.password = hashedPassword;
+      vendor.userType = 'vendor';
+      vendor.vendorCategory = 'packaging';
+      await this.userRepository.save(vendor);
+      console.log('Vendor user updated successfully');
     }
   }
 
@@ -93,6 +120,7 @@ export class AuthService implements OnModuleInit {
         backgroundImage: user.backgroundImage,
         isVerifiedCreator: user.isVerifiedCreator,
         creatorStatus: user.creatorStatus,
+        vendorCategory: user.vendorCategory,
       },
     };
   }
@@ -118,6 +146,7 @@ export class AuthService implements OnModuleInit {
     // Generate JWT token
     const token = this.generateToken(user);
 
+    console.log(`[AuthService.login] Login successful for: ${user.email}, Role: ${user.userType}, Cat: ${user.vendorCategory}`);
     return {
       success: true,
       message: 'Login successful',
@@ -132,6 +161,7 @@ export class AuthService implements OnModuleInit {
         backgroundImage: user.backgroundImage,
         isVerifiedCreator: user.isVerifiedCreator,
         creatorStatus: user.creatorStatus,
+        vendorCategory: user.vendorCategory,
       },
     };
   }
@@ -163,6 +193,7 @@ export class AuthService implements OnModuleInit {
         backgroundImage: user.backgroundImage,
         isVerifiedCreator: user.isVerifiedCreator,
         creatorStatus: user.creatorStatus,
+        vendorCategory: user.vendorCategory,
       },
     };
   }
@@ -192,6 +223,7 @@ export class AuthService implements OnModuleInit {
         backgroundImage: user.backgroundImage,
         isVerifiedCreator: user.isVerifiedCreator,
         creatorStatus: user.creatorStatus,
+        vendorCategory: user.vendorCategory,
       };
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
@@ -261,6 +293,7 @@ export class AuthService implements OnModuleInit {
       email: user.email,
       name: user.name,
       userType: user.userType,
+      vendorCategory: user.vendorCategory,
     };
 
     return jwt.sign(payload, process.env.JWT_SECRET || 'default-secret-key', {
@@ -307,6 +340,7 @@ export class AuthService implements OnModuleInit {
           userType: user.userType,
           isVerifiedCreator: user.isVerifiedCreator,
           creatorStatus: user.creatorStatus,
+          vendorCategory: user.vendorCategory,
         },
       };
     } catch (error) {
@@ -347,6 +381,7 @@ export class AuthService implements OnModuleInit {
           userType: user.userType,
           isVerifiedCreator: user.isVerifiedCreator,
           creatorStatus: user.creatorStatus,
+          vendorCategory: user.vendorCategory,
         },
       };
     } catch (error) {

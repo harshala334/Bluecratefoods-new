@@ -116,17 +116,17 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                         <View style={styles.priceRow}>
                             <View style={styles.priceStack}>
                                 <Text style={styles.price}>₹{currentPrice}</Text>
-                                {(product.mrp || (currentPrice * 1.2)) > currentPrice && (
-                                    <Text style={styles.mrpText}>₹{Math.round(product.mrp || (currentPrice * 1.2))}</Text>
+                                {(Number(product.mrp || 0) > currentPrice) && (
+                                    <Text style={styles.mrpText}>₹{Math.round(Number(product.mrp))}</Text>
                                 )}
                             </View>
-                            <View style={styles.discountBadge}>
-                                <Text style={styles.discountText}>
-                                    {product.mrp && product.mrp > currentPrice
-                                        ? Math.round(((product.mrp - currentPrice) / product.mrp) * 100)
-                                        : 20}% OFF
-                                </Text>
-                            </View>
+                            {Number(product.mrp || 0) > currentPrice && (
+                                <View style={styles.discountBadge}>
+                                    <Text style={styles.discountText}>
+                                        {Math.round(((Number(product.mrp) - currentPrice) / Number(product.mrp)) * 100)}% OFF
+                                    </Text>
+                                </View>
+                            )}
                         </View>
 
                         {Array.isArray(product.bulkTiers) && product.bulkTiers.length > 0 && (

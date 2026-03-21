@@ -171,7 +171,7 @@ export const EditProfileScreen = ({ navigation, route }: any) => {
                         <Text style={styles.label}>Background Image</Text>
                         <View style={styles.imagePreviewContainer}>
                             {backgroundImage ? (
-                                <Image source={{ uri: backgroundImage }} style={styles.background} />
+                                <Image source={{ uri: backgroundImage }} style={styles.backgroundPreview} />
                             ) : (
                                 <View style={[styles.backgroundPreview, styles.placeholder]} />
                             )}

@@ -29,8 +29,11 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
     const cartItem = items.find(i => i.ingredient.id === product.id);
     const quantity = cartItem?.quantity || 0;
 
+    const isOutOfStock = product.inStock === false;
+
     const handleAdd = (e: any) => {
         e.stopPropagation();
+        if (isOutOfStock) return;
         const ingredient = {
             id: product.id,
             name: product.name,
@@ -55,6 +58,8 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
 
     const handleAddBulk = (e: any, bulkQuantity: string) => {
         e.stopPropagation();
+        if (isOutOfStock) return;
+
         const qty = parseInt(bulkQuantity) || 1;
         const cartItem = items.find(i => i.ingredient.id === product.id);
 
@@ -89,7 +94,7 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
             }}
         >
             {/* Product Image Area */}
-            <View style={{ position: 'relative' }}>
+            <View style={{ position: 'relative', opacity: isOutOfStock ? 0.5 : 1 }}>
                 <Image
                     source={{ uri: product.image }}
                     style={{ width: '100%', height: 90, backgroundColor: colors.gray[100] }}
@@ -176,16 +181,19 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
                                 </View>
                                 <TouchableOpacity
                                     style={{
-                                        backgroundColor: colors.white,
+                                        backgroundColor: isOutOfStock ? colors.gray[100] : colors.white,
                                         borderWidth: 1,
-                                        borderColor: colors.primary[200],
+                                        borderColor: isOutOfStock ? colors.gray[300] : colors.primary[200],
                                         paddingHorizontal: 6,
                                         paddingVertical: 2,
                                         borderRadius: 4,
                                     }}
                                     onPress={(e) => handleAddBulk(e, tier.quantity)}
+                                    disabled={isOutOfStock}
                                 >
-                                    <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>ADD</Text>
+                                    <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: isOutOfStock ? colors.gray[400] : colors.primary[600] }}>
+                                        {isOutOfStock ? 'OUT' : 'ADD'}
+                                    </Text>
                                 </TouchableOpacity>
                             </View>
                         );
@@ -239,6 +247,21 @@ export const VerticalProductCard = ({ product, onPress, width }: VerticalProduct
                             >
                                 <Feather name="plus" size={14} color={colors.primary[600]} />
                             </TouchableOpacity>
+                        </View>
+                    ) : isOutOfStock ? (
+                        <View
+                            style={{
+                                backgroundColor: colors.gray[100],
+                                borderWidth: 1,
+                                borderColor: colors.gray[300],
+                                paddingHorizontal: 8,
+                                paddingVertical: 3,
+                                borderRadius: 6,
+                            }}
+                        >
+                            <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[500] }}>
+                                OUT OF STOCK
+                            </Text>
                         </View>
                     ) : (
                         <TouchableOpacity

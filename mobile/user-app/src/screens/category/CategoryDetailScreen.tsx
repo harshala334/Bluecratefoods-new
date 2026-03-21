@@ -160,7 +160,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
                 setProducts(results);
             } catch (error) {
                 console.warn("Failed to fetch products for category:", categoryId, error);
-                setProducts(PRODUCTS); // Fallback to local mock if service fails
+                // setProducts(PRODUCTS); // Fallback to local mock if service fails
             }
             setLoading(false);
         };

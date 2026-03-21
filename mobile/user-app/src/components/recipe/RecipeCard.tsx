@@ -13,7 +13,7 @@ interface RecipeCardProps {
   onPress: (recipeId: number) => void;
 }
 
-const getDifficultyColor = (difficulty: string) => {
+const getDifficultyColor = (difficulty: string | undefined) => {
   switch (difficulty) {
     case 'Easy':
       return { bg: colors.green[100], text: colors.green[700] };

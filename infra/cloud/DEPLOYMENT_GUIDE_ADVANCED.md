@@ -25,21 +25,18 @@ The web app is located in `web/nextjs-client`. To deploy it to Cloud Run:
 
 ### Step 1: Build & Push Image
 ```bash
-gcloud builds submit web/nextjs-client \
-  --tag us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client \
-  --project bluecratefoods
+gcloud builds submit web/nextjs-client --tag us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client --project bluecratefoods
+
 ```
 
 ### Step 2: Deploy to Cloud Run
 ```bash
-gcloud run deploy web-client \
-  --image us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --project bluecratefoods \
-  --set-env-vars="NEXT_PUBLIC_API_URL=https://api-gateway-441546178642.us-central1.run.app/api"
+gcloud run deploy web-client --image us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client --platform managed --region us-central1 --allow-unauthenticated --project bluecratefoods --set-env-vars="NEXT_PUBLIC_API_URL=https://api-gateway-441546178642.us-central1.run.app"
+
 ```
+
+> [!NOTE]
+> The API URL `https://api-gateway-441546178642.us-central1.run.app/api` has been verified as functional. The domain `api.bluecratefoods.com` currently returns a 503 error.
 
 ---
 
