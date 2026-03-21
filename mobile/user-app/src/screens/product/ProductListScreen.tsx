@@ -150,7 +150,7 @@ const ProductListScreen = ({ navigation }: any) => {
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <SafeAreaView style={styles.container} edges={['left', 'right']}>
             {/* Fixed Header Section */}
             <View style={{ backgroundColor: colors.background.primary, paddingTop: insets.top + spacing.md }}>
                 {/* Hero / Welcome */}

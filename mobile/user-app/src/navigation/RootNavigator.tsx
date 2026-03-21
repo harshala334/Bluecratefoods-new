@@ -64,10 +64,12 @@ function HomeStack() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.background.primary,
+          backgroundColor: colors.primary[600],
           elevation: 0,
           shadowOpacity: 0,
+          borderBottomWidth: 0,
         },
+        headerShadowVisible: false,
         headerTintColor: '#fff',
         headerTitleStyle: {
           fontWeight: '600',

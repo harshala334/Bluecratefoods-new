@@ -10,7 +10,7 @@ interface LocationState {
 }
 
 export const useLocationStore = create<LocationState>((set) => ({
-    location: 'NYC', // Default location
+    location: 'Kolkata', // Default location
     isLoading: false,
     errorMsg: null,
     setLocation: (location) => set({ location }),

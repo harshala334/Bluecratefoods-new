@@ -262,7 +262,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <View style={styles.mainContent}>
                 {/* Sidebar */}
                 <View style={styles.sidebar}>

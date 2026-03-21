@@ -84,9 +84,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 12,
         backgroundColor: 'rgba(255,255,255,0.12)',
         borderRadius: 24,
-        ...shadow.medium,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.25)',
     },
     headerContent: {
         flexDirection: 'row',
