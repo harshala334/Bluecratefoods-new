@@ -266,6 +266,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
             <View style={styles.mainContent}>
                 {/* Sidebar */}
                 <View style={styles.sidebar}>
+                    <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(109, 240, 236, 0.67)' }]} />
                     {/* Move back button here */}
                     <TouchableOpacity
                         style={styles.sidebarBackButton}
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
     },
     sidebar: {
         width: SIDEBAR_WIDTH,
-        backgroundColor: colors.primary[500], // Strong primary brand color
+        backgroundColor: colors.primary[500], // Base primary brand color
         paddingTop: spacing.xs,
     },
     sidebarItem: {

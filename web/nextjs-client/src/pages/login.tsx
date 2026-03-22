@@ -49,28 +49,20 @@ export default function Login() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        console.log('[Login] Login successful. User:', data.user);
-        console.log('[Login] Token received:', data.token?.substring(0, 15) + '...');
         toast.success(activeTab === 'login' ? 'Login successful!' : 'Account created successfully!')
         localStorage.setItem('token', data.token)
         const serverUserType = data.user.userType || userType
         localStorage.setItem('userType', serverUserType)
         localStorage.setItem('user', JSON.stringify(data.user))
 
-        // Log exact details for debugging
-        console.log('[Login] serverUserType:', serverUserType);
-        
         // Use a more robust check for roles
         const isStaff = serverUserType === 'admin' || serverUserType === 'vendor' || data.user.email === 'admin@gmail.com';
         
         if (isStaff) {
-          console.log('[Login] Redirecting Staff to: /admin/dashboard');
           router.push('/admin/dashboard')
         } else if (serverUserType === 'business') {
-          console.log('[Login] Redirecting Business to: /b2b');
           router.push('/b2b')
         } else {
-          console.log('[Login] Redirecting Individual/Default to: /d2c');
           router.push('/d2c')
         }
       } else {

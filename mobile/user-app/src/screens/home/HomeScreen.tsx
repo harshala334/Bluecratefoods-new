@@ -223,10 +223,11 @@ export const HomeScreen = ({ navigation }: any) => {
   const CompactProductCard = ({ recipe: product, onPress, style }: any) => {
     const { addItem } = useCartStore();
     const { addFrequentItem } = useRecipeStore();
+    const isOutOfStock = product.inStock === false;
 
     return (
       <TouchableOpacity style={[styles.compactCard, style]} onPress={onPress} activeOpacity={0.9}>
-        <View style={styles.compactImageContainer}>
+        <View style={[styles.compactImageContainer, isOutOfStock && { opacity: 0.5 }]}>
           <Image source={{ uri: product.image }} style={styles.compactImage} />
         </View>
         <View style={styles.compactContent}>
@@ -248,24 +249,30 @@ export const HomeScreen = ({ navigation }: any) => {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.miniAddBtn}
-          onPress={(e) => {
-            e.stopPropagation();
-            const ingredient = {
-              id: product.id,
-              name: product.name,
-              price: product.price || product.basePrice || 0,
-              unit: product.unit || product.weight || '',
-              image: product.image,
-              category: product.category || 'general'
-            };
-            addItem(ingredient as any, 1);
-            addFrequentItem(product);
-          }}
-        >
-          <Feather name="plus" size={12} color={colors.white} />
-        </TouchableOpacity>
+        {isOutOfStock ? (
+          <View style={[styles.miniAddBtn, { backgroundColor: colors.gray[100], width: 'auto', paddingHorizontal: 6, borderRadius: 4, height: 20, borderWidth: 1, borderColor: colors.gray[300] }]}>
+            <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[500] }}>OUT</Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.miniAddBtn}
+            onPress={(e) => {
+              e.stopPropagation();
+              const ingredient = {
+                id: product.id,
+                name: product.name,
+                price: product.price || product.basePrice || 0,
+                unit: product.unit || product.weight || '',
+                image: product.image,
+                category: product.category || 'general'
+              };
+              addItem(ingredient as any, 1);
+              addFrequentItem(product);
+            }}
+          >
+            <Feather name="plus" size={12} color={colors.white} />
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     );
   };

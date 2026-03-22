@@ -21,7 +21,7 @@ export class UsersProxyController {
             const response = await axios({
                 method: req.method,
                 url: targetUrl,
-                data: req.body,
+                data: ['POST', 'PUT', 'PATCH'].includes(req.method) ? req.body : undefined,
                 headers: {
                     'content-type': 'application/json',
                     ...(req.headers.authorization ? { 'authorization': req.headers.authorization } : {}),

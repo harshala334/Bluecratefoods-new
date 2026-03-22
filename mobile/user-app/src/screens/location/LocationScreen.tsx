@@ -20,8 +20,8 @@ export const LocationScreen = ({ navigation }: any) => {
     const { setLocation, fetchCurrentLocation, isLoading, location } = useLocationStore();
     const mapRef = useRef<MapView>(null);
     const [region, setRegion] = useState<Region>({
-        latitude: 40.7128,
-        longitude: -74.0060,
+        latitude: 22.5726,
+        longitude: 88.3639,
         latitudeDelta: LATITUDE_DELTA,
         longitudeDelta: LONGITUDE_DELTA,
     });
@@ -56,21 +56,21 @@ export const LocationScreen = ({ navigation }: any) => {
 
     const reverseGeocode = async (lat: number, lng: number) => {
         try {
-            // Updated to use Backend Proxy
-            const response = await fetch(
-                `${API_CONFIG.ENDPOINTS.REVERSE_GEOCODE}?lat=${lat}&lng=${lng}`
-            );
-            const data = await response.json();
-            if (data.results && data.results.length > 0) {
-                // Prefer compound code or formatted address, simplify for UI
-                // Grab the first result components for City/Area
-                const formatted = data.results[0].formatted_address;
-                // Or try to parse for a shorter name: 
-                // const city = data.results[0].address_components.find(...)
-                return formatted;
+            const geocodeResult = await Location.reverseGeocodeAsync({
+                latitude: lat,
+                longitude: lng,
+            });
+            if (geocodeResult && geocodeResult.length > 0) {
+                const address = geocodeResult[0];
+                const parts = [
+                    address.street || address.name,
+                    address.city || address.subregion,
+                    address.region || address.country
+                ].filter(Boolean);
+                return parts.join(', ') || 'Unknown Location';
             }
         } catch (error) {
-            console.error(error);
+            console.error('Reverse geocode error:', error);
         }
         return 'Unknown Location';
     };

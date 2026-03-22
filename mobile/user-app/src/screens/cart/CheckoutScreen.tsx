@@ -29,8 +29,8 @@ const { width } = Dimensions.get('window');
 const PAYMENT_METHODS = [
   { id: 'card', name: 'Credit/Debit Card', icon: 'credit-card', provider: 'Feather', disabled: true },
   { id: 'upi', name: 'UPI (GPay, PhonePe)', icon: 'smartphone', provider: 'Feather', disabled: true },
-  { id: 'netbanking', name: 'Net Banking', icon: 'account-balance', provider: 'Material', disabled: true },
-  { id: 'wallet', name: 'Wallets', icon: 'account-balance-wallet', provider: 'Material', disabled: true },
+  { id: 'netbanking', name: 'Net Banking', icon: 'bank', provider: 'Material', disabled: true },
+  { id: 'wallet', name: 'Wallets', icon: 'wallet', provider: 'Material', disabled: true },
   { id: 'cod', name: 'Cash on Delivery', icon: 'dollar-sign', provider: 'Feather', disabled: false },
 ];
 
@@ -81,14 +81,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color={colors.text.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
-        <View style={{ width: 44 }} />
-      </View>
+
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
