@@ -26,61 +26,18 @@ const { width: windowWidth } = Dimensions.get('window');
 const SIDEBAR_WIDTH = 90;
 
 // Mock Data for demonstration
-const SUBCATEGORIES: any = {
-    veg: [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'leafy', name: 'Leafy Greens', icon: '🥬' },
-        { id: 'roots', name: 'Root Veggies', icon: '🥕' },
-        { id: 'exotic', name: 'Exotic Veg', icon: '🥑' },
-        { id: 'daily', name: 'Daily Needs', icon: '🧅' },
-        { id: 'organic', name: 'Organic', icon: '🌿' },
-    ],
-    frozen: [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'snacks', name: 'Snacks', icon: '🥟' },
-        { id: 'desserts', name: 'Desserts', icon: '🍦' },
-        { id: 'meals', name: 'Quick Meals', icon: '🥡' },
-        { id: 'fries', name: 'Fries & Sides', icon: '🍟' },
-    ],
-    '5min': [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'breakfast', name: 'Breakfast', icon: '🥣' },
-        { id: 'noodles', name: 'Noodles', icon: '🍜' },
-        { id: 'soups', name: 'Soups', icon: '🍲' },
-    ],
-    '10min': [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'indian', name: 'Indian Meals', icon: '🍛' },
-        { id: 'pasta', name: 'Pastas', icon: '🍝' },
-        { id: 'biryani', name: 'Biryanis', icon: '🥘' },
-    ],
-    meat: [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'chicken', name: 'Chicken', icon: '🍗' },
-        { id: 'mutton', name: 'Mutton', icon: '🍖' },
-        { id: 'fish', name: 'Fish & Seafood', icon: '🐟' },
-        { id: 'eggs', name: 'Eggs', icon: '🥚' },
-    ],
-    grocery: [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'flour', name: 'Flour & Rice', icon: '🍚' },
-        { id: 'oil', name: 'Oils & Ghee', icon: '🍶' },
-        { id: 'spices', name: 'Spices', icon: '🧂' },
-        { id: 'dairy', name: 'Dairy & Bread', icon: '🍞' },
-    ],
-    packaging: [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'boxes', name: 'Boxes', icon: '📦' },
-        { id: 'bags', name: 'Bags', icon: '🛍️' },
-        { id: 'containers', name: 'Containers', icon: '🍱' },
-    ],
-    // Fallback for others
-    default: [
-        { id: 'all', name: 'All Items', icon: '📦' },
-        { id: 'new', name: 'New Arrivals', icon: '✨' },
-        { id: 'deals', name: 'Best Deals', icon: '🏷️' },
-    ]
+import { CATEGORY_DATA, DEFAULT_SUBCATEGORIES } from '../../constants/categories';
+
+// Helper to get subcategories mapping from central data
+const getSubcategoriesMap = () => {
+    const map: Record<string, any[]> = {};
+    CATEGORY_DATA.forEach(cat => {
+        map[cat.id] = cat.subcategories;
+    });
+    return map;
 };
+
+const SUBCATEGORIES = getSubcategoriesMap();
 
 const PRODUCTS: any = [
     {
@@ -168,7 +125,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         fetchProducts();
     }, [categoryId]);
 
-    const subcategories = SUBCATEGORIES[categoryId] || SUBCATEGORIES.default;
+    const subcategories = SUBCATEGORIES[categoryId] || DEFAULT_SUBCATEGORIES;
 
     const handleAdd = (product: any) => {
         const ingredient = {

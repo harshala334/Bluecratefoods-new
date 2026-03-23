@@ -27,7 +27,11 @@ export class RecipesService implements OnModuleInit {
 
         if (query?.search) {
             const searchLower = `%${query.search.toLowerCase()}%`;
-            qb.andWhere('(LOWER(recipe.name) LIKE :search OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(recipe.tags) AS t WHERE LOWER(t) LIKE :search))', { search: searchLower });
+            qb.andWhere(`(
+                LOWER(recipe.name) LIKE :search OR 
+                EXISTS (SELECT 1 FROM jsonb_array_elements_text(recipe.tags) AS t WHERE LOWER(t) LIKE :search) OR
+                EXISTS (SELECT 1 FROM jsonb_array_elements_text(recipe.searchKeywords) AS sk WHERE LOWER(sk) LIKE :search)
+            )`, { search: searchLower });
         }
 
         return qb.orderBy('recipe.createdAt', 'DESC').getMany();

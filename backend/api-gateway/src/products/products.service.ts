@@ -24,7 +24,14 @@ export class ProductsService {
 
         if (query?.search) {
             const searchLower = `%${query.search.toLowerCase()}%`;
-            qb.andWhere('(LOWER(product.name) LIKE :search OR LOWER(product.description) LIKE :search OR LOWER(product.category) LIKE :search)', { search: searchLower });
+            qb.andWhere(`(
+                LOWER(product.name) LIKE :search OR 
+                LOWER(product.description) LIKE :search OR 
+                LOWER(product.category) LIKE :search OR
+                EXISTS (SELECT 1 FROM jsonb_array_elements_text(product.tags) AS t WHERE LOWER(t) LIKE :search) OR
+                EXISTS (SELECT 1 FROM jsonb_array_elements_text(product.secondaryCategories) AS sc WHERE LOWER(sc) LIKE :search) OR
+                EXISTS (SELECT 1 FROM jsonb_array_elements_text(product.searchKeywords) AS sk WHERE LOWER(sk) LIKE :search)
+            )`, { search: searchLower });
         }
 
         // If user is a vendor, restrict to their category

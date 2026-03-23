@@ -57,8 +57,11 @@ export class Recipe {
     @Column({ default: true })
     isPublic: boolean;
 
-    @Column('jsonb', { nullable: true })
+    @Column('jsonb', { nullable: true, default: [] })
     tags: string[];
+
+    @Column('jsonb', { nullable: true, default: [] })
+    searchKeywords: string[];
 
     @Column({
         type: 'enum',

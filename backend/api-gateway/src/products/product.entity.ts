@@ -53,8 +53,11 @@ export class Product {
     @Column('jsonb', { nullable: true })
     bulkTiers: any[];
 
-    @Column('jsonb', { nullable: true })
+    @Column('jsonb', { nullable: true, default: [] })
     tags: string[];
+
+    @Column('jsonb', { nullable: true, default: [] })
+    searchKeywords: string[];
 
     @Column('int', { default: 0 })
     spiceLevel: number;

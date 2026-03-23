@@ -7,8 +7,88 @@ import toast from 'react-hot-toast'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 export default function AdminProducts() {
     const [products, setProducts] = useState<any[]>([])
-    const [categories, setCategories] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
+
+    // Subcategory mapping matching mobile app logic exactly
+    const TAG_MAPPING: Record<string, { id: string, name: string }[]> = {
+        frozen: [
+            { id: 'all', name: 'All Items' },
+            { id: 'chicken-momo', name: 'Chicken Momo' },
+            { id: 'seafood-momo', name: 'Seafood Momo' },
+            { id: 'veg-momo', name: 'Veg Momo' },
+            { id: 'sha-phaley-momo', name: 'Sha-Phaley Momo' },
+            { id: 'fried-fish', name: 'Fried Fish' },
+            { id: 'fried-chicken', name: 'Fried Chicken' },
+            { id: 'fried-veg', name: 'Fried Veg' },
+            { id: 'multi-use-meat', name: 'Multi-use Meat' },
+            { id: 'sauce-marinades', name: 'Sauce/Marinades' },
+        ],
+        '5min': [
+            { id: 'all', name: 'All Items' },
+            { id: 'chicken-momo', name: 'Chicken Momo' },
+            { id: 'seafood-momo', name: 'Seafood Momo' },
+            { id: 'veg-momo', name: 'Veg Momo' },
+            { id: 'sha-phaley-momo', name: 'Sha-Phaley Momo' },
+            { id: 'fried-fish', name: 'Fried Fish' },
+            { id: 'fried-chicken', name: 'Fried Chicken' },
+            { id: 'fried-veg', name: 'Fried Veg' },
+        ],
+        '10min': [
+            { id: 'all', name: 'All Items' },
+            { id: 'kebab-grills', name: 'Kebab/Grills' },
+            { id: 'pulled-chicken', name: 'Pulled Chicken' },
+            { id: 'bengali-main', name: 'Bengali Main Course' },
+            { id: 'general-main', name: 'General Main Course' },
+        ],
+        veg: [
+            { id: 'all', name: 'All Items' },
+            { id: 'leafy', name: 'Leafy Greens' },
+            { id: 'roots', name: 'Root Veggies' },
+            { id: 'exotic', name: 'Exotics' },
+            { id: 'daily', name: 'Daily Needs' },
+            { id: 'organic', name: 'Organic' },
+            { id: 'salads', name: 'Salad Mixes' },
+        ],
+        meat: [
+            { id: 'all', name: 'All Items' },
+            { id: 'fresh-meat', name: 'Fresh Meat' },
+            { id: 'frozen-meat', name: 'Frozen Meat' },
+            { id: 'cold-cuts', name: 'Cold Cuts' },
+            { id: 'chicken', name: 'Chicken' },
+            { id: 'mutton', name: 'Mutton Chops' },
+            { id: 'fish', name: 'Seafood' },
+            { id: 'eggs', name: 'Organic Eggs' },
+        ],
+        kitchen: [
+            { id: 'all', name: 'All Items' },
+            { id: 'tools', name: 'Tools' },
+            { id: 'cookware', name: 'Cookware' },
+        ],
+        packaging: [
+            { id: 'all', name: 'All Items' },
+            { id: 'boxes', name: 'Boxes' },
+            { id: 'bags', name: 'Bags' },
+        ],
+    }
+
+    const APP_CATEGORIES = [
+        { id: 'frozen', name: 'Ready to cook: Frozen' },
+        { id: '5min', name: '5 Min Meals' },
+        { id: '10min', name: '10 Min Meals' },
+        { id: 'veg', name: 'Fresh Vegetables' },
+        { id: 'meat', name: 'Fresh & Frozen Meat' },
+        { id: 'kitchen', name: 'Kitchen Essentials' },
+        { id: 'packaging', name: 'Packaging Materials' },
+    ]
+
+    // Create a flat map for all tag names
+    const TAG_NAME_MAP: Record<string, string> = {};
+    Object.values(TAG_MAPPING).forEach(tags => {
+        tags.forEach(tag => {
+            TAG_NAME_MAP[tag.id] = tag.name;
+        });
+    });
+
     const [searchTerm, setSearchTerm] = useState('')
     const [filterCategory, setFilterCategory] = useState('')
     const [filterStock, setFilterStock] = useState('')
@@ -30,6 +110,8 @@ export default function AdminProducts() {
         inStock: true,
         stockQuantity: '',
         secondaryCategories: [] as string[],
+        tags: [] as string[],
+        searchKeywords: '',
         bulkTiers: [
             { quantity: '', price: '' },
             { quantity: '', price: '' },
@@ -58,21 +140,6 @@ export default function AdminProducts() {
         }
     }
 
-    const fetchCategories = async () => {
-        try {
-            const token = localStorage.getItem('token')
-            const response = await fetch(`${API_URL}/api/products/categories`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            const data = await response.json()
-            setCategories(data)
-        } catch (error) {
-            console.error('Fetch categories error:', error)
-        }
-    }
-
     // Get user from localStorage
     const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     const user = userStr ? JSON.parse(userStr) : null;
@@ -81,7 +148,6 @@ export default function AdminProducts() {
 
     useEffect(() => {
         fetchProducts()
-        fetchCategories()
     }, [])
 
     const handleDownloadTemplate = async () => {
@@ -123,7 +189,7 @@ export default function AdminProducts() {
                     (item.Tags || '').toLowerCase().includes('5 min') ? '5min' :
                         (item.Tags || '').toLowerCase().includes('10 min') ? '10min' :
                             (item.Tags || '').toLowerCase().includes('vegetables') ? 'veg' :
-                                (item.Tags || '').toLowerCase().includes('grocery') ? 'grocery' :
+                                (item.Tags || '').toLowerCase().includes('kitchen') ? 'kitchen' :
                                     (item.Tags || '').toLowerCase().includes('packaging') ? 'packaging' : 'frozen',
                 basePrice: parseFloat(item.PackPricing) || 0,
                 unit: item.UnitPack,
@@ -233,6 +299,8 @@ export default function AdminProducts() {
                 inStock: product.inStock !== false,   // default true
                 stockQuantity: product.stockQuantity?.toString() || '0',
                 secondaryCategories: product.secondaryCategories || [],
+                tags: product.tags || [],
+                searchKeywords: (product.searchKeywords || []).join(', '),
                 bulkTiers: [
                     product.bulkTiers?.[0] || { quantity: '', price: '' },
                     product.bulkTiers?.[1] || { quantity: '', price: '' },
@@ -240,6 +308,7 @@ export default function AdminProducts() {
                 ]
             })
         } else {
+            setIsEditing(true) // Actually isEditing: false but for new products we used FALSE below. Wait...
             setIsEditing(false)
             setCurrentProduct(null)
             setFormData({
@@ -255,7 +324,9 @@ export default function AdminProducts() {
                 isActive: true,
                 inStock: true,
                 stockQuantity: '0',
-                secondaryCategories: [],
+                secondaryCategories: vendorCategory ? [vendorCategory] : ['frozen'],
+                tags: [],
+                searchKeywords: '',
                 bulkTiers: [
                     { quantity: '', price: '' },
                     { quantity: '', price: '' },
@@ -277,11 +348,18 @@ export default function AdminProducts() {
             .filter(t => t.quantity && t.price)
             .map(t => ({ quantity: t.quantity, price: parseFloat(t.price) || 0 }));
 
+        // Logic to sync category and secondaryCategories
+        const primaryCat = formData.secondaryCategories.length > 0 ? formData.secondaryCategories[0] : formData.category;
+
         const payload = {
             ...formData,
+            category: primaryCat,
             basePrice: parseFloat(formData.basePrice) || 0,
             mrp: parseFloat(formData.mrp) || null,
             stockQuantity: parseFloat(formData.stockQuantity) || 0,
+            secondaryCategories: formData.secondaryCategories,
+            tags: formData.tags,
+            searchKeywords: formData.searchKeywords.split(',').map(k => k.trim()).filter(k => k !== ''),
             bulkTiers: formattedBulkTiers.length > 0 ? formattedBulkTiers : null,
             isApproved: true,
             status: 'approved'
@@ -380,7 +458,7 @@ export default function AdminProducts() {
                             onChange={(e) => setFilterCategory(e.target.value)}
                         >
                             <option value="">All Categories</option>
-                            {categories.map(cat => (
+                            {APP_CATEGORIES.map(cat => (
                                 <option key={cat.id} value={cat.id}>{cat.name}</option>
                             ))}
                         </select>
@@ -411,8 +489,9 @@ export default function AdminProducts() {
                                 <thead className="bg-gray-50 sticky top-0 z-30 shadow-sm border-b border-gray-200">
                                     <tr className="divide-x divide-gray-200">
                                         <th className="px-6 py-4 text-sm font-semibold text-gray-600 sticky left-0 bg-gray-50 z-40 shadow-[1px_0_0_0_#e5e7eb] border-r border-gray-200">Product</th>
-                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Category</th>
-                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Secondary Cats</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Categories</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Subcategories</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-gray-600">Search Keywords</th>
                                         <th className="px-6 py-4 text-sm font-semibold text-gray-600">Base Price</th>
                                         <th className="px-6 py-4 text-sm font-semibold text-gray-600">MRP</th>
                                         <th className="px-6 py-4 text-sm font-semibold text-gray-600">Wgt/Vol</th>
@@ -435,22 +514,35 @@ export default function AdminProducts() {
                                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                                                     </div>
-                                                    <div className="ml-4 truncate max-w-[220px]">
-                                                        <div className="text-sm font-bold text-gray-900 truncate" title={product.name}>{product.name}</div>
+                                                    <div className="ml-4">
+                                                        <div className="text-sm font-bold text-gray-900" title={product.name}>{product.name}</div>
                                                         <div className="text-xs text-gray-500">ID: BCF-{product.id.toString().padStart(3, '0')}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-md text-xs font-medium uppercase tracking-wider ${product.category === 'meat' ? 'bg-red-100 text-red-700' :
-                                                    product.category === 'frozen' ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-green-100 text-green-700'
-                                                    }`}>
-                                                    {product.category}
-                                                </span>
+                                                <div className="flex flex-wrap gap-1 min-w-[120px]">
+                                                    {product.secondaryCategories?.map((catId: string) => {
+                                                        const cat = APP_CATEGORIES.find(c => c.id === catId);
+                                                        return (
+                                                            <span key={catId} className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                                                catId === 'meat' ? 'bg-red-100 text-red-700' :
+                                                                catId === 'frozen' ? 'bg-blue-100 text-blue-700' :
+                                                                'bg-green-100 text-green-700'
+                                                            }`}>
+                                                                {cat?.name || catId}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
-                                                {product.secondaryCategories?.length ? product.secondaryCategories.join(', ') : '-'}
+                                                {product.tags?.length 
+                                                    ? product.tags.map((tagId: string) => TAG_NAME_MAP[tagId] || tagId).join(', ') 
+                                                    : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500 italic">
+                                                {product.searchKeywords?.length ? product.searchKeywords.join(', ') : '-'}
                                             </td>
                                             <td className="px-6 py-4 font-bold text-gray-900">
                                                 ₹{product.basePrice}
@@ -542,41 +634,76 @@ export default function AdminProducts() {
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Primary Category</label>
-                                        <select
-                                            disabled={userType === 'vendor'}
-                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
-                                            value={formData.category}
-                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        >
-                                            {categories.map((cat) => (
-                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Secondary Categories</label>
-                                        <div className="w-full px-4 py-2 bg-gray-50 border-none rounded-lg max-h-24 overflow-y-auto space-y-1">
-                                            {['frozen', '5min', '10min', 'meat', 'veg', 'grocery', 'packaging', 'dessert'].map(cat => (
-                                                <label key={cat} className="flex items-center space-x-2 text-sm text-gray-700">
+                                        <label className="block text-sm font-bold text-primary-700 mb-2 text-left underline">Assigned Categories</label>
+                                        <div className="w-full px-4 py-3 bg-primary-50 border border-primary-100 rounded-xl max-h-40 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-2">
+                                            {APP_CATEGORIES.map(cat => (
+                                                <label key={cat.id} className="flex items-center space-x-2 text-sm text-gray-700 p-1 hover:bg-white rounded transition-colors cursor-pointer">
                                                     <input
                                                         type="checkbox"
-                                                        className="rounded text-primary-600 focus:ring-primary-500"
-                                                        checked={formData.secondaryCategories.includes(cat)}
+                                                        disabled={userType === 'vendor' && vendorCategory !== cat.id}
+                                                        className="rounded text-primary-600 focus:ring-primary-500 w-4 h-4"
+                                                        checked={formData.secondaryCategories.includes(cat.id)}
                                                         onChange={(e) => {
                                                             const newCats = e.target.checked
-                                                                ? [...formData.secondaryCategories, cat]
-                                                                : formData.secondaryCategories.filter(c => c !== cat);
+                                                                ? [...formData.secondaryCategories, cat.id]
+                                                                : formData.secondaryCategories.filter(c => c !== cat.id);
                                                             setFormData({ ...formData, secondaryCategories: newCats });
                                                         }}
                                                     />
-                                                    <span>{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                                    <span className={formData.secondaryCategories.includes(cat.id) ? 'font-bold text-primary-700' : ''}>{cat.name}</span>
                                                 </label>
                                             ))}
                                         </div>
+                                        <p className="text-[10px] text-primary-500 mt-1 italic">* Select all categories where this product should appear.</p>
                                     </div>
+                                </div>
+
+                                {/* Dynamic Subcategory Tags */}
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 text-left underline">Subcategory Tags (App Sidebar)</label>
+                                    <div className={`w-full px-4 py-3 border rounded-xl min-h-[60px] max-h-48 overflow-y-auto ${formData.secondaryCategories.length === 0 ? 'bg-gray-100 text-gray-400' : 'bg-white border-gray-200 shadow-inner'}`}>
+                                        {formData.secondaryCategories.length === 0 ? (
+                                            <div className="flex items-center justify-center h-full italic text-xs">
+                                                Select a category above to load relevant tags...
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                {Array.from(new Set(formData.secondaryCategories.flatMap(catId => TAG_MAPPING[catId] || []))).map(tag => (
+                                                    <label key={tag.id} className="flex items-center space-x-2 text-sm text-gray-700 p-1 hover:bg-gray-50 rounded transition-colors cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                                                            checked={formData.tags.includes(tag.id)}
+                                                            onChange={(e) => {
+                                                                const newTags = e.target.checked
+                                                                    ? [...formData.tags, tag.id]
+                                                                    : formData.tags.filter(t => t !== tag.id);
+                                                                setFormData({ ...formData, tags: newTags });
+                                                            }}
+                                                        />
+                                                        <span className={formData.tags.includes(tag.id) ? 'font-bold text-blue-700' : ''}>{tag.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-1 italic">* Used for the sub-navigation sidebar in the mobile app.</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 text-left underline">Internal Search Keywords (Comma separated)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                                        placeholder="e.g. synonym1, synonym2, local_language_name"
+                                        value={formData.searchKeywords}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, searchKeywords: e.target.value });
+                                        }}
+                                    />
+                                    <p className="text-[10px] text-gray-400 mt-1 italic">* These keywords are hidden from the UI but used to improve search results.</p>
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>

@@ -21,81 +21,7 @@ import { Recipe } from '../../types/recipe';
 
 const { width: windowWidth } = Dimensions.get('window');
 
-const SECTIONS = [
-    {
-        id: 'frozen',
-        title: 'Ready to cook: Frozen',
-        subtitle: '120+ Items • Quick & delicious',
-        icon: '🥟',
-        image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&q=80',
-        subcategories: [
-            { id: 'snacks', name: 'Snacks', icon: '🥟' },
-            { id: 'desserts', name: 'Desserts', icon: '🍦' },
-            { id: 'meals', name: 'Quick Meals', icon: '🥡' },
-            { id: 'fries', name: 'Fries & Sides', icon: '🍟' },
-            { id: 'pizza', name: 'Frozen Pizzas', icon: '🍕' },
-            { id: 'appetizers', name: 'Appetizers', icon: '🍤' },
-        ]
-    },
-    {
-        id: '5min',
-        title: '5 Min Meals',
-        subtitle: '45+ Items • Instant satisfaction',
-        icon: '⚡',
-        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80',
-        subcategories: [
-            { id: 'breakfast', name: 'Breakfast', icon: '🥣' },
-            { id: 'noodles', name: 'Instant Noodles', icon: '🍜' },
-            { id: 'soups', name: 'Warm Soups', icon: '🍲' },
-            { id: 'beverages', name: 'Hot Drinks', icon: '☕' },
-        ]
-    },
-    {
-        id: 'veg',
-        title: 'Fresh Vegetables',
-        subtitle: '80+ Items • Farm to doorstep',
-        icon: '🥬',
-        image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500&q=80',
-        subcategories: [
-            { id: 'leafy', name: 'Leafy Greens', icon: '🥬' },
-            { id: 'roots', name: 'Root Veggies', icon: '🥕' },
-            { id: 'exotic', name: 'Exotics', icon: '🥑' },
-            { id: 'daily', name: 'Daily Needs', icon: '🧅' },
-            { id: 'organic', name: 'Organic', icon: '🌿' },
-            { id: 'salads', name: 'Salad Mixes', icon: '🥗' },
-        ]
-    },
-    {
-        id: 'meat',
-        title: 'Fresh & Frozen Meat',
-        subtitle: '30+ Items • Premium cuts',
-        icon: '🥩',
-        image: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?w=500&q=80',
-        subcategories: [
-            { id: 'chicken', name: 'Chicken', icon: '🍗' },
-            { id: 'mutton', name: 'Mutton Chops', icon: '🍖' },
-            { id: 'fish', name: 'Seafood', icon: '🐟' },
-            { id: 'eggs', name: 'Organic Eggs', icon: '🥚' },
-            { id: 'duck', name: 'Duck & Game', icon: '🦆' },
-            { id: 'cold-cuts', name: 'Cold Cuts', icon: '🥓' },
-        ]
-    },
-    {
-        id: 'grocery',
-        title: 'Groceries',
-        subtitle: '500+ Items • Home essentials',
-        icon: '🛒',
-        image: 'https://images.unsplash.com/photo-1506484334402-40ff22e05a6d?w=500&q=80',
-        subcategories: [
-            { id: 'flour', name: 'Flour & Rice', icon: '🍚' },
-            { id: 'oil', name: 'Oils & Ghee', icon: '🍶' },
-            { id: 'spices', name: 'Pure Spices', icon: '🧂' },
-            { id: 'dairy', name: 'Dairy & Bread', icon: '🍞' },
-            { id: 'pulses', name: 'Pulses', icon: '🥜' },
-            { id: 'condiments', name: 'Sauces', icon: '🥫' },
-        ]
-    },
-];
+import { CATEGORY_DATA } from '../../constants/categories';
 
 const ProductListScreen = ({ navigation }: any) => {
     const insets = useSafeAreaInsets();
@@ -104,12 +30,12 @@ const ProductListScreen = ({ navigation }: any) => {
     const handleCategoryPress = (categoryId: string, subCategoryId?: string) => {
         navigation.navigate('CategoryDetail', {
             categoryId,
-            categoryTitle: SECTIONS.find(c => c.id === categoryId)?.title || 'Products',
+            categoryTitle: CATEGORY_DATA.find(c => c.id === categoryId)?.title || 'Products',
             selectedSubId: subCategoryId || 'all'
         });
     };
 
-    const renderSection = (section: typeof SECTIONS[0]) => (
+    const renderSection = (section: any) => (
         <View key={section.id} style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
                 <View>
@@ -126,7 +52,7 @@ const ProductListScreen = ({ navigation }: any) => {
             </View>
 
             <View style={styles.subcategoryGrid}>
-                {section.subcategories.map((sub) => (
+                {section.subcategories.filter((s: any) => s.id !== 'all').map((sub: any) => (
                     <TouchableOpacity
                         key={sub.id}
                         style={styles.subCard}
@@ -139,9 +65,9 @@ const ProductListScreen = ({ navigation }: any) => {
                         <Text style={styles.subName} numberOfLines={2}>{sub.name}</Text>
                     </TouchableOpacity>
                 ))}
-                {/* Placeholder for grid alignment if odd */}
-                {section.subcategories.length % 3 !== 0 &&
-                    Array(3 - (section.subcategories.length % 3)).fill(0).map((_, i) => (
+                {/* Placeholder for grid alignment */}
+                {section.subcategories.filter((s: any) => s.id !== 'all').length % 3 !== 0 &&
+                    Array(3 - (section.subcategories.filter((s: any) => s.id !== 'all').length % 3)).fill(0).map((_, i) => (
                         <View key={`placeholder-${i}`} style={[styles.subCard, { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0, borderWidth: 0 }]} />
                     ))
                 }
@@ -217,8 +143,9 @@ const ProductListScreen = ({ navigation }: any) => {
             >
                 {/* Main Sections */}
                 <View style={{ marginTop: spacing.sm }}>
-                    {SECTIONS.map(renderSection)}
+                    {CATEGORY_DATA.map(renderSection)}
                 </View>
+
 
                 {/* Bottom Trust Section */}
                 <View style={styles.trustSection}>

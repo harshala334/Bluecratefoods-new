@@ -153,17 +153,17 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const categories = [
     // Row 1: Vertical/Bento (Next to Promo)
-    { id: 'frozen', title: 'Ready to cook: Frozen', subtitle: 'Quick frozen delicacies', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&q=80', filter: 'frozen', row: 1 },
+    { id: 'frozen', title: 'Ready to cook: Frozen', subtitle: '120+ Items • Quick & delicious', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&q=80', filter: 'frozen', row: 1 },
 
     // Row 2: Curated Deliveries (Auto-adjusting grid)
-    { id: '5min', title: '5 Min Meals', subtitle: 'Instant satisfaction', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', filter: '5min', row: 2 },
-    { id: '10min', title: '10 Min Meals', subtitle: 'Fast & fresh', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80', filter: '10min', row: 2 },
+    { id: '5min', title: '5 Min Meals', subtitle: '45+ Items • Instant satisfaction', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', filter: '5min', row: 2 },
+    { id: '10min', title: '10 Min Meals', subtitle: '30+ Items • Fast & fresh', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80', filter: '10min', row: 2 },
 
     // Row 3: Sourcing Categories — 4 squares with local images
-    { id: 'veg', title: 'Fresh Vegetables', subtitle: 'Farm to home', image: require('../../../assets/images/vege.jpg'), filter: 'vegetables', row: 3 },
-    { id: 'meat', title: 'Fresh & Frozen Meat', subtitle: 'Premium cuts', image: require('../../../assets/images/chicken.jpg'), filter: 'meat', row: 3 },
-    { id: 'kitchen', title: 'Kitchen Essentials', subtitle: 'Pro grade tools', image: require('../../../assets/images/kitchen.jpg'), filter: 'kitchen', row: 3 },
-    { id: 'packaging', title: 'Packaging Materials', subtitle: 'Sustainable', image: require('../../../assets/images/packag.jpg'), filter: 'packaging', row: 3 },
+    { id: 'veg', title: 'Fresh Vegetables', subtitle: '80+ Items • Farm to doorstep', image: require('../../../assets/images/vege.jpg'), filter: 'veg', row: 3 },
+    { id: 'meat', title: 'Fresh & Frozen Meat', subtitle: '30+ Items • Premium cuts', image: require('../../../assets/images/chicken.jpg'), filter: 'meat', row: 3 },
+    { id: 'kitchen', title: 'Kitchen Essentials', subtitle: '80+ Items • Pro grade tools', image: require('../../../assets/images/kitchen.jpg'), filter: 'kitchen', row: 3 },
+    { id: 'packaging', title: 'Packaging Materials', subtitle: '50+ Items • Sustainable', image: require('../../../assets/images/packag.jpg'), filter: 'packaging', row: 3 },
   ];
 
 
@@ -411,13 +411,10 @@ export const HomeScreen = ({ navigation }: any) => {
                 { title: 'Frozen', image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80', filter: 'frozen' },
                 { title: 'Vegetables', image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&q=80', filter: 'veg' },
                 { title: 'Meat', image: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400&q=80', filter: 'meat' },
-                { title: 'Dairy', image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&q=80', filter: 'grocery' },
-                { title: 'Snacks', image: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400&q=80', filter: 'frozen' },
-                { title: 'Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&q=80', filter: '5min' },
-                { title: 'Groceries', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80', filter: 'grocery' },
-                { title: 'Beverages', image: 'https://images.unsplash.com/photo-1581006852262-e4307cf6283a?w=400&q=80', filter: 'frozen' },
-                { title: 'Fruits', image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=400&q=80', filter: 'veg' },
-                { title: 'Kitchen', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&q=80', filter: 'packaging' },
+                { title: '5 Min', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&q=80', filter: '5min' },
+                { title: '10 Min', image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&q=80', filter: '10min' },
+                { title: 'Kitchen', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&q=80', filter: 'kitchen' },
+                { title: 'Packaging', image: 'https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=400&q=80', filter: 'packaging' },
               ].map((item) => (
                 <TouchableOpacity
                   key={item.title}
