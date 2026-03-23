@@ -27,7 +27,7 @@ interface KittyChatSearchBarProps {
 }
 
 export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSearchBarProps) => {
-    const { addSearchTerm } = useRecipeStore();
+    const { addSearchTerm, searchHistory } = useRecipeStore();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [chatMessages, setChatMessages] = useState<Message[]>([]);
@@ -46,7 +46,9 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
     ];
     const [dynamicPlaceholder, setDynamicPlaceholder] = useState(placeholderTexts[0]);
 
-    const quickOptions = ['Best Sellers', 'Frozen Snacks', 'Fresh Veggies', 'Premium Meat', 'Dairy Essentials', 'Ready to Cook', 'Breakfast', 'Ice Creams', 'Organic Fruits', 'Kitchen Needs'];
+    const quickOptions = searchHistory.length > 0
+        ? searchHistory.sort((a, b) => b.lastUsed - a.lastUsed).map(s => s.query).slice(0, 10)
+        : ['Best Sellers', 'Frozen Snacks', 'Fresh Veggies', 'Premium Meat', 'Dairy Essentials', 'Ready to Cook', 'Breakfast', 'Ice Creams', 'Organic Fruits', 'Kitchen Needs'];
 
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
@@ -91,16 +93,16 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
         return unsubscribe;
     }, []);
 
-    const handleChatSubmit = async (text?: string) => {
+    const handleChatSubmit = (text?: string) => {
         const userText = text || searchQuery;
         if (!userText.trim()) return;
 
+        // 1. Immediate UI updates for responsiveness
         setSearchQuery('');
-        setIsSearching(true);
-        setSearchingText(userText);
-        Keyboard.dismiss();
         setIsSearchFocused(false);
+        Keyboard.dismiss();
 
+        // 2. Add user message to chat immediately
         const userMsg: Message = {
             id: Date.now().toString(),
             text: userText,
@@ -110,7 +112,13 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
         chatService.addMessage(userMsg);
         addSearchTerm(userText);
 
-        generateMascotResponse(userText);
+        // 3. Defer search results and bot response logic
+        // This allows the keyboard dismissal and user message update to render first
+        setTimeout(() => {
+            setIsSearching(true);
+            setSearchingText(userText);
+            generateMascotResponse(userText);
+        }, 80);
     };
 
     const generateMascotResponse = async (query: string) => {

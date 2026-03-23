@@ -50,7 +50,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const { items, addItem, updateQuantityByIngredientId } = useCartStore();
   const { addSearchTerm, getUnifiedFrequentList, addFrequentItem, clearSearchHistory } = useRecipeStore();
-  const unifiedFrequent = getUnifiedFrequentList();
+  const unifiedFrequent = getUnifiedFrequentList().filter(item => item.type === 'product');
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
