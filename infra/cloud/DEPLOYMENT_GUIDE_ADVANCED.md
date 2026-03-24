@@ -21,22 +21,37 @@ bash infra/cloud/deploy_cloud_run.sh api-gateway auth-service
 ---
 
 ## 2. Web Frontend (Next.js)
-The web app is located in `web/nextjs-client`. To deploy it to Cloud Run:
+The web app is located in `web/nextjs-client`. **Note:** Next.js bakes environment variables at build time. For `bluecratefoods.com`, the build must include the correct API URL.
 
 ### Step 1: Build & Push Image
+Use the `cloudbuild.yaml` to ensure the API URL is baked in correctly:
 ```bash
-gcloud builds submit web/nextjs-client --tag us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client --project bluecratefoods
-
+gcloud builds submit web/nextjs-client \
+  --config web/nextjs-client/cloudbuild.yaml \
+  --substitutions _NEXT_PUBLIC_API_URL=https://api-gateway-441546178642.us-central1.run.app \
+  --project bluecratefoods
 ```
 
-### Step 2: Deploy to Cloud Run
-```bash
-gcloud run deploy web-client --image us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client --platform managed --region us-central1 --allow-unauthenticated --project bluecratefoods --set-env-vars="NEXT_PUBLIC_API_URL=https://api-gateway-441546178642.us-central1.run.app"
+### Step 2: Deploy / Update
+Depending on where you are serving from:
 
+#### A. If using GKE (Current for bluecratefoods.com)
+After pushing the new image, restart the deployment to pull the latest:
+```bash
+kubectl -n bluecrate rollout restart deployment nextjs-client
 ```
 
-> [!NOTE]
-> The API URL `https://api-gateway-441546178642.us-central1.run.app/api` has been verified as functional. The domain `api.bluecratefoods.com` currently returns a 503 error.
+#### B. If using Cloud Run
+```bash
+gcloud run deploy web-client \
+  --image us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client \
+  --platform managed --region us-central1 \
+  --allow-unauthenticated --project bluecratefoods \
+  --set-env-vars="NEXT_PUBLIC_API_URL=https://api-gateway-441546178642.us-central1.run.app"
+```
+
+> [!IMPORTANT]
+> Always use the `api-gateway` URL `https://api-gateway-441546178642.us-central1.run.app`. The domain `api.bluecratefoods.com` is currently inactive (503).
 
 ---
 

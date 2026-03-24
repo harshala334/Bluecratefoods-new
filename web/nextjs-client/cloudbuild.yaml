@@ -3,8 +3,8 @@ steps:
   args: [
     'build', 
     '--build-arg', 'NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL}', 
-    '-t', 'us-central1-docker.pkg.dev/bluecratefoods/bluecrate/nextjs-client:latest', 
+    '-t', 'us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client:latest', 
     '.'
   ]
 images:
-- 'us-central1-docker.pkg.dev/bluecratefoods/bluecrate/nextjs-client:latest'
+- 'us-central1-docker.pkg.dev/bluecratefoods/bluecrate/web-client:latest'
