@@ -289,6 +289,26 @@ export const ProfileScreen = ({ navigation }: any) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => {
+              // Open the web deletion page or show instructions
+              // In production, we can use Linking.openURL('https://bluecratefoods.com/delete-account')
+              Toast.show({
+                type: 'info',
+                text1: 'Account Deletion',
+                text2: 'Please visit bluecratefoods.com/delete-account to request deletion.',
+                position: 'bottom',
+              });
+            }}
+          >
+            <View style={[styles.settingIconContainer, { backgroundColor: '#FFF3E0' }]}>
+              <Feather name="trash-2" size={22} color="#F57C00" />
+            </View>
+            <Text style={styles.settingText}>Delete Account</Text>
+            <Feather name="chevron-right" size={18} color={colors.gray[400]} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[styles.settingItem, { borderBottomWidth: 0 }]}
             onPress={handleLogout}
           >

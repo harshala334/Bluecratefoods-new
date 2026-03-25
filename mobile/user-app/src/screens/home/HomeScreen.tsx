@@ -544,7 +544,7 @@ export const HomeScreen = ({ navigation }: any) => {
                   <ImageBackground
                     source={typeof cat.image === 'string' ? { uri: cat.image } : cat.image}
                     style={styles.bentoImageFull}
-                    imageStyle={{ transform: [{ scale: 1.22 }], resizeMode: 'cover' }}
+                    imageStyle={{ transform: [{ scale: 1.22 }, { translateY: -4 }], resizeMode: 'cover' }}
                   >
                     <LinearGradient
                       colors={['transparent', 'rgba(0,0,0,0.7)']}
@@ -1316,8 +1316,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 40,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
+    paddingBottom: 2,
   },
   // New Styles
   searchOverlay: {

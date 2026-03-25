@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FiBox, FiHome, FiBarChart2, FiUsers, FiLogOut, FiMenu, FiX, FiTruck } from 'react-icons/fi'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface AdminLayoutProps {
     children: React.ReactNode
@@ -11,10 +11,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const router = useRouter()
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
+    const [mounted, setMounted] = useState(false)
+
     // Get user from localStorage
-    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-    const user = userStr ? JSON.parse(userStr) : null;
-    const userType = user?.userType || 'admin';
+    const [user, setUser] = useState<any>(null)
+    const [userType, setUserType] = useState<string>('guest')
+
+    useEffect(() => {
+        setMounted(true)
+        const userStr = localStorage.getItem('user')
+        if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+            try {
+                const userData = JSON.parse(userStr)
+                setUser(userData)
+                setUserType(userData?.userType || 'individual')
+            } catch (e) {
+                console.error('Error parsing user data', e)
+                router.push('/login')
+            }
+        } else {
+            router.push('/login')
+        }
+    }, [router])
 
     const allMenuItems = [
         { name: 'Dashboard', icon: FiHome, href: '/admin/dashboard', roles: ['admin', 'vendor'] },
@@ -30,7 +48,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const handleLogout = () => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
+        localStorage.removeItem('userType')
         router.push('/login')
+    }
+
+    if (!mounted || (userType !== 'admin' && userType !== 'vendor')) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600 font-medium">Verifying access...</p>
+                </div>
+            </div>
+        )
     }
 
     return (

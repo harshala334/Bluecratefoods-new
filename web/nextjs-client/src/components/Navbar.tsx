@@ -14,33 +14,50 @@ export default function Navbar() {
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
+  const [mounted, setMounted] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const userJson = localStorage.getItem('user')
-    if (userJson) {
-      const userData = JSON.parse(userJson)
-      setUser(userData)
-      if (userData.email === 'admin@gmail.com' || userData.userType === 'admin') {
-        setIsAdmin(true)
+    if (userJson && userJson !== 'undefined' && userJson !== 'null') {
+      try {
+        const userData = JSON.parse(userJson)
+        if (userData) {
+          setUser(userData)
+          if (userData.email === 'admin@gmail.com' || userData.userType === 'admin') {
+            setIsAdmin(true)
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing user data', e)
       }
     }
   }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    localStorage.removeItem('token')
+    localStorage.removeItem('userType')
+    setUser(null)
+    setIsAdmin(false)
+    router.push('/login')
+  }
 
   const productNavItems = [
     { href: '/b2b', label: 'B2B Solutions', color: 'yellow' },
     { href: '/d2c', label: 'D2C Store', color: 'red' },
   ]
 
-  const adminNavItem = isAdmin ? [{ href: '/admin/dashboard', label: 'Admin', color: 'default' }] : []
+  const adminNavItem = (mounted && isAdmin) ? [{ href: '/admin/dashboard', label: 'Admin', color: 'default' }] : []
 
   const infoNavItems = [
     { href: '/#about-us', label: 'About Us', color: 'default' },
     { href: '/#contacts', label: 'Contact', color: 'default' },
   ]
 
-  const navItems = [...productNavItems, ...adminNavItem, ...infoNavItems]
+  const navItems = mounted ? [...productNavItems, ...adminNavItem, ...infoNavItems] : [...productNavItems, ...infoNavItems]
 
   const isActive = (href: string) => {
     // Check if it's a page route
@@ -157,11 +174,19 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            {user ? (
-              <Link href={isAdmin ? "/admin/dashboard" : "/profile"} className="hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:-translate-y-1 hover:scale-105">
-                <FiUser />
-                <span>{isAdmin ? 'Admin' : 'Profile'}</span>
-              </Link>
+            {mounted && user ? (
+              <div className="flex items-center space-x-2">
+                <Link href={isAdmin ? "/admin/dashboard" : "/profile"} className="hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:-translate-y-1 hover:scale-105">
+                  <FiUser />
+                  <span>{isAdmin ? 'Admin' : 'Profile'}</span>
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="hidden md:flex items-center px-4 py-2 text-red-600 hover:text-red-700 font-medium transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <Link href="/login" className="hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:-translate-y-1 hover:scale-105">
                 <FiUser />
