@@ -47,4 +47,37 @@ export class UserController {
     // Placeholder - replace with real logic
     return { message: `User with id ${id} has been deleted` };
   }
+
+  // Address Management
+  @Get(':id/addresses')
+  getUserAddresses(@Param('id') id: string) {
+    // Placeholder - in real app fetch from DB
+    return [
+      {
+        id: 'addr-1',
+        label: 'Home',
+        addressLine1: '123, Green Street',
+        addressLine2: 'Blue Crate Apartments',
+        city: 'Bangalore',
+        state: 'Karnataka',
+        zipCode: '560038',
+        isPrimary: true
+      }
+    ];
+  }
+
+  @Post(':id/addresses')
+  addAddress(@Param('id') id: string, @Body() addressData: any) {
+    return {
+      id: 'addr-' + Date.now(),
+      userId: id,
+      ...addressData,
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  @Delete(':id/addresses/:addressId')
+  removeAddress(@Param('id') id: string, @Param('addressId') addressId: string) {
+    return { success: true, message: 'Address removed' };
+  }
 }

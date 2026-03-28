@@ -9,7 +9,9 @@ export class PaymentController {
     @Post('create-order')
     async createOrder(@Body() body: { amount: number; userId: string }) {
         this.logger.log(`Create order request for userId: ${body.userId}, amount: ${body.amount}`);
-        const receipt = `receipt_${Date.now()}_${body.userId}`;
+        // Razorpay receipt limit is 40 chars. Use short prefix + timestamp + partial userId.
+        const shortId = body.userId.substring(0, 10);
+        const receipt = `rcpt_${Date.now()}_${shortId}`;
         return this.paymentService.createOrder(body.amount, 'INR', receipt);
     }
 

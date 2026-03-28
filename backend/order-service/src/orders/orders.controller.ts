@@ -8,16 +8,16 @@ export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
 
     @Post()
-    create(@Body() createOrderDto: CreateOrderDto) {
-        // TODO: Extract userId from request auth token
-        const mockUserId = 'user-123';
-        return this.ordersService.create(createOrderDto, mockUserId);
+    create(@Body() createOrderDto: CreateOrderDto, @Query('userId') userId?: string) {
+        // In real app, extract from JWT. For now, take from query or default
+        const actualUserId = userId || 'user-123';
+        return this.ordersService.create(createOrderDto, actualUserId);
     }
 
     @Get('mine')
-    async findMyOrders() {
-        const mockUserId = 'user-123';
-        return this.ordersService.findAllByUserId(mockUserId);
+    async findMyOrders(@Query('userId') userId?: string) {
+        const actualUserId = userId || 'user-123';
+        return this.ordersService.findAllByUserId(actualUserId);
     }
 
     @Get('store/:storeId')

@@ -9,6 +9,8 @@ import { typography } from '../../constants/typography';
 import { Feather } from '@expo/vector-icons';
 import { useLocationStore } from '../../stores/locationStore';
 import * as Location from 'expo-location';
+import { AddressDetailModal } from '../../components/location/AddressDetailModal';
+import { useAuthStore } from '../../stores/authStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,6 +29,8 @@ export const LocationScreen = ({ navigation }: any) => {
     });
     const [addressText, setAddressText] = useState(location);
     const [isMapReady, setIsMapReady] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const { addAddress } = useAuthStore();
 
     // Initial location fetch
     useEffect(() => {
@@ -84,8 +88,31 @@ export const LocationScreen = ({ navigation }: any) => {
     };
 
     const handleConfirm = () => {
-        setLocation(addressText);
-        navigation.goBack();
+        setShowDetailModal(true);
+    };
+
+    const handleSaveAddress = async (details: any) => {
+        try {
+            const fullAddress = `${details.houseNo}, ${details.floor ? details.floor + ', ' : ''}${details.landmark ? details.landmark + ', ' : ''}${addressText}`;
+            
+            await addAddress({
+                label: details.label,
+                addressLine1: `${details.houseNo}${details.floor ? ', ' + details.floor : ''}`,
+                addressLine2: details.landmark || '',
+                city: '', // Handled by backend or geocode
+                state: '', 
+                zipCode: '',
+                isPrimary: true,
+                latitude: region.latitude,
+                longitude: region.longitude
+            });
+
+            setLocation(fullAddress);
+            setShowDetailModal(false);
+            navigation.goBack();
+        } catch (error) {
+            console.error('Failed to save address:', error);
+        }
     };
 
     return (
@@ -205,6 +232,13 @@ export const LocationScreen = ({ navigation }: any) => {
                     <Feather name="crosshair" size={24} color={colors.gray[700]} />
                 </TouchableOpacity>
             </View>
+
+            <AddressDetailModal
+                visible={showDetailModal}
+                onClose={() => setShowDetailModal(false)}
+                onSave={handleSaveAddress}
+                baseAddress={addressText}
+            />
         </View>
     );
 };

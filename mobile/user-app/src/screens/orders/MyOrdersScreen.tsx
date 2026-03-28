@@ -2,22 +2,56 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useOrderStore } from '../../stores/orderStore';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
-import { spacing, borderRadius } from '../../constants/spacing';
+import { spacing, borderRadius, shadow } from '../../constants/spacing';
 import { typography } from '../../constants/typography';
 import { formatPrice } from '../../utils/formatters';
 
-const OrderItem = ({ order, onPress }: any) => (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+const OrderItem = ({ order, onPress, onReorder }: any) => (
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
         <View style={styles.header}>
-            <Text style={styles.storeName}>Store #{order.storeId || 'N/A'}</Text>
-            <Text style={[styles.status, { color: getStatusColor(order.status) }]}>{order.status}</Text>
+            <View>
+                <Text style={styles.storeName}>Order #{order.id.slice(-6).toUpperCase()}</Text>
+                <Text style={styles.date}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</Text>
+            </View>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) + '20' }]}>
+                <Text style={[styles.status, { color: getStatusColor(order.status) }]}>{order.status}</Text>
+            </View>
         </View>
+        
+        <View style={styles.divider} />
+
         <View style={styles.details}>
-            <Text style={styles.itemCount}>{order.items.length} items</Text>
-            <Text style={styles.total}>{formatPrice(order.totalAmount)}</Text>
+            <View style={styles.itemsList}>
+                {order.items.slice(0, 2).map((item: any, idx: number) => (
+                    <Text key={idx} style={styles.itemName} numberOfLines={1}>
+                        {item.quantity}x {item.name}
+                    </Text>
+                ))}
+                {order.items.length > 2 && (
+                    <Text style={styles.moreItems}>+ {order.items.length - 2} more items</Text>
+                )}
+            </View>
+            <View style={styles.priceContainer}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.total}>{formatPrice(order.totalAmount)}</Text>
+            </View>
         </View>
-        <Text style={styles.date}>{new Date(order.createdAt).toLocaleDateString()}</Text>
+
+        <View style={styles.actions}>
+            <TouchableOpacity 
+                style={styles.reorderButton} 
+                onPress={(e) => {
+                    e.stopPropagation();
+                    onReorder(order);
+                }}
+            >
+                <Feather name="refresh-cw" size={14} color={colors.primary[600]} />
+                <Text style={styles.reorderText}>Reorder</Text>
+            </TouchableOpacity>
+            <Feather name="chevron-right" size={20} color={colors.gray[400]} />
+        </View>
     </TouchableOpacity>
 );
 
@@ -35,16 +69,25 @@ const getStatusColor = (status: string) => {
 
 export const MyOrdersScreen = ({ navigation }: any) => {
     const insets = useSafeAreaInsets();
-    const { orders, loadOrders } = useOrderStore();
+    const { orders, loadOrders, reorder } = useOrderStore();
 
     useEffect(() => {
         loadOrders();
     }, []);
 
+    const handleReorder = async (order: any) => {
+        try {
+            await reorder(order);
+            navigation.navigate('Cart');
+        } catch (error) {
+            console.error('Reorder error:', error);
+        }
+    };
+
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={styles.headerContainer}>
-                <Text style={styles.title}>My Orders</Text>
+                <Text style={styles.title}>Order History</Text>
             </View>
             <FlatList
                 data={orders}
@@ -53,6 +96,7 @@ export const MyOrdersScreen = ({ navigation }: any) => {
                     <OrderItem
                         order={item}
                         onPress={() => navigation.navigate('TrackOrder', { orderId: item.id })}
+                        onReorder={handleReorder}
                     />
                 )}
                 contentContainerStyle={styles.listContent}
@@ -87,44 +131,98 @@ const styles = StyleSheet.create({
     },
     card: {
         backgroundColor: colors.white,
-        borderRadius: borderRadius.lg,
-        padding: spacing.md,
-        marginBottom: spacing.md,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
+        borderRadius: borderRadius.xl,
+        padding: spacing.lg,
+        marginBottom: spacing.lg,
+        ...shadow.soft,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.02)',
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: spacing.sm,
+        alignItems: 'flex-start',
+        marginBottom: spacing.md,
     },
     storeName: {
-        fontSize: typography.fontSize.lg,
+        fontSize: typography.fontSize.base,
         fontFamily: typography.fontFamily.bold,
         color: colors.text.primary,
+        marginBottom: 2,
+    },
+    statusBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
     },
     status: {
-        fontSize: typography.fontSize.sm,
+        fontSize: 10,
         fontFamily: typography.fontFamily.bold,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: colors.gray[50],
+        marginBottom: spacing.md,
     },
     details: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: spacing.xs,
+        alignItems: 'flex-end',
+        marginBottom: spacing.lg,
     },
-    itemCount: {
+    itemsList: {
+        flex: 1,
+    },
+    itemName: {
+        fontSize: typography.fontSize.sm,
         color: colors.gray[600],
+        fontFamily: typography.fontFamily.medium,
+        marginBottom: 2,
+    },
+    moreItems: {
+        fontSize: typography.fontSize.xs,
+        color: colors.gray[400],
+        fontFamily: typography.fontFamily.medium,
+    },
+    priceContainer: {
+        alignItems: 'flex-end',
+    },
+    totalLabel: {
+        fontSize: 10,
+        color: colors.gray[400],
+        fontFamily: typography.fontFamily.bold,
+        textTransform: 'uppercase',
     },
     total: {
+        fontSize: typography.fontSize.lg,
         fontFamily: typography.fontFamily.bold,
         color: colors.text.primary,
     },
     date: {
         fontSize: typography.fontSize.xs,
         color: colors.gray[400],
+        fontFamily: typography.fontFamily.medium,
+    },
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    reorderButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.primary[50],
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: borderRadius.lg,
+        gap: 6,
+    },
+    reorderText: {
+        fontSize: typography.fontSize.xs,
+        fontFamily: typography.fontFamily.bold,
+        color: colors.primary[600],
     },
     emptyState: {
         padding: spacing.xl,

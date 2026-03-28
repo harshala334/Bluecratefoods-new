@@ -34,18 +34,19 @@ const PAYMENT_METHODS = [
   { id: 'cod', name: 'Cash on Delivery', icon: 'dollar-sign', provider: 'Feather', disabled: false },
 ];
 
+import Constants from 'expo-constants';
 import RazorpayCheckout from 'react-native-razorpay';
 import useAuthStore from '../../stores/authStore';
 import { API_CONFIG } from '../../constants/config';
 import axios from 'axios';
 
-const RAZORPAY_KEY_ID = 'rzp_test_YOUR_KEY_ID'; // Replace with real key
+const RAZORPAY_KEY_ID = Constants.expoConfig?.extra?.RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_ID';
 
 export const CheckoutScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { items, getCartSummary, clearCart } = useCartStore();
   const { placeOrder } = useOrderStore();
-  const { user } = useAuthStore();
+  const { user, selectedAddress } = useAuthStore();
   const { total } = getCartSummary();
   const [selectedPayment, setSelectedPayment] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,7 +64,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
     try {
       await placeOrder(items, total, {
         name: user?.name || 'Guest User',
-        address: '181, Becharam Chatterjee Road, Behala, Kolkata-700061',
+        address: selectedAddress ? `${selectedAddress.addressLine1}, ${selectedAddress.addressLine2 ? selectedAddress.addressLine2 + ', ' : ''}${selectedAddress.city}` : '181, Becharam Chatterjee Road, Behala, Kolkata-700061',
         phone: user?.phone || '9591890828',
         email: user?.email || 'guest@example.com'
       });
@@ -118,7 +119,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
         // 4. Record order in our system
         await placeOrder(items, total, {
           name: user?.name || 'Guest User',
-          address: '181, Becharam Chatterjee Road, Behala, Kolkata-700061',
+          address: selectedAddress ? `${selectedAddress.addressLine1}, ${selectedAddress.addressLine2 ? selectedAddress.addressLine2 + ', ' : ''}${selectedAddress.city}` : '181, Becharam Chatterjee Road, Behala, Kolkata-700061',
           phone: user?.phone || '9591890828',
           email: user?.email || 'guest@example.com'
         });
@@ -175,14 +176,17 @@ export const CheckoutScreen = ({ navigation }: any) => {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.addressTypeHeader}>
-                  <Text style={styles.addressLabel}>Home (Primary)</Text>
-                  <TouchableOpacity>
+                  <Text style={styles.addressLabel}>{selectedAddress?.label || 'Home'} (Primary)</Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('Location')}>
                     <Text style={styles.changeAddressText}>Change</Text>
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.addressText}>
-                  123, Green Street, Blue Crate Apartments{"\n"}
-                  Indiranagar, Bangalore - 560038
+                  {selectedAddress ? (
+                    `${selectedAddress.addressLine1}${selectedAddress.addressLine2 ? '\n' + selectedAddress.addressLine2 : ''}\n${selectedAddress.city} ${selectedAddress.zipCode}`
+                  ) : (
+                    "123, Green Street, Blue Crate Apartments\nIndiranagar, Bangalore - 560038"
+                  )}
                 </Text>
               </View>
             </View>

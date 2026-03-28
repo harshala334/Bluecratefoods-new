@@ -14,7 +14,8 @@ interface AuthState {
   isAuthenticated: boolean;
   hasCompletedOnboarding: boolean;
   isLoading: boolean;
-  error: string | null;
+  addresses: Address[];
+  selectedAddress: Address | null;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
@@ -23,6 +24,9 @@ interface AuthState {
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
+  fetchAddresses: () => Promise<void>;
+  addAddress: (address: Omit<Address, 'id' | 'userId'>) => Promise<void>;
+  setSelectedAddress: (address: Address) => void;
   completeOnboarding: () => Promise<void>;
   skipLogin: () => Promise<void>;
   clearError: () => void;
@@ -35,6 +39,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   hasCompletedOnboarding: false,
   isLoading: false,
   error: null,
+  addresses: [],
+  selectedAddress: null,
 
   login: async (email, password) => {
     try {
@@ -176,11 +182,58 @@ export const useAuthStore = create<AuthState>((set) => ({
         hasCompletedOnboarding: !!onboardingCompleted,
         isLoading: false,
       });
+
+      if (user) {
+        // Fetch addresses from a utility or directly
+        const { fetchAddresses } = useAuthStore.getState();
+        fetchAddresses();
+      }
     } catch (error) {
       console.error('Load user error:', error);
       set({ isLoading: false });
     }
   },
+
+  fetchAddresses: async () => {
+    try {
+      const { user } = useAuthStore.getState();
+      if (!user) return;
+
+      // Import service dynamically or at top
+      const { addressService } = await import('../services/addressService');
+      const addresses = await addressService.getAddresses(user.id);
+      set({
+        addresses,
+        selectedAddress: addresses.find(a => a.isPrimary) || addresses[0] || null
+      });
+    } catch (error) {
+      console.error('Fetch addresses error:', error);
+    }
+  },
+
+  addAddress: async (addressData) => {
+    try {
+      const { user } = useAuthStore.getState();
+      if (!user) return;
+
+      const { addressService } = await import('../services/addressService');
+      const newAddress = await addressService.addAddress(user.id, {
+        ...addressData,
+        userId: user.id,
+        isDefault: useAuthStore.getState().addresses.length === 0
+      } as any);
+
+      set(state => ({
+        addresses: [...state.addresses, newAddress as any],
+        selectedAddress: newAddress as any
+      }));
+    } catch (error) {
+      console.error('Add address error:', error);
+      throw error;
+    }
+  },
+
+  setSelectedAddress: (address) => set({ selectedAddress: address }),
 
   completeOnboarding: async () => {
     try {

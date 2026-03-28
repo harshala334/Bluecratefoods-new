@@ -62,6 +62,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     extra: {
         eas: {
             projectId: "41d1bb77-a0a7-4244-92ad-dc61f9150ea3"
-        }
+        },
+        RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_ID'
     }
 });
