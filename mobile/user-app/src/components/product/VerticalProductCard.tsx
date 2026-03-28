@@ -94,10 +94,10 @@ export const VerticalProductCard = React.memo(({ product, onPress, width }: Vert
             }}
         >
             {/* Product Image Area */}
-            <View style={{ position: 'relative', opacity: isOutOfStock ? 0.5 : 1 }}>
+            <View style={{ position: 'relative' }}>
                 <Image
                     source={{ uri: product.image }}
-                    style={{ width: '100%', height: 90, backgroundColor: colors.gray[100] }}
+                    style={{ width: '100%', height: 90, backgroundColor: 'transparent' }}
                     resizeMode="cover"
                 />
                 {product.badge && (

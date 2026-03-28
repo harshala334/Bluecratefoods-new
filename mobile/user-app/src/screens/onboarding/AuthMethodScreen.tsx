@@ -19,6 +19,7 @@ import { Alert, ActivityIndicator } from 'react-native';
 import { GoogleSignin, statusCodes, auth } from '../../utils/authProvider';
 
 const AuthMethodScreen = ({ navigation }: any) => {
+    const [countryCode, setCountryCode] = useState('+91');
     const [phone, setPhone] = useState('');
     const googleLogin = useAuthStore((state) => state.googleLogin);
     const skipLogin = useAuthStore((state) => state.skipLogin);
@@ -29,16 +30,25 @@ const AuthMethodScreen = ({ navigation }: any) => {
     };
 
     const handleContinue = async () => {
-        if (phone.length >= 10) {
-            try {
-                // Formatting phone number for Firebase (assuming India +91 for now)
-                const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
-                const confirmation = await auth().signInWithPhoneNumber(formattedPhone);
-                navigation.navigate('OTP', { phone: formattedPhone, confirmation });
-            } catch (error: any) {
-                console.error('Phone auth error:', error);
-                Alert.alert('Error', 'Failed to send OTP. ' + (error.message || ''));
+        if (phone.length < 10) {
+            Alert.alert('Error', 'Please enter a valid 10-digit mobile number');
+            return;
+        }
+
+        try {
+            // Formatting phone number
+            const formattedPhone = phone.startsWith('+') ? phone : `${countryCode}${phone}`;
+            // We now use our custom backend's sendOtp (MSG91)
+            const response = await authService.sendOtp(formattedPhone);
+
+            if (response.success) {
+                navigation.navigate('OTP', { phone: formattedPhone });
+            } else {
+                Alert.alert('Error', response.message || 'Failed to send OTP');
             }
+        } catch (error: any) {
+            console.error('Phone auth error:', error);
+            Alert.alert('Error', 'Failed to send OTP. ' + (error.message || ''));
         }
     };
 
@@ -96,13 +106,16 @@ const AuthMethodScreen = ({ navigation }: any) => {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <View style={styles.countryPicker}>
-                                <Text style={styles.countryCode}>+1</Text>
+                            <TouchableOpacity
+                                style={styles.countryPicker}
+                                onPress={() => Alert.alert('Select Country', 'Currently only +91 (India) is supported.', [{ text: 'OK' }])}
+                            >
+                                <Text style={styles.countryCode}>{countryCode}</Text>
                                 <Feather name="chevron-down" size={16} color={colors.gray[400]} />
-                            </View>
+                            </TouchableOpacity>
                             <TextInput
                                 style={styles.input}
-                                placeholder="201-555-0123"
+                                placeholder="9999999999"
                                 keyboardType="phone-pad"
                                 value={phone}
                                 onChangeText={setPhone}
@@ -191,7 +204,6 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     backButton: {
-        // Removed marginBottom to align with Skip button
     },
     title: {
         fontSize: 24,

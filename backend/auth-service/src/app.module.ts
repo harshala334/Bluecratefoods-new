@@ -8,6 +8,10 @@ import { User } from './entities/user.entity';
 import * as fs from 'fs';
 import { FirebaseService } from './firebase.service';
 
+import { SmsService } from './sms.service';
+import { PaymentService } from './payment.service';
+import { PaymentController } from './payment.controller';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,7 +30,7 @@ import { FirebaseService } from './firebase.service';
     }),
     TypeOrmModule.forFeature([User]),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, DatabaseFixService, FirebaseService],
+  controllers: [AuthController, PaymentController],
+  providers: [AuthService, DatabaseFixService, FirebaseService, SmsService, PaymentService],
 })
 export class AppModule { }

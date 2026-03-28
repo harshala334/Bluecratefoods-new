@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # GCP Project Configuration
-PROJECT_ID="bluecratefoods"
+PROJECT_ID="bluecratefoods-491614"
 REGION="us-central1"
 REPO_NAME="bluecrate"
-DB_HOST="136.114.139.164"
+DB_HOST="34.171.201.34"
 DB_USER="bluecrate"
 DB_PASS="bluecratepass"
 
@@ -58,6 +58,12 @@ for service in "${services[@]}"; do
 
     # Build image
     gcloud builds submit --tag $IMAGE_PATH "$BUILD_PATH" --project $PROJECT_ID
+
+    # Service-specific environment variables
+    EXTRA_ENV=""
+    if [ "$service" == "api-gateway" ]; then
+        EXTRA_ENV=",AUTH_SERVICE_URL=https://auth-service-e7zjf3b6pq-uc.a.run.app,ORDER_SERVICE_URL=https://order-service-e7zjf3b6pq-uc.a.run.app,USER_SERVICE_URL=https://user-service-e7zjf3b6pq-uc.a.run.app,STORE_SERVICE_URL=https://store-service-e7zjf3b6pq-uc.a.run.app"
+    fi
     
     # Deploy to Cloud Run
     gcloud run deploy $service \
@@ -66,7 +72,7 @@ for service in "${services[@]}"; do
         --region $REGION \
         --allow-unauthenticated \
         --project $PROJECT_ID \
-        --set-env-vars="NODE_ENV=production,DB_HOST=$DB_HOST,DB_USER=$DB_USER,DB_PASS=$DB_PASS,DB_NAME=$DB_NAME,DB_PORT=5432"
+        --set-env-vars="NODE_ENV=production,DB_HOST=$DB_HOST,DB_USER=$DB_USER,DB_PASS=$DB_PASS,DB_NAME=$DB_NAME,DB_PORT=5432$EXTRA_ENV"
 done
 
 echo "✅ Deployment for target services complete!"

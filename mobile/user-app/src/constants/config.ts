@@ -6,7 +6,7 @@ export const PROD_URL = 'https://api-gateway-441546178642.us-central1.run.app/ap
 // Use LAN IP for Android to support both Emulator and Real Device (via Expo Tunnel)
 // NOTE: 10.0.2.2 is used for Android Emulator to access host machine localhost
 export const LOCAL_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000/api' : 'http://localhost:8000/api';
-export const CDN_URL = 'https://storage.googleapis.com/bluecrate-assets';
+export const CDN_URL = 'https://storage.googleapis.com/bluecrate-assets-491614';
 
 // Helper to decide base URL per endpoint
 const getBaseUrl = () => {

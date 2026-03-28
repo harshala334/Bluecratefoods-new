@@ -19,8 +19,8 @@ import { Alert, ActivityIndicator } from 'react-native';
 import { auth } from '../../utils/authProvider';
 
 const OTPScreen = ({ navigation, route }: any) => {
-    const { phone, confirmation } = route.params || { phone: 'your phone', confirmation: null };
-    const [otp, setOtp] = useState(['', '', '', '6']); // Firebase uses 6 digits usually
+    const { phone } = route.params || { phone: 'your phone' };
+    const [otp, setOtp] = useState(['', '', '', '']); 
     const [timer, setTimer] = useState(30);
     const inputRefs = useRef<Array<TextInput | null>>([]);
 
@@ -52,24 +52,17 @@ const OTPScreen = ({ navigation, route }: any) => {
     };
 
     const handleVerify = async (code: string) => {
-        if (!confirmation) {
-            Alert.alert('Error', 'No confirmation object found. Please try sending OTP again.');
+        if (!code || code.length < 4) {
+            Alert.alert('Error', 'Please enter a valid 4-digit OTP');
             return;
         }
 
         try {
-            const userCredential = await confirmation.confirm(code);
-            const idToken = await userCredential?.user?.getIdToken();
-
-            if (idToken) {
-                await otpLogin(phone, idToken);
-                // RootNavigator will handle navigation
-            } else {
-                throw new Error('Failed to get ID Token from Firebase');
-            }
+            await otpLogin(phone, code);
+            // RootNavigator will handle navigation
         } catch (error: any) {
             console.error('OTP confirmation error:', error);
-            Alert.alert('Error', error.message || 'Invalid OTP');
+            Alert.alert('Error', error.message || 'Invalid or expired OTP');
         }
     };
 

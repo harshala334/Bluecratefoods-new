@@ -4,7 +4,7 @@ import AdminLayout from '@/components/admin/AdminLayout'
 import ProtectedRoute from '@/components/admin/ProtectedRoute'
 import { FiPlus, FiDownload, FiUpload, FiSearch, FiEdit2, FiTrash2, FiClock, FiCheckCircle, FiX } from 'react-icons/fi'
 import toast from 'react-hot-toast'
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app/api'
 export default function AdminProducts() {
     const [products, setProducts] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)

@@ -29,7 +29,7 @@ export default function EnquiryModal({ isOpen, onClose }: EnquiryModalProps) {
         setLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app/api/api';
             await axios.post(`${apiUrl}/enquiry`, formData);
 
             toast.success('Enquiry sent successfully!');

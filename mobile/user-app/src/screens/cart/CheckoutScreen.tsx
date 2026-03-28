@@ -27,49 +27,125 @@ const { width } = Dimensions.get('window');
  */
 
 const PAYMENT_METHODS = [
-  { id: 'card', name: 'Credit/Debit Card', icon: 'credit-card', provider: 'Feather', disabled: true },
-  { id: 'upi', name: 'UPI (GPay, PhonePe)', icon: 'smartphone', provider: 'Feather', disabled: true },
-  { id: 'netbanking', name: 'Net Banking', icon: 'bank', provider: 'Material', disabled: true },
-  { id: 'wallet', name: 'Wallets', icon: 'wallet', provider: 'Material', disabled: true },
+  { id: 'upi', name: 'UPI (GPay, PhonePe, etc.)', icon: 'smartphone', provider: 'Feather', disabled: false },
+  { id: 'card', name: 'Credit/Debit Card', icon: 'credit-card', provider: 'Feather', disabled: false },
+  { id: 'netbanking', name: 'Net Banking', icon: 'bank', provider: 'Material', disabled: false },
+  { id: 'wallet', name: 'Wallets / PayLater', icon: 'wallet', provider: 'Material', disabled: false },
   { id: 'cod', name: 'Cash on Delivery', icon: 'dollar-sign', provider: 'Feather', disabled: false },
 ];
+
+import RazorpayCheckout from 'react-native-razorpay';
+import useAuthStore from '../../stores/authStore';
+import { API_CONFIG } from '../../constants/config';
+import axios from 'axios';
+
+const RAZORPAY_KEY_ID = 'rzp_test_YOUR_KEY_ID'; // Replace with real key
 
 export const CheckoutScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { items, getCartSummary, clearCart } = useCartStore();
   const { placeOrder } = useOrderStore();
+  const { user } = useAuthStore();
   const { total } = getCartSummary();
-  const [selectedPayment, setSelectedPayment] = useState('cod');
+  const [selectedPayment, setSelectedPayment] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePlaceOrder = async () => {
-    setIsProcessing(true);
+    if (selectedPayment === 'cod') {
+      await handleCodOrder();
+    } else {
+      await handleRazorpayPayment();
+    }
+  };
 
-    // Simulate API call
-    setTimeout(async () => {
-      // Create the order in our OrderStore (Database)
+  const handleCodOrder = async () => {
+    setIsProcessing(true);
+    try {
       await placeOrder(items, total, {
-        name: 'Guest User',
-        address: '123, Green Street, Blue Crate Apartments, Indiranagar, Bangalore - 560038',
-        phone: '9876543210',
-        email: 'guest@example.com'
+        name: user?.name || 'Guest User',
+        address: '181, Becharam Chatterjee Road, Behala, Kolkata-700061',
+        phone: user?.phone || '9591890828',
+        email: user?.email || 'guest@example.com'
       });
 
       setIsProcessing(false);
-      Alert.alert(
-        'Order Placed! 🥳',
-        'Your order has been sent to the kitchen and will reach you in 10-15 mins.',
-        [
-          {
-            text: 'Track Order',
-            onPress: async () => {
-              await clearCart();
-              navigation.navigate('TrackOrder');
-            },
+      showSuccessAlert();
+    } catch (err) {
+      setIsProcessing(false);
+      Alert.alert('Error', 'Failed to place order. Please try again.');
+    }
+  };
+
+  const handleRazorpayPayment = async () => {
+    setIsProcessing(true);
+    try {
+      // 1. Create Order on Backend
+      const { data: rzpOrder } = await axios.post(`${API_CONFIG.BASE_URL}/auth/payment/create-order`, {
+        amount: total,
+        userId: user?.id || 'guest',
+      });
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        description: 'Quality Meal Kits & Ingredients',
+        image: 'https://bluecratefoods.com/BCF_logo.png',
+        currency: rzpOrder.currency,
+        key: RAZORPAY_KEY_ID,
+        amount: rzpOrder.amount,
+        name: 'BlueCrate Foods',
+        order_id: rzpOrder.id,
+        prefill: {
+          email: user?.email || '',
+          contact: user?.phone || '',
+          name: user?.name || ''
+        },
+        theme: { color: colors.primary[600] }
+      };
+
+      const response = await RazorpayCheckout.open(options);
+
+      // 3. Verify Signature on Backend
+      const { data: verification } = await axios.post(`${API_CONFIG.BASE_URL}/auth/payment/verify-signature`, {
+        orderId: rzpOrder.id,
+        paymentId: response.razorpay_payment_id,
+        signature: response.razorpay_signature,
+        userId: user?.id || 'guest',
+        items,
+        amount: total,
+      });
+
+      if (verification.success) {
+        // 4. Record order in our system
+        await placeOrder(items, total, {
+          name: user?.name || 'Guest User',
+          address: '181, Becharam Chatterjee Road, Behala, Kolkata-700061',
+          phone: user?.phone || '9591890828',
+          email: user?.email || 'guest@example.com'
+        });
+        setIsProcessing(false);
+        showSuccessAlert();
+      }
+    } catch (error: any) {
+      setIsProcessing(false);
+      console.error('Payment Error:', error);
+      Alert.alert('Payment Failed', error.description || 'Transaction was not successful.');
+    }
+  };
+
+  const showSuccessAlert = () => {
+    Alert.alert(
+      'Order Placed! 🥳',
+      'Your order has been sent to the kitchen and will reach you in 10-15 mins.',
+      [
+        {
+          text: 'Track Order',
+          onPress: async () => {
+            await clearCart();
+            navigation.navigate('TrackOrder');
           },
-        ]
-      );
-    }, 1500);
+        },
+      ]
+    );
   };
 
   const renderPaymentIcon = (method: typeof PAYMENT_METHODS[0]) => {

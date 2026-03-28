@@ -84,21 +84,12 @@ export const authService = {
   },
 
   async verifyOtp(phone: string, code: string): Promise<AuthResponse> {
-    // Bypass for Expo Go mocking
-    if (code === 'mock-firebase-id-token') {
-      console.log('[MOCK] Bypassing verifyOtp API for mock token');
-      const now = new Date().toISOString();
-      return {
-        token: 'mock-jwt-token',
-        user: { id: 'mock-id', name: 'Demo User', phone, email: 'demo@example.com', userType: 'customer', createdAt: now, updatedAt: now }
-      };
-    }
     return api.post<AuthResponse>(`${API_CONFIG.BASE_URL}/auth/verify-otp`, { phone, code });
   },
 
   // Google Login
   async googleLogin(token: string): Promise<AuthResponse> {
-    // Bypass for Expo Go mocking
+    // Keep mock for now since you might not have configured Google in backend yet
     if (token === 'mock-google-id-token') {
       console.log('[MOCK] Bypassing googleLogin API for mock token');
       const now = new Date().toISOString();

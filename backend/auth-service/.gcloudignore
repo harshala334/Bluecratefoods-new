@@ -1,6 +1,7 @@
-﻿node_modules/
-.git/
-.env
-dist/
-coverage/
-test/
+.gcloudignore
+.git
+.gitignore
+node_modules
+dist
+npm-debug.log
+.vscode

@@ -8,7 +8,7 @@ const nextConfig = {
   trailingSlash: true,
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app',
   },
 }
 

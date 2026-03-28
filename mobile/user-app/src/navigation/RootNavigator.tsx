@@ -386,7 +386,7 @@ const RectTabButton = ({ onPress }: any) => {
       activeOpacity={0.8}
     >
       <LinearGradient
-        colors={[colors.orange[500], colors.orange[600]]}
+        colors={['#ff4d6d', '#df3c5dff']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -398,13 +398,13 @@ const RectTabButton = ({ onPress }: any) => {
           borderBottomLeftRadius: 16,
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,
-          borderWidth: 1.5,
-          borderColor: colors.orange[400],
+          borderWidth: 2,
+          borderColor: '#dc143c',
           borderRightWidth: 0,
           ...commonShadow.soft,
           justifyContent: 'center',
           overflow: 'visible',
-          transform: [{ translateY: -6 }],
+          top: 1, // Shifted up to align bottom bound with other tab labels at y=54px
         }}
       >
         <View style={{ width: tabWidth, alignItems: 'center', position: 'relative', marginLeft: 6 }}>

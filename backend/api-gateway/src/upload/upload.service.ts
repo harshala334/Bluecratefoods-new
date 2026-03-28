@@ -5,7 +5,7 @@ import { extname } from 'path';
 @Injectable()
 export class UploadService {
     private storage: Storage;
-    private bucketName = 'bluecrate-uploads'; // As defined in Terraform
+    private bucketName = 'bluecrate-uploads-491614'; // Updated for migration
 
     constructor() {
         // Automatically picks up credentials from Workload Identity or GOOGLE_APPLICATION_CREDENTIALS

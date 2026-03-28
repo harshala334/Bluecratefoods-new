@@ -13,11 +13,13 @@ import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
+import useAuthStore from '../../stores/authStore';
 
 const { width, height } = Dimensions.get('window');
 
 const WelcomeScreen = ({ navigation }: any) => {
     const insets = useSafeAreaInsets();
+    const skipLogin = useAuthStore((state) => state.skipLogin);
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
@@ -29,7 +31,7 @@ const WelcomeScreen = ({ navigation }: any) => {
                     colors={['transparent', 'rgba(0,0,0,0.8)', 'black']}
                     style={styles.gradient}
                 >
-                    <View style={[styles.content, { 
+                    <View style={[styles.content, {
                         paddingTop: Math.max(insets.top, 24),
                         paddingBottom: Math.max(insets.bottom, 24)
                     }]}>
@@ -47,7 +49,7 @@ const WelcomeScreen = ({ navigation }: any) => {
                             <View style={styles.buttonContainer}>
                                 <View style={styles.kittyWrapper} pointerEvents="none">
                                     <Image
-                                        source={require('../../../assets/images/kitty_with_cart-removebg-preview.png')}
+                                        source={require('../../../assets/images/kitty_with_cart_cropped.png')}
                                         style={styles.kittyMascot}
                                         resizeMode="contain"
                                     />
@@ -57,16 +59,16 @@ const WelcomeScreen = ({ navigation }: any) => {
                                     onPress={() => navigation.navigate('AuthMethod')}
                                     activeOpacity={0.8}
                                 >
-                                    <Text style={styles.buttonText}>Get Started</Text>
+                                    <Text style={styles.buttonText}>Login / Sign Up</Text>
                                 </TouchableOpacity>
                             </View>
 
                             <TouchableOpacity
                                 style={styles.loginLink}
-                                onPress={() => navigation.navigate('Login')}
+                                onPress={() => skipLogin()}
                             >
                                 <Text style={styles.loginText}>
-                                    Already have an account? <Text style={styles.loginAccent}>Log in</Text>
+                                    New to Blue Crate? <Text style={styles.loginAccent}>Explore as Guest</Text>
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -106,8 +108,8 @@ const styles = StyleSheet.create({
     },
     kittyWrapper: {
         position: 'absolute',
-        bottom: 54,        // Button height is 58, this sits Kitty on its top edge
-        left: -5,
+        bottom: 10,        // Significantly pulled down for solid overlap so she doesn't float
+        left: -12,         // Added a bit more left offset for a natural look
         zIndex: 10,
         elevation: 10,
     },

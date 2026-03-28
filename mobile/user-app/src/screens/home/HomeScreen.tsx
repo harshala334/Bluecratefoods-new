@@ -18,6 +18,7 @@ import {
   Animated,
   Easing,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { API_CONFIG, CDN_URL } from '../../constants/config';
@@ -30,9 +31,8 @@ import { recipeService } from '../../services/recipeService';
 import { Recipe } from '../../types/recipe';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KittyChatSearchBar } from '../../components/common/KittyChatSearchBar';
+const { width: windowWidth } = Dimensions.get('window');
 import { VerticalProductCard } from '../../components/product/VerticalProductCard';
-
-const { width: windowWidth } = Dimensions.get('window'); // Re-declaring since we removed interface
 
 
 import { useLocationStore } from '../../stores/locationStore';
@@ -61,13 +61,19 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const quickOptions = ['Breakfast', 'Healthy', 'Snacks', 'Dessert', 'Spicy', 'Chicken', 'Chinese', 'Italian', 'Mexican'];
 
+  const { width: screenWidth } = useWindowDimensions();
+  const BENTO_PADDING = 22; // Margin(6) + Padding(14) + Border(2)
+  const BENTO_GAP = 8;
+  const BENTO_UNIT = (screenWidth - (BENTO_PADDING * 2) - (BENTO_GAP * 3)) / 4;
+  const BENTO_WIDE_WIDTH = BENTO_UNIT * 3 + (BENTO_GAP * 2);
+
   const promos = [
     { id: 1, title: '50% OFF on First Order', subtitle: 'Use code: WELCOME50', color: '#FF7043', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80' },
     { id: 2, title: 'New Vegan Collection', subtitle: 'Explore plant-based goodness', color: '#66BB6A', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80' },
     { id: 3, title: 'Chef\'s Special Curry', subtitle: 'Limited time offer', color: '#FFA726', image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&q=80' }
   ];
 
-  const carouselWidth = (windowWidth - 32 - 4) * 0.75;
+  const carouselWidth = BENTO_WIDE_WIDTH;
 
   // Handle back button press when search is focused
   useEffect(() => {
@@ -153,11 +159,11 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const categories = [
     // Row 1: Vertical/Bento (Next to Promo)
-    { id: 'frozen', title: 'Ready to cook: Frozen', subtitle: '120+ Items • Quick & delicious', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&q=80', filter: 'frozen', row: 1 },
+    { id: 'frozen', title: 'Frozen : Ready-to-Cook', subtitle: '120+ Items • Quick & delicious', image: require('../../../assets/images/frozen.jpg'), filter: 'frozen', row: 1 },
 
     // Row 2: Curated Deliveries (Auto-adjusting grid)
-    { id: '5min', title: '5 Min Meals', subtitle: '45+ Items • Instant satisfaction', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', filter: '5min', row: 2 },
-    { id: '10min', title: '10 Min Meals', subtitle: '30+ Items • Fast & fresh', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80', filter: '10min', row: 2 },
+    { id: '5min', title: '5 Min Meals', subtitle: '45+ Items • Instant satisfaction', image: require('../../../assets/images/fivemins.jpg'), filter: '5min', row: 2 },
+    { id: '10min', title: '10 Min Meals', subtitle: '30+ Items • Fast & fresh', image: require('../../../assets/images/fifteenmins.jpg'), filter: '10min', row: 2 },
 
     // Row 3: Sourcing Categories — 4 squares with local images
     { id: 'veg', title: 'Fresh Vegetables', subtitle: '80+ Items • Farm to doorstep', image: require('../../../assets/images/vege.jpg'), filter: 'veg', row: 3 },
@@ -170,15 +176,13 @@ export const HomeScreen = ({ navigation }: any) => {
 
 
   const CUISINES = [
-    { id: 'chinese', name: 'Chinese', image: 'https://images.unsplash.com/photo-1552611052-33e04de081de?w=600&q=80' },
-    { id: 'italian', name: 'Italian', image: 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=600&q=80' },
-    { id: 'indian', name: 'Indian', image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80' },
-    { id: 'mexican', name: 'Mexican', image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80' },
-    { id: 'japanese', name: 'Japanese', image: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=600&q=80' },
-    { id: 'thai', name: 'Thai', image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80' },
-    { id: 'french', name: 'French', image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80' },
-    { id: 'mediterranean', name: 'Mediterranean', image: 'https://images.unsplash.com/photo-1505575967455-40e256f73376?w=600&q=80' },
-    { id: 'middle-eastern', name: 'Middle Eastern', image: 'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=600&q=80' },
+    { id: 'bengali', name: 'Bengali', image: require('../../../assets/images/bengali_cuisine.jpg') },
+    { id: 'chinese', name: 'Chinese', image: require('../../../assets/images/chinese_cuisine.jpg') },
+    { id: 'mughlai', name: 'Mughlai', image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=800&q=80' },
+    { id: 'indian', name: 'Indian', image: require('../../../assets/images/indian_cuisine.jpg') },
+    { id: 'south_indian', name: 'South Indian', image: require('../../../assets/images/south_indian_cuisine.jpg') },
+    { id: 'momo', name: 'Momo', image: require('../../../assets/images/momo_cuisine.jpg') },
+    { id: 'continental', name: 'Continental', image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&q=80' },
   ];
 
   const PACKAGING_DATA = [
@@ -227,7 +231,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
     return (
       <TouchableOpacity style={[styles.compactCard, style]} onPress={onPress} activeOpacity={0.9}>
-        <View style={[styles.compactImageContainer, isOutOfStock && { opacity: 0.5 }]}>
+        <View style={styles.compactImageContainer}>
           <Image source={{ uri: product.image }} style={styles.compactImage} />
         </View>
         <View style={styles.compactContent}>
@@ -277,6 +281,21 @@ export const HomeScreen = ({ navigation }: any) => {
     );
   };
 
+  // Helper to force bento titles into 2 lines for alignment
+  const formatBentoTitle = (text: string) => {
+    if (text.includes(':')) {
+      return text.split(':').map(part => part.trim()).join('\n');
+    }
+    const words = text.split(' ');
+    if (words.length === 2) return `${words[0]}\n${words[1]}`;
+    if (words.length > 2) {
+      const mid = Math.ceil(words.length / 2);
+      return `${words.slice(0, mid).join(' ')}\n${words.slice(mid).join(' ')}`;
+    }
+    return text;
+  };
+
+
   const [searchResults, setSearchResults] = useState<Recipe[]>([]);
 
   const handleCategoryPress = (filter: string) => {
@@ -288,6 +307,23 @@ export const HomeScreen = ({ navigation }: any) => {
         categoryTitle: category?.title || 'Products',
       }
     });
+  };
+
+  const handleProductRecoPress = async (query: string) => {
+    try {
+      const results = await recipeService.searchRecipes(query);
+      if (results && results.length > 0) {
+        setSearchResults(results);
+      } else {
+        // Fallback: search in product list if no immediate recipes/product results
+        navigation.navigate('ProductsTab', {
+          screen: 'ProductList',
+          params: { search: query }
+        });
+      }
+    } catch (error) {
+      console.warn("Failed to search from reco:", error);
+    }
   };
 
 
@@ -340,7 +376,7 @@ export const HomeScreen = ({ navigation }: any) => {
               <View key={product.id} style={{ marginRight: 8 }}>
                 <VerticalProductCard
                   product={product}
-                  width={windowWidth * 0.42}
+                  width={screenWidth * 0.42}
                   onPress={() => navigation.navigate('ProductsTab', {
                     screen: 'ProductDetail',
                     params: { product }
@@ -406,25 +442,25 @@ export const HomeScreen = ({ navigation }: any) => {
                 </TouchableOpacity>
               ))
             ) : (
-              // Initial placeholders
+              // Initial placeholders - Product Wise
               [
-                { title: 'Frozen', image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80', filter: 'frozen' },
-                { title: 'Vegetables', image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&q=80', filter: 'veg' },
-                { title: 'Meat', image: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400&q=80', filter: 'meat' },
-                { title: '5 Min', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&q=80', filter: '5min' },
-                { title: '10 Min', image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&q=80', filter: '10min' },
-                { title: 'Kitchen', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&q=80', filter: 'kitchen' },
-                { title: 'Packaging', image: 'https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=400&q=80', filter: 'packaging' },
+                { id: 'reco-onion', title: 'Onion', image: require('../../../assets/images/onion_reco.jpg'), query: 'Onion' },
+                { id: 'reco-coriander', title: 'Coriander', image: require('../../../assets/images/coriander_reco.jpg'), query: 'Coriander' },
+                { id: 'reco-fishfry', title: 'Fish Fry', image: require('../../../assets/images/fish_fry_reco.jpg'), query: 'Fish Fry' },
+                { id: 'reco-momos', title: 'Momos', image: require('../../../assets/images/chickenmomos_reco.jpg'), query: 'Chicken Momos' },
+                { id: 'reco-thigh', title: 'Chicken Thigh', image: require('../../../assets/images/chicken_thigh_reco.jpg'), query: 'Chicken Thigh' },
+                { id: 'reco-boneless', title: 'Boneless Chicken', image: require('../../../assets/images/boneless_chicken_reco.jpg'), query: 'Boneless Chicken' },
               ].map((item) => (
                 <TouchableOpacity
-                  key={item.title}
+                  key={item.id}
                   style={styles.gemContainer}
-                  onPress={() => handleCategoryPress(item.filter)}
+                  onPress={() => handleProductRecoPress(item.query)}
                 >
                   <View style={[styles.gemCircle, { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }]}>
                     <Image
-                      source={{ uri: item.image }}
+                      source={typeof item.image === 'string' ? { uri: item.image } : item.image}
                       style={{ width: '100%', height: '100%', borderRadius: 100 }}
+                      resizeMode="cover"
                     />
                   </View>
                   <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
@@ -437,12 +473,12 @@ export const HomeScreen = ({ navigation }: any) => {
         </View>
       </View>
 
-      <View style={styles.sectionCard}>
+      <View style={styles.bentoSectionCard}>
         <View style={styles.bentoSection}>
           <View style={styles.bentoGrid}>
             {/* Row 1: Carousel (3/4) + First Row 1 Category (1/4) */}
             <View style={styles.bentoRow}>
-              <View style={styles.promoWrapper}>
+              <View style={[styles.promoWrapper, { width: BENTO_WIDE_WIDTH, height: BENTO_UNIT }]}>
                 <ScrollView
                   ref={scrollViewRef}
                   horizontal
@@ -456,7 +492,7 @@ export const HomeScreen = ({ navigation }: any) => {
                   style={styles.promoScroll}
                 >
                   {promos.map((promo) => (
-                    <View key={promo.id} style={{ width: carouselWidth, height: 96 }}>
+                    <View key={promo.id} style={{ width: BENTO_WIDE_WIDTH, height: BENTO_UNIT }}>
                       <ImageBackground
                         source={{ uri: promo.image }}
                         style={styles.promoCardContent}
@@ -485,20 +521,19 @@ export const HomeScreen = ({ navigation }: any) => {
               {categories.filter(c => c.row === 1).slice(0, 1).map((cat) => (
                 <TouchableOpacity
                   key={cat.id}
-                  style={styles.bentoVertical}
+                  style={[styles.bentoVertical, { width: BENTO_UNIT, height: BENTO_UNIT }]}
                   onPress={() => handleCategoryPress(cat.filter)}
                 >
                   <ImageBackground
-                    source={{ uri: cat.image }}
+                    source={typeof cat.image === 'string' ? { uri: cat.image } : cat.image}
                     style={styles.bentoImageFull}
-                    imageStyle={{ transform: [{ scale: 1.1 }], resizeMode: 'cover' }}
+                    imageStyle={{ resizeMode: 'cover' }}
                   >
-                    <LinearGradient
-                      colors={['transparent', 'rgba(0,0,0,0.8)']}
-                      style={styles.bentoGradient}
-                    >
-                      <Text style={styles.bentoLabelFloating}>{cat.title.split(':').pop()?.trim()}</Text>
-                    </LinearGradient>
+                    <View style={styles.bentoGradient}>
+                      <Text style={styles.bentoLabelFloating} numberOfLines={2}>
+                        {formatBentoTitle(cat.title)}
+                      </Text>
+                    </View>
                   </ImageBackground>
                 </TouchableOpacity>
               ))}
@@ -509,55 +544,48 @@ export const HomeScreen = ({ navigation }: any) => {
               {categories.filter(c => c.row === 2).map((cat) => (
                 <TouchableOpacity
                   key={cat.id}
-                  style={styles.bentoHalf} // Adjusts width automatically in flex-row bentoRow
+                  style={[styles.bentoHalf, { height: BENTO_UNIT }]} // Ensures Row 2 matches unit height
                   onPress={() => handleCategoryPress(cat.filter)}
                 >
                   <ImageBackground
-                    source={{ uri: cat.image }}
+                    source={typeof cat.image === 'string' ? { uri: cat.image } : cat.image}
                     style={styles.bentoImageFull}
-                    imageStyle={{ transform: [{ scale: 1.1 }], resizeMode: 'cover' }}
+                    imageStyle={{ resizeMode: 'cover' }}
                   >
-                    <LinearGradient
-                      colors={['transparent', 'rgba(0,0,0,0.8)']}
-                      style={styles.bentoGradient}
-                    >
-                      <Text numberOfLines={2} style={styles.bentoLabelFloating}>{cat.title.split(':').pop()?.trim()}</Text>
-                    </LinearGradient>
+                    {!['5min', '10min'].includes(cat.id) && (
+                      <View style={styles.bentoGradient}>
+                        <Text style={styles.bentoLabelFloating} numberOfLines={2}>
+                          {formatBentoTitle(cat.title)}
+                        </Text>
+                      </View>
+                    )}
                   </ImageBackground>
                 </TouchableOpacity>
               ))}
             </View>
 
             {/* Row 3: Core Categories — 4 squares, edge-to-edge */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.bentoSquareRow}
-              style={styles.bentoSquareRowOuter}
-            >
+            <View style={styles.bentoRow}>
               {categories.filter(c => c.row === 3).map((cat) => (
                 <TouchableOpacity
                   key={cat.id}
-                  style={styles.bentoSquareItem}
+                  style={[styles.bentoSquareItem, { width: BENTO_UNIT, height: BENTO_UNIT }]}
                   onPress={() => handleCategoryPress(cat.filter)}
                 >
                   <ImageBackground
                     source={typeof cat.image === 'string' ? { uri: cat.image } : cat.image}
                     style={styles.bentoImageFull}
-                    imageStyle={{ transform: [{ scale: 1.22 }, { translateY: -4 }], resizeMode: 'cover' }}
+                    imageStyle={{ resizeMode: 'cover' }}
                   >
-                    <LinearGradient
-                      colors={['transparent', 'rgba(0,0,0,0.7)']}
-                      style={styles.bentoGradient}
-                    >
-                      <Text style={[styles.bentoLabelFloating, { textAlign: 'center' }]} numberOfLines={2}>
-                        {cat.title}
+                    <View style={styles.bentoGradient}>
+                      <Text style={styles.bentoLabelFloating} numberOfLines={2}>
+                        {formatBentoTitle(cat.title)}
                       </Text>
-                    </LinearGradient>
+                    </View>
                   </ImageBackground>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
           </View>
         </View>
       </View>
@@ -581,7 +609,7 @@ export const HomeScreen = ({ navigation }: any) => {
                 onPress={() => handleCategoryPress(cuisine.id)}
               >
                 <View style={[styles.gemCircle, { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }]}>
-                  <Image source={{ uri: cuisine.image }} style={styles.gemImage} />
+                  <Image source={typeof cuisine.image === 'string' ? { uri: cuisine.image } : cuisine.image} style={styles.gemImage} />
                 </View>
                 <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
                   {cuisine.name}
@@ -598,7 +626,7 @@ export const HomeScreen = ({ navigation }: any) => {
           <View style={[styles.bestsellerSection, { backgroundColor: 'transparent' }]}>
             <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
               <Text style={styles.bestsellerTitle}>Best Selling Products</Text>
-              <Feather name="trending-up" size={16} color={colors.primary[400]} />
+              <MaterialCommunityIcons name="chart-bar" size={16} color={colors.primary[500]} />
             </View>
             <ScrollView
               horizontal
@@ -690,7 +718,7 @@ export const HomeScreen = ({ navigation }: any) => {
                     return (
                       <VerticalProductCard
                         key={product.id}
-                        width={windowWidth * 0.42}
+                        width={screenWidth * 0.42}
                         product={product}
                         onPress={() => {
                           if (isMeal) {
@@ -732,7 +760,7 @@ export const HomeScreen = ({ navigation }: any) => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            snapToInterval={windowWidth * 0.7 + spacing.md}
+            snapToInterval={screenWidth * 0.7 + spacing.md}
             decelerationRate="fast"
             contentContainerStyle={[styles.cuisineScroll, { paddingLeft: 0, paddingRight: 0 }]}
           >
@@ -776,10 +804,10 @@ export const HomeScreen = ({ navigation }: any) => {
   );
 };
 
-const BENTO_PADDING = 16;
-const BENTO_GAP = 8;
-const BENTO_UNIT = (windowWidth - (BENTO_PADDING * 2) - (BENTO_GAP * 3)) / 4;
-const BENTO_WIDE_WIDTH = BENTO_UNIT * 3 + (BENTO_GAP * 2);
+const BENTO_PADDING_VAL = 22;
+const BENTO_GAP_VAL = 8;
+const BENTO_UNIT_VAL = (windowWidth - (BENTO_PADDING_VAL * 2) - (BENTO_GAP_VAL * 3)) / 4;
+const BENTO_WIDE_WIDTH_VAL = BENTO_UNIT_VAL * 3 + (BENTO_GAP_VAL * 2);
 
 const styles = StyleSheet.create({
   container: {
@@ -874,6 +902,17 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 6, // Reduced from 12 to match search bar gap
     ...shadow.soft,
+  },
+  bentoSectionCard: {
+    backgroundColor: colors.white,
+    marginHorizontal: 6,
+    borderRadius: 20,
+    padding: 14, // Uniform padding on all sides
+    marginBottom: 8,
+    ...shadow.medium,
+    borderWidth: 2,
+    borderColor: colors.primary[500],
+    overflow: 'hidden',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1157,19 +1196,16 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   bentoGrid: {
-    gap: BENTO_GAP,
+    gap: BENTO_GAP_VAL,
   },
   bentoRow: {
     flexDirection: 'row',
-    gap: BENTO_GAP,
-    flexWrap: 'wrap', // Support auto-adjusting/wrapping for Row 2
+    gap: BENTO_GAP_VAL,
   },
   promoWrapper: {
-    flex: 3,
-    height: BENTO_UNIT, // 1 unit high
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: colors.gray[100],
+    backgroundColor: colors.primary[50],
     ...shadow.soft,
   },
   promoScroll: {
@@ -1230,60 +1266,65 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.4)',
   },
   bentoDotActive: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary[600],
     width: 12,
   },
   bentoVertical: {
-    flex: 1,
-    height: BENTO_UNIT, // 1 unit high
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: colors.gray[100],
-    ...shadow.soft,
+    backgroundColor: colors.primary[50],
+    ...shadow.medium,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
   },
   bentoHalf: {
     flex: 1,
-    height: BENTO_UNIT, // 1 unit high
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: colors.gray[100],
-    ...shadow.soft,
+    backgroundColor: colors.primary[50],
+    ...shadow.medium,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
   },
   bentoQuarter: {
     flex: 1,
-    height: BENTO_UNIT, // 1 unit high
+    height: BENTO_UNIT_VAL, // 1 unit high
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: colors.gray[100],
-    ...shadow.soft,
+    backgroundColor: colors.primary[50],
+    ...shadow.medium,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
     minWidth: '22%', // Ensure at least 4 items fit, but they can wrap
   },
   bentoScrollRow: {
-    gap: BENTO_GAP,
-    paddingRight: BENTO_PADDING,
+    gap: BENTO_GAP_VAL,
+    paddingRight: BENTO_PADDING_VAL,
     marginTop: 2,
   },
   bentoScrollItem: {
-    width: BENTO_UNIT * 1.8,
-    height: BENTO_UNIT,
+    width: BENTO_UNIT_VAL * 1.8,
+    height: BENTO_UNIT_VAL,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: colors.gray[100],
-    ...shadow.soft,
+    backgroundColor: colors.primary[50],
+    ...shadow.medium,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
   },
   bentoSquareRowOuter: {
     marginTop: 0,
   },
   bentoSquareRow: {
-    gap: BENTO_GAP,
+    gap: BENTO_GAP_VAL,
   },
   bentoSquareItem: {
-    width: BENTO_UNIT,
-    height: BENTO_UNIT,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: colors.gray[100],
-    ...shadow.soft,
+    backgroundColor: colors.primary[50],
+    ...shadow.medium,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
   },
   bentoImageFull: {
     width: '100%',
@@ -1299,26 +1340,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.05)',
   },
   bentoLabelFloating: {
-    color: colors.white,
-    fontSize: 9,
-    fontWeight: '600', // Semibold
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: 10,
+    color: colors.gray[600],
+    fontWeight: '600',
     textAlign: 'center',
-    paddingHorizontal: 4, // Horizontal only for small items
+    width: '100%',
+    paddingHorizontal: 4,
+    lineHeight: 11,
   },
   bentoGradient: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 40,
-    justifyContent: 'flex-end',
+    height: 32,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 2,
+    backgroundColor: 'transparent',
   },
   // New Styles
   searchOverlay: {
@@ -1400,7 +1438,7 @@ const styles = StyleSheet.create({
   },
   compactImageContainer: {
     width: 70,
-    backgroundColor: colors.gray[50],
+    backgroundColor: 'transparent',
     position: 'relative',
   },
   compactSaveBadge: {

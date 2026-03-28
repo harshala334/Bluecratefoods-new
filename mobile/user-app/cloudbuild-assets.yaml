@@ -5,7 +5,7 @@ steps:
       - '-c'
       - |
         if [ -d "assets" ]; then
-          gsutil -m cp -r assets/* gs://bluecrate-assets/
+          gsutil -m cp -r assets/* gs://bluecrate-assets-491614/
         else
           echo "No assets directory found"
         fi

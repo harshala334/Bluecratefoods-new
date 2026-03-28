@@ -10,6 +10,7 @@ import {
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
 import { spacing, borderRadius } from '../../constants/spacing';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '../../services/authService';
 import { storage } from '../../utils/storage';
 import { STORAGE_KEYS } from '../../constants/config';
@@ -52,7 +53,8 @@ export const RegisterScreen = ({ navigation }: any) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
       <View style={styles.content}>
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.subtitle}>Sign up to get started</Text>
@@ -109,8 +111,9 @@ export const RegisterScreen = ({ navigation }: any) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

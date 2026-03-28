@@ -8,6 +8,7 @@ import {
   Image,
   ImageBackground,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { colors } from '../../constants/colors';
@@ -291,13 +292,14 @@ export const ProfileScreen = ({ navigation }: any) => {
           <TouchableOpacity
             style={styles.settingItem}
             onPress={() => {
-              // Open the web deletion page or show instructions
-              // In production, we can use Linking.openURL('https://bluecratefoods.com/delete-account')
-              Toast.show({
-                type: 'info',
-                text1: 'Account Deletion',
-                text2: 'Please visit bluecratefoods.com/delete-account to request deletion.',
-                position: 'bottom',
+              Linking.openURL('https://bluecratefoods.com/delete-account').catch((err) => {
+                console.error('Failed to open URL:', err);
+                Toast.show({
+                  type: 'error',
+                  text1: 'Error',
+                  text2: 'Could not open deletion page. Please visit our website.',
+                  position: 'bottom',
+                });
               });
             }}
           >

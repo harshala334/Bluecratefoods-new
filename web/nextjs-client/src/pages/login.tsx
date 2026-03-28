@@ -23,7 +23,7 @@ export default function Login() {
     setIsLoading(true)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app'
       const endpoint = activeTab === 'login' ? '/api/auth/login' : '/api/auth/signup'
       const payload = activeTab === 'login'
         ? {

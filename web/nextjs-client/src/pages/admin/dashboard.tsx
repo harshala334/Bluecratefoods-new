@@ -5,7 +5,7 @@ import AdminLayout from '@/components/admin/AdminLayout'
 import ProtectedRoute from '@/components/admin/ProtectedRoute'
 import { FiBox, FiUsers, FiDollarSign, FiArrowUpRight } from 'react-icons/fi'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app/api'
 
 export default function AdminDashboard() {
     const [productsCount, setProductsCount] = useState<number | string>('...')
