@@ -35,7 +35,7 @@ const PAYMENT_METHODS = [
 ];
 
 import Constants from 'expo-constants';
-import RazorpayCheckout from 'react-native-razorpay';
+import { RazorpayCheckout } from '../../utils/authProvider';
 import useAuthStore from '../../stores/authStore';
 import { API_CONFIG } from '../../constants/config';
 import axios from 'axios';

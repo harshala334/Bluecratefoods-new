@@ -54,6 +54,28 @@ export const mockFirebaseAuth = () => {
     };
 };
 
+export const mockRazorpay = {
+    open: (options: any) => {
+        console.log('[MOCK] Razorpay.open', options);
+        return new Promise((resolve) => {
+            Alert.alert(
+                'Mock Payment Success',
+                'Since you are on Expo Go, we are using a mock payment dialog.',
+                [
+                    {
+                        text: 'Simulate Success',
+                        onPress: () => resolve({
+                            razorpay_payment_id: 'pay_MOCK' + Date.now(),
+                            razorpay_order_id: options.order_id,
+                            razorpay_signature: 'mock_signature'
+                        })
+                    }
+                ]
+            );
+        });
+    }
+};
+
 export const statusCodes = {
     SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
     IN_PROGRESS: 'IN_PROGRESS',

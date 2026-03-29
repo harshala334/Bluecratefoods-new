@@ -109,7 +109,11 @@ export const LocationScreen = ({ navigation }: any) => {
 
             setLocation(fullAddress);
             setShowDetailModal(false);
-            navigation.goBack();
+            if (navigation.canGoBack()) {
+                navigation.goBack();
+            } else {
+                navigation.navigate('Main');
+            }
         } catch (error) {
             console.error('Failed to save address:', error);
         }
@@ -119,16 +123,27 @@ export const LocationScreen = ({ navigation }: any) => {
         <View style={styles.container}>
             {/* Header / Search Bar Overlay */}
             <View style={styles.searchContainer}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                <TouchableOpacity 
+                    style={styles.backButton} 
+                    onPress={() => {
+                        if (navigation.canGoBack()) {
+                            navigation.goBack();
+                        } else {
+                            navigation.navigate('Main');
+                        }
+                    }}
+                >
                     <Feather name="arrow-left" size={24} color={colors.text.primary} />
                 </TouchableOpacity>
                 <View style={{ flex: 1 }}>
                     <GooglePlacesAutocomplete
                         placeholder='Search for area, street...'
                         onPress={(data, details = null) => {
+                            console.log('Place Selected:', data.description);
                             // 'details' is provided when fetchDetails = true
-                            if (details) {
+                            if (details && details.geometry && details.geometry.location) {
                                 const { lat, lng } = details.geometry.location;
+                                console.log('Place Coordinates:', lat, lng);
                                 const newRegion = {
                                     latitude: lat,
                                     longitude: lng,
@@ -137,7 +152,9 @@ export const LocationScreen = ({ navigation }: any) => {
                                 };
                                 mapRef.current?.animateToRegion(newRegion, 1000);
                                 setRegion(newRegion);
-                                setAddressText(data.description); // Use description from autocomplete initially
+                                setAddressText(data.description); 
+                            } else {
+                                console.warn('No details available for selected place');
                             }
                         }}
                         query={{

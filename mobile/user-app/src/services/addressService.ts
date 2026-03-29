@@ -16,15 +16,15 @@ export interface Address {
 
 export const addressService = {
   getAddresses: async (userId: string): Promise<Address[]> => {
-    return api.get<Address[]>(`${API_CONFIG.BASE_URL}/user/users/${userId}/addresses`);
+    return api.get<Address[]>(`${API_CONFIG.BASE_URL}/users/${userId}/addresses`);
   },
 
   addAddress: async (userId: string, address: Omit<Address, 'id'>): Promise<Address> => {
-    return api.post<Address>(`${API_CONFIG.BASE_URL}/user/users/${userId}/addresses`, address);
+    return api.post<Address>(`${API_CONFIG.BASE_URL}/users/${userId}/addresses`, address);
   },
 
   deleteAddress: async (userId: string, addressId: string): Promise<void> => {
-    return api.delete(`${API_CONFIG.BASE_URL}/user/users/${userId}/addresses/${addressId}`);
+    return api.delete(`${API_CONFIG.BASE_URL}/users/${userId}/addresses/${addressId}`);
   },
 };
 

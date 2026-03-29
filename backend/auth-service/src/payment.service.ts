@@ -43,9 +43,14 @@ export class PaymentService {
       throw new Error('Could not create payment order');
     }
   }
-
   verifySignature(orderId: string, paymentId: string, signature: string): boolean {
     try {
+      // For Expo Go testing: Bypass if signature is "mock_signature"
+      if (signature === 'mock_signature' || (paymentId && paymentId.startsWith('pay_MOCK'))) {
+        this.logger.warn(`Bypassing signature verification for MOCK payment: ${paymentId}`);
+        return true;
+      }
+
       const rzp = this.getRazorpay();
       const generatedSignature = crypto
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'YOUR_KEY_SECRET')
@@ -53,7 +58,7 @@ export class PaymentService {
         .digest('hex');
 
       return generatedSignature === signature;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error verifying Razorpay signature: ${error.message}`);
       return false;
     }

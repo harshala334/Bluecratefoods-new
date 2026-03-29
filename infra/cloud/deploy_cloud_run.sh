@@ -62,7 +62,12 @@ for service in "${services[@]}"; do
     # Service-specific environment variables
     EXTRA_ENV=""
     if [ "$service" == "api-gateway" ]; then
-        EXTRA_ENV=",AUTH_SERVICE_URL=https://auth-service-e7zjf3b6pq-uc.a.run.app,ORDER_SERVICE_URL=https://order-service-e7zjf3b6pq-uc.a.run.app,USER_SERVICE_URL=https://user-service-e7zjf3b6pq-uc.a.run.app,STORE_SERVICE_URL=https://store-service-e7zjf3b6pq-uc.a.run.app"
+        MAPS_KEY="AIzaSyBkCWQSUGwfhHprR2gBt5RDaNKz0K_DW9w"
+        EXTRA_ENV=",GOOGLE_MAPS_API_KEY=$MAPS_KEY,AUTH_SERVICE_URL=https://auth-service-e7zjf3b6pq-uc.a.run.app,ORDER_SERVICE_URL=https://order-service-e7zjf3b6pq-uc.a.run.app,USER_SERVICE_URL=https://user-service-e7zjf3b6pq-uc.a.run.app,STORE_SERVICE_URL=https://store-service-e7zjf3b6pq-uc.a.run.app"
+    fi
+
+    if [ "$service" == "auth-service" ]; then
+        EXTRA_ENV=",JWT_SECRET=change_me,ADMIN_EMAIL=admin@gmail.com,ADMIN_PASSWORD=Bluecratefoods@2025"
     fi
     
     # Deploy to Cloud Run
