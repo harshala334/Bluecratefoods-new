@@ -1,18 +1,6 @@
 import { api } from './api';
 import { API_CONFIG } from '../constants/config';
-
-export interface Address {
-  id: string;
-  label: string;
-  addressLine1: string;
-  addressLine2?: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  isPrimary: boolean;
-  latitude?: number;
-  longitude?: number;
-}
+import { Address } from '../types/user';
 
 export const addressService = {
   getAddresses: async (userId: string): Promise<Address[]> => {

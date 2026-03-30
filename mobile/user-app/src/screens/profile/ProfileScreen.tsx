@@ -25,7 +25,7 @@ import useAuthStore from '../../stores/authStore';
  */
 
 export const ProfileScreen = ({ navigation }: any) => {
-  const { user, isAuthenticated, logout, isLoading: authLoading } = useAuthStore();
+  const { user, isAuthenticated, isGuest, logout, isLoading: authLoading } = useAuthStore();
   const [loading, setLoading] = React.useState(true);
 
   const handleLogout = async () => {
@@ -58,7 +58,7 @@ export const ProfileScreen = ({ navigation }: any) => {
     );
   }
 
-  if (!isAuthenticated || !user) {
+  if (isGuest || !isAuthenticated || !user) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Animated, Dimensions, ActivityIndicator } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../constants/colors';
@@ -576,12 +576,12 @@ function OnboardingStack() {
 }
 
 function RootNavigator() {
-  const { hasCompletedOnboarding, isAuthenticated, isLoading } = useAuthStore();
+  const { hasCompletedOnboarding, isAuthenticated, isGuest, isLoading } = useAuthStore();
 
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
       </View>
     );
   }
@@ -598,7 +598,7 @@ function RootNavigator() {
         },
       }}
     >
-      {!hasCompletedOnboarding && !isAuthenticated ? (
+      {!hasCompletedOnboarding && !isAuthenticated && !isGuest ? (
         <Stack.Screen
           name="Onboarding"
           component={OnboardingStack}

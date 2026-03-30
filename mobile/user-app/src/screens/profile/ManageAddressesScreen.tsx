@@ -29,8 +29,38 @@ const MOCK_ADDRESSES = [
     },
 ];
 
+import useAuthStore from '../../stores/authStore';
+
 export const ManageAddressesScreen = ({ navigation }: any) => {
+    const { isGuest, isAuthenticated } = useAuthStore();
     const [addresses, setAddresses] = useState(MOCK_ADDRESSES);
+
+    if (isGuest || !isAuthenticated) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Feather name="chevron-left" size={24} color={colors.text.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Manage Addresses</Text>
+                    <View style={{ width: 40 }} />
+                </View>
+                <View style={styles.guestContainer}>
+                    <View style={styles.guestIconCircle}>
+                        <Ionicons name="location-outline" size={60} color={colors.primary[500]} />
+                    </View>
+                    <Text style={styles.guestTitle}>Login to Manage Addresses</Text>
+                    <Text style={styles.guestSubtitle}>Save your home and work addresses for faster checkout.</Text>
+                    <TouchableOpacity
+                        style={styles.loginButton}
+                        onPress={() => navigation.navigate('Login')}
+                    >
+                        <Text style={styles.loginButtonText}>Login Now</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     const deleteAddress = (id: string) => {
         setAddresses(prev => prev.filter(addr => addr.id !== id));
@@ -243,6 +273,49 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: colors.gray[500],
         fontFamily: typography.fontFamily.medium,
+    },
+    guestContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: spacing.xl,
+        backgroundColor: colors.white,
+    },
+    guestIconCircle: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: colors.primary[50],
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.xl,
+    },
+    guestTitle: {
+        fontSize: 20,
+        fontFamily: typography.fontFamily.bold,
+        color: colors.text.primary,
+        textAlign: 'center',
+        marginBottom: spacing.sm,
+    },
+    guestSubtitle: {
+        fontSize: 14,
+        color: colors.gray[500],
+        textAlign: 'center',
+        marginBottom: spacing.xl,
+        paddingHorizontal: spacing.xl,
+        lineHeight: 20,
+    },
+    loginButton: {
+        backgroundColor: colors.primary[500],
+        paddingHorizontal: 40,
+        paddingVertical: spacing.md,
+        borderRadius: borderRadius.full,
+        ...shadow.medium,
+    },
+    loginButtonText: {
+        fontSize: 16,
+        fontFamily: typography.fontFamily.bold,
+        color: colors.white,
     },
 });
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, AuthResponse } from '../types/user';
+import { User, AuthResponse, Address } from '../types/user';
 import { authService } from '../services/authService';
 import { storage } from '../utils/storage';
 import { STORAGE_KEYS } from '../constants/config';
@@ -12,8 +12,10 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isGuest: boolean;
   hasCompletedOnboarding: boolean;
   isLoading: boolean;
+  error: string | null;
   addresses: Address[];
   selectedAddress: Address | null;
 
@@ -36,6 +38,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  isGuest: false,
   hasCompletedOnboarding: false,
   isLoading: false,
   error: null,
@@ -52,11 +55,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token);
       await storage.setItem(STORAGE_KEYS.USER_DATA, response.user);
       await storage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+      await storage.setItem(STORAGE_KEYS.IS_GUEST, false);
 
       set({
         user: response.user,
         token: response.token,
         isAuthenticated: true,
+        isGuest: false,
         hasCompletedOnboarding: true,
         isLoading: false,
       });
@@ -77,11 +82,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token);
       await storage.setItem(STORAGE_KEYS.USER_DATA, response.user);
       await storage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+      await storage.setItem(STORAGE_KEYS.IS_GUEST, false);
 
       set({
         user: response.user,
         token: response.token,
         isAuthenticated: true,
+        isGuest: false,
         hasCompletedOnboarding: true,
         isLoading: false,
       });
@@ -102,11 +109,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token);
       await storage.setItem(STORAGE_KEYS.USER_DATA, response.user);
       await storage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+      await storage.setItem(STORAGE_KEYS.IS_GUEST, false);
 
       set({
         user: response.user,
         token: response.token,
         isAuthenticated: true,
+        isGuest: false,
         hasCompletedOnboarding: true,
         isLoading: false,
       });
@@ -129,11 +138,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token);
       await storage.setItem(STORAGE_KEYS.USER_DATA, response.user);
       await storage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+      await storage.setItem(STORAGE_KEYS.IS_GUEST, false);
 
       set({
         user: response.user,
         token: response.token,
         isAuthenticated: true,
+        isGuest: false,
         hasCompletedOnboarding: true,
         isLoading: false,
       });
@@ -156,11 +167,14 @@ export const useAuthStore = create<AuthState>((set) => ({
       await storage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       await storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       await storage.removeItem(STORAGE_KEYS.USER_DATA);
+      await storage.removeItem(STORAGE_KEYS.IS_GUEST);
 
       set({
         user: null,
         token: null,
         isAuthenticated: false,
+        isGuest: false,
+        hasCompletedOnboarding: true, // Keep this true to avoid redirecting back to Welcome after logout
         error: null,
       });
     }
@@ -174,16 +188,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       const token = await storage.getItem<string>(STORAGE_KEYS.AUTH_TOKEN);
       const user = await storage.getItem<User>(STORAGE_KEYS.USER_DATA);
       const onboardingCompleted = await storage.getItem<boolean>(STORAGE_KEYS.ONBOARDING_COMPLETE);
+      const isGuest = await storage.getItem<boolean>(STORAGE_KEYS.IS_GUEST) || false;
 
       set({
         user: user || null,
         token: token || null,
-        isAuthenticated: !!(token && user),
+        isAuthenticated: !!(token && user && !isGuest),
+        isGuest: isGuest,
         hasCompletedOnboarding: !!onboardingCompleted,
         isLoading: false,
       });
 
-      if (user) {
+      if (user && !isGuest) {
         // Fetch addresses from a utility or directly
         const { fetchAddresses } = useAuthStore.getState();
         fetchAddresses();
@@ -196,8 +212,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   fetchAddresses: async () => {
     try {
-      const { user } = useAuthStore.getState();
-      if (!user) return;
+      const { user, isGuest } = useAuthStore.getState();
+      if (!user || isGuest) return;
 
       // Import service dynamically or at top
       const { addressService } = await import('../services/addressService');
@@ -213,8 +229,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   addAddress: async (addressData) => {
     try {
-      const { user } = useAuthStore.getState();
-      if (!user) return;
+      const { user, isGuest } = useAuthStore.getState();
+      if (!user || isGuest) return;
 
       const { addressService } = await import('../services/addressService');
       const newAddress = await addressService.addAddress(user.id, {
@@ -261,11 +277,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, mockToken);
       await storage.setItem(STORAGE_KEYS.USER_DATA, mockUser);
       await storage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+      await storage.setItem(STORAGE_KEYS.IS_GUEST, true);
 
       set({
         user: mockUser,
         token: mockToken,
-        isAuthenticated: true,
+        isAuthenticated: false,
+        isGuest: true,
         hasCompletedOnboarding: true,
         isLoading: false,
       });

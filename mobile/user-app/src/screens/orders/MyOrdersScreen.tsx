@@ -67,13 +67,41 @@ const getStatusColor = (status: string) => {
     }
 };
 
+import useAuthStore from '../../stores/authStore';
+
 export const MyOrdersScreen = ({ navigation }: any) => {
     const insets = useSafeAreaInsets();
     const { orders, loadOrders, reorder } = useOrderStore();
+    const { isGuest, isAuthenticated } = useAuthStore();
 
     useEffect(() => {
-        loadOrders();
-    }, []);
+        if (!isGuest && isAuthenticated) {
+            loadOrders();
+        }
+    }, [isGuest, isAuthenticated]);
+
+    if (isGuest || !isAuthenticated) {
+        return (
+            <View style={[styles.container, { paddingTop: insets.top }]}>
+                <View style={styles.headerContainer}>
+                    <Text style={styles.title}>Order History</Text>
+                </View>
+                <View style={styles.guestContainer}>
+                    <View style={styles.guestIconCircle}>
+                        <Feather name="package" size={60} color={colors.primary[500]} />
+                    </View>
+                    <Text style={styles.guestTitle}>Track Your Orders</Text>
+                    <Text style={styles.guestSubtitle}>Login to see your past orders and track active ones.</Text>
+                    <TouchableOpacity
+                        style={styles.loginButton}
+                        onPress={() => navigation.navigate('Login')}
+                    >
+                        <Text style={styles.loginButtonText}>Login Now</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    }
 
     const handleReorder = async (order: any) => {
         try {
@@ -231,5 +259,47 @@ const styles = StyleSheet.create({
     emptyText: {
         color: colors.gray[500],
         fontSize: typography.fontSize.base,
+    },
+    guestContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: spacing.xl,
+    },
+    guestIconCircle: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: colors.primary[50],
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.xl,
+    },
+    guestTitle: {
+        fontSize: 20,
+        fontFamily: typography.fontFamily.bold,
+        color: colors.text.primary,
+        textAlign: 'center',
+        marginBottom: spacing.sm,
+    },
+    guestSubtitle: {
+        fontSize: 14,
+        color: colors.gray[500],
+        textAlign: 'center',
+        marginBottom: spacing.xl,
+        paddingHorizontal: spacing.xl,
+        lineHeight: 20,
+    },
+    loginButton: {
+        backgroundColor: colors.primary[500],
+        paddingHorizontal: 40,
+        paddingVertical: spacing.md,
+        borderRadius: borderRadius.full,
+        ...shadow.medium,
+    },
+    loginButtonText: {
+        fontSize: 16,
+        fontFamily: typography.fontFamily.bold,
+        color: colors.white,
     },
 });

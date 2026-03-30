@@ -30,6 +30,7 @@ export const LocationScreen = ({ navigation }: any) => {
     const [addressText, setAddressText] = useState(location);
     const [isMapReady, setIsMapReady] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [geocodeDetails, setGeocodeDetails] = useState<any>(null);
     const { addAddress } = useAuthStore();
 
     // Initial location fetch
@@ -66,12 +67,13 @@ export const LocationScreen = ({ navigation }: any) => {
             });
             if (geocodeResult && geocodeResult.length > 0) {
                 const address = geocodeResult[0];
+                setGeocodeDetails(address);
                 const parts = [
                     address.street || address.name,
-                    address.city || address.subregion,
-                    address.region || address.country
+                    address.district || address.subregion || address.city,
+                    address.city || address.region
                 ].filter(Boolean);
-                return parts.join(', ') || 'Unknown Location';
+                return parts.slice(0, 2).join(', ') || 'Unknown Location';
             }
         } catch (error) {
             console.error('Reverse geocode error:', error);
@@ -99,10 +101,12 @@ export const LocationScreen = ({ navigation }: any) => {
                 label: details.label,
                 addressLine1: `${details.houseNo}${details.floor ? ', ' + details.floor : ''}`,
                 addressLine2: details.landmark || '',
-                city: '', // Handled by backend or geocode
-                state: '', 
-                zipCode: '',
+                city: geocodeDetails?.city || '', 
+                state: geocodeDetails?.region || '', 
+                zipCode: geocodeDetails?.postalCode || '',
+                country: geocodeDetails?.country || 'India',
                 isPrimary: true,
+                isDefault: true,
                 latitude: region.latitude,
                 longitude: region.longitude
             });

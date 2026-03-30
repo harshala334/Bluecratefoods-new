@@ -76,6 +76,7 @@ export const STORAGE_KEYS = {
   CART_DATA: '@bluecrate:cart_data',
   RECENT_SEARCHES: '@bluecrate:recent_searches',
   ONBOARDING_COMPLETE: '@bluecrate:onboarding_complete',
+  IS_GUEST: '@bluecrate:is_guest',
 };
 
 // App Configuration

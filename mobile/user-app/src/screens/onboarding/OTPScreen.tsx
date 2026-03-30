@@ -59,10 +59,13 @@ const OTPScreen = ({ navigation, route }: any) => {
 
         try {
             await otpLogin(phone, code);
-            // RootNavigator will handle navigation
+            // RootNavigator will handle navigation as state changes
+            if (route.params?.redirectTo) {
+                navigation.navigate(route.params.redirectTo);
+            }
         } catch (error: any) {
             console.error('OTP confirmation error:', error);
-            Alert.alert('Error', error.message || 'Invalid or expired OTP');
+            Alert.alert('Error', error.message || 'Invalid or expired OTP. Use 1234 for mock.');
         }
     };
 

@@ -20,14 +20,16 @@ export interface Address {
   id: string;
   userId: string;
   label: string; // Home, Work, Other
-  street: string;
+  addressLine1: string;
+  addressLine2?: string;
   city: string;
   state: string;
   zipCode: string;
   country: string;
+  isPrimary: boolean;
+  isDefault: boolean;
   latitude?: number;
   longitude?: number;
-  isDefault: boolean;
 }
 
 export interface AuthResponse {

@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCartStore } from '../../stores/cartStore';
+import useAuthStore from '../../stores/authStore';
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
 import { spacing, borderRadius, shadow } from '../../constants/spacing';
@@ -30,6 +31,7 @@ export const CartScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { items, updateQuantity, removeItem, getCartSummary } = useCartStore();
   const { location } = useLocationStore();
+  const { isGuest, isAuthenticated } = useAuthStore();
   const isServiceable = location?.toLowerCase().includes('kolkata');
 
   const { subtotal, deliveryFee, tax, total } = getCartSummary();
@@ -197,7 +199,11 @@ export const CartScreen = ({ navigation }: any) => {
             style={styles.checkoutButton}
             onPress={() => {
               if (isServiceable) {
-                navigation.navigate('Checkout');
+                if (isGuest || !isAuthenticated) {
+                  navigation.navigate('Login');
+                } else {
+                  navigation.navigate('Checkout');
+                }
               } else {
                 alert('Sharing your shopping list...');
               }
