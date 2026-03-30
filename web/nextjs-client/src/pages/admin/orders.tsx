@@ -5,7 +5,7 @@ import ProtectedRoute from '@/components/admin/ProtectedRoute'
 import { FiShoppingBag, FiClock, FiCheck, FiX, FiTruck, FiUser, FiPhone } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-441546178642.us-central1.run.app'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-920625255147.us-central1.run.app'
 
 interface OrderItem {
     id: string

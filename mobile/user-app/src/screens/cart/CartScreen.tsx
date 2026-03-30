@@ -200,7 +200,7 @@ export const CartScreen = ({ navigation }: any) => {
             onPress={() => {
               if (isServiceable) {
                 if (isGuest || !isAuthenticated) {
-                  navigation.navigate('Login');
+                  navigation.navigate('AuthMethod');
                 } else {
                   navigation.navigate('Checkout');
                 }

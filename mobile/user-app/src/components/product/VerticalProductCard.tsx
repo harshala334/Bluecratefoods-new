@@ -40,7 +40,8 @@ export const VerticalProductCard = React.memo(({ product, onPress, width }: Vert
             price: currentPrice,
             unit: product.unit || product.weight || '',
             image: product.image,
-            category: product.category || 'general'
+            category: product.category || 'general',
+            bulkTiers: product.bulkTiers
         };
         addItem(ingredient as any, 1);
         addFrequentItem(product);
@@ -70,7 +71,8 @@ export const VerticalProductCard = React.memo(({ product, onPress, width }: Vert
                 price: currentPrice,
                 unit: product.unit || product.weight || '',
                 image: product.image,
-                category: product.category || 'general'
+                category: product.category || 'general',
+                bulkTiers: product.bulkTiers
             };
             addItem(ingredient as any, qty);
             addFrequentItem(product);
@@ -146,16 +148,126 @@ export const VerticalProductCard = React.memo(({ product, onPress, width }: Vert
                     </Text>
                 </View>
 
-                <View style={{ height: 14, justifyContent: 'center', marginBottom: 4 }}>
-                    <Text style={{ fontSize: 9, color: colors.gray[500], fontFamily: typography.fontFamily.medium }}>
-                        {product.unit || product.weight || ' '}
+                {/* Display weight and unit info prominently */}
+                {(product.weight || product.unit) && (
+                    <Text style={{ fontSize: 10, color: colors.gray[500], fontFamily: typography.fontFamily.medium, marginBottom: 6 }}>
+                        {product.weight ? product.weight : ''} {product.weight && product.unit ? ' | ' : ''} {product.unit ? `${product.unit} pack` : ''}
                     </Text>
+                )}
+
+
+
+                {/* Base price row moved above bulk */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <View style={{ flexDirection: 'column' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                            <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
+                                ₹{currentPrice}
+                            </Text>
+                            {mrp > currentPrice ? (
+                                <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
+                                    ₹{Math.round(mrp)}
+                                </Text>
+                            ) : null}
+                        </View>
+                        {/* Show applied rate if quantity matches a tier */}
+                        {(() => {
+                            if (quantity <= 0) return null;
+                            const validTiers = Array.isArray(product.bulkTiers)
+                                ? product.bulkTiers
+                                    .map((t: any) => ({
+                                        qty: parseInt(String(t?.quantity)) || 0,
+                                        price: Number(t?.price) || 0
+                                    }))
+                                    .filter((t: any) => t.qty > 0 && t.price > 0)
+                                    .sort((a: any, b: any) => b.qty - a.qty)
+                                : [];
+
+                            const matchedTier = validTiers.find((t: any) => quantity >= t.qty);
+                            if (matchedTier) {
+                                const rate = Math.round(matchedTier.price / matchedTier.qty);
+                                if (rate < currentPrice) {
+                                    return (
+                                        <Text style={{ fontSize: 8, color: colors.primary[600], fontFamily: typography.fontFamily.bold, marginTop: 1 }}>
+                                            ₹{rate}/unit
+                                        </Text>
+                                    );
+                                }
+                            }
+                            return null;
+                        })()}
+                    </View>
+
+                    {quantity > 0 ? (
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: colors.primary[50],
+                            borderRadius: 6,
+                            borderWidth: 1,
+                            borderColor: colors.primary[100],
+                            ...shadow.soft,
+                        }}>
+                            <TouchableOpacity
+                                onPress={handleDecrement}
+                                style={{ padding: 4, paddingHorizontal: 4 }}
+                            >
+                                <Feather name="minus" size={14} color={colors.primary[600]} />
+                            </TouchableOpacity>
+                            <Text style={{
+                                fontSize: 12,
+                                fontFamily: typography.fontFamily.bold,
+                                color: colors.primary[700],
+                                minWidth: 16,
+                                textAlign: 'center',
+                            }}>
+                                {quantity}
+                            </Text>
+                            <TouchableOpacity
+                                onPress={handleIncrement}
+                                style={{ padding: 4, paddingHorizontal: 4 }}
+                            >
+                                <Feather name="plus" size={14} color={colors.primary[600]} />
+                            </TouchableOpacity>
+                        </View>
+                    ) : isOutOfStock ? (
+                        <View
+                            style={{
+                                backgroundColor: colors.gray[100],
+                                borderWidth: 1,
+                                borderColor: colors.gray[300],
+                                paddingHorizontal: 6,
+                                paddingVertical: 3,
+                                borderRadius: 6,
+                            }}
+                        >
+                            <Text style={{ fontSize: 8, fontFamily: typography.fontFamily.bold, color: colors.gray[500] }}>
+                                OUT
+                            </Text>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: colors.white,
+                                borderWidth: 1,
+                                borderColor: colors.primary[500],
+                                paddingHorizontal: 8,
+                                paddingVertical: 3,
+                                borderRadius: 6,
+                                ...shadow.soft,
+                            }}
+                            onPress={handleAdd}
+                        >
+                            <Text style={{ fontSize: 11, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>
+                                ADD
+                            </Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Generous fixed height bulk section for alignment and headers */}
                 <View style={{
                     height: 90,
-                    marginBottom: 10,
                     backgroundColor: colors.gray[50],
                     padding: 6,
                     borderRadius: 8,
@@ -163,7 +275,7 @@ export const VerticalProductCard = React.memo(({ product, onPress, width }: Vert
                     <Text style={{ fontSize: 7, fontFamily: typography.fontFamily.bold, color: colors.primary[600], marginBottom: 2, letterSpacing: 0.5 }}>
                         BULK SAVINGS
                     </Text>
-                    {[0, 1].map((idx) => {
+                    {[1, 2].map((idx) => {
                         const tier = Array.isArray(product.bulkTiers) ? product.bulkTiers[idx] : null;
                         if (tier) {
                             const qtyNum = parseInt(tier.quantity) || 1;
@@ -213,7 +325,7 @@ export const VerticalProductCard = React.memo(({ product, onPress, width }: Vert
                                 }}>
                                     <View style={{ flex: 1 }}>
                                         <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.medium, color: colors.gray[400] }}>
-                                            Bulk Price {idx + 1}: —
+                                            Bulk Price {idx}: —
                                         </Text>
                                         <Text style={{ fontSize: 7, color: colors.gray[300], fontFamily: typography.fontFamily.medium }}>
                                             Best unit value
@@ -233,89 +345,6 @@ export const VerticalProductCard = React.memo(({ product, onPress, width }: Vert
                             );
                         }
                     })}
-                </View>
-
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View>
-                        <View style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end', height: 32 }}>
-                            <Text style={{ fontSize: 13, fontFamily: typography.fontFamily.bold, color: colors.text.primary }}>
-                                ₹{currentPrice}
-                            </Text>
-                            <View style={{ height: 12 }}>
-                                {mrp > currentPrice ? (
-                                    <Text style={{ fontSize: 9, color: colors.gray[400], textDecorationLine: 'line-through' }}>
-                                        ₹{Math.round(mrp)}
-                                    </Text>
-                                ) : null}
-                            </View>
-                        </View>
-                    </View>
-
-                    {quantity > 0 ? (
-                        <View style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: colors.primary[50],
-                            borderRadius: 6,
-                            borderWidth: 1,
-                            borderColor: colors.primary[100],
-                            ...shadow.soft,
-                        }}>
-                            <TouchableOpacity
-                                onPress={handleDecrement}
-                                style={{ padding: 4, paddingHorizontal: 4 }}
-                            >
-                                <Feather name="minus" size={14} color={colors.primary[600]} />
-                            </TouchableOpacity>
-                            <Text style={{
-                                fontSize: 12,
-                                fontFamily: typography.fontFamily.bold,
-                                color: colors.primary[700],
-                                minWidth: 16,
-                                textAlign: 'center',
-                            }}>
-                                {quantity}
-                            </Text>
-                            <TouchableOpacity
-                                onPress={handleIncrement}
-                                style={{ padding: 4, paddingHorizontal: 4 }}
-                            >
-                                <Feather name="plus" size={14} color={colors.primary[600]} />
-                            </TouchableOpacity>
-                        </View>
-                    ) : isOutOfStock ? (
-                        <View
-                            style={{
-                                backgroundColor: colors.gray[100],
-                                borderWidth: 1,
-                                borderColor: colors.gray[300],
-                                paddingHorizontal: 8,
-                                paddingVertical: 3,
-                                borderRadius: 6,
-                            }}
-                        >
-                            <Text style={{ fontSize: 9, fontFamily: typography.fontFamily.bold, color: colors.gray[500] }}>
-                                OUT OF STOCK
-                            </Text>
-                        </View>
-                    ) : (
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: colors.white,
-                                borderWidth: 1,
-                                borderColor: colors.primary[500],
-                                paddingHorizontal: 8,
-                                paddingVertical: 3,
-                                borderRadius: 6,
-                                ...shadow.soft,
-                            }}
-                            onPress={handleAdd}
-                        >
-                            <Text style={{ fontSize: 11, fontFamily: typography.fontFamily.bold, color: colors.primary[600] }}>
-                                ADD
-                            </Text>
-                        </TouchableOpacity>
-                    )}
                 </View>
             </View>
         </TouchableOpacity>

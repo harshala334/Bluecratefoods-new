@@ -21,13 +21,42 @@ interface CartState extends Cart {
   getCartSummary: () => CartSummary;
 }
 
+// Helper to calculate price with volume discounts
+export const calculateItemPrice = (item: CartItem) => {
+  const quantity = item.quantity || 0;
+  const basePrice = item.ingredient?.price || 0;
+  
+  if (!quantity) return 0;
+  
+  const bulkTiers = item.ingredient?.bulkTiers;
+  
+  if (!bulkTiers || !Array.isArray(bulkTiers) || bulkTiers.length === 0) {
+    return basePrice * quantity;
+  }
+  
+  // Parse and sort tiers by quantity descending
+  const validTiers = bulkTiers
+    .map(t => ({
+      qty: parseInt(String(t?.quantity)) || 0,
+      price: Number(t?.price) || 0
+    }))
+    .filter(t => t.qty > 0 && t.price > 0)
+    .sort((a, b) => b.qty - a.qty);
+    
+  // Find the highest applicable tier
+  const matchedTier = validTiers.find(t => quantity >= t.qty);
+  
+  if (matchedTier) {
+    const unitPrice = matchedTier.price / matchedTier.qty;
+    return quantity * unitPrice;
+  }
+  
+  return basePrice * quantity;
+};
+
 // Helper function to calculate totals
 const calculateTotals = (items: CartItem[]) => {
-  const subtotal = items.reduce((sum, item) => {
-    const price = item.ingredient?.price || 0;
-    const qty = item.quantity || 0;
-    return sum + (price * qty);
-  }, 0);
+  const subtotal = items.reduce((sum, item) => sum + calculateItemPrice(item), 0);
 
   const deliveryFee = subtotal > 50 || subtotal === 0 ? 0 : 5.99;
   const tax = subtotal * 0.08;
@@ -75,9 +104,9 @@ export const useCartStore = create<CartState>((set, get) => ({
         newItems = [...items, newItem];
       }
 
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalItems = newItems.length;
       const totalPrice = newItems.reduce(
-        (sum, item) => sum + item.ingredient.price * item.quantity,
+        (sum, item) => sum + calculateItemPrice(item),
         0
       );
 
@@ -95,9 +124,9 @@ export const useCartStore = create<CartState>((set, get) => ({
       const { items } = get();
       const newItems = items.filter((item) => item.id !== itemId);
 
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalItems = newItems.length;
       const totalPrice = newItems.reduce(
-        (sum, item) => sum + item.ingredient.price * item.quantity,
+        (sum, item) => sum + calculateItemPrice(item),
         0
       );
 
@@ -116,9 +145,9 @@ export const useCartStore = create<CartState>((set, get) => ({
         item.id === itemId ? { ...item, quantity } : item
       );
 
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalItems = newItems.length;
       const totalPrice = newItems.reduce(
-        (sum, item) => sum + item.ingredient.price * item.quantity,
+        (sum, item) => sum + calculateItemPrice(item),
         0
       );
 
@@ -146,9 +175,9 @@ export const useCartStore = create<CartState>((set, get) => ({
         String(item.ingredient.id) === String(ingredientId) ? { ...item, quantity } : item
       );
 
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalItems = newItems.length;
       const totalPrice = newItems.reduce(
-        (sum, item) => sum + item.ingredient.price * item.quantity,
+        (sum, item) => sum + calculateItemPrice(item),
         0
       );
 
@@ -175,9 +204,9 @@ export const useCartStore = create<CartState>((set, get) => ({
       const items = await storage.getItem<CartItem[]>(STORAGE_KEYS.CART_DATA);
 
       if (items && items.length > 0) {
-        const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+        const totalItems = items.length;
         const totalPrice = items.reduce(
-          (sum, item) => sum + item.ingredient.price * item.quantity,
+          (sum, item) => sum + calculateItemPrice(item),
           0
         );
 

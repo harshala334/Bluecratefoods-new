@@ -11,6 +11,7 @@ export interface Ingredient {
   utensils?: Utensil[];
   steps?: Step[];
   isMandatory?: boolean;
+  bulkTiers?: any[];
 }
 
 export interface Step {

@@ -1,21 +1,26 @@
-import { Dimensions, PixelRatio } from 'react-native';
+import { Dimensions, PixelRatio, Platform } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+// Wait until necessary, to avoid top-level Dimensions evaluation issues on Web
+const getWidth = () => Dimensions.get('window').width;
+const getHeight = () => Dimensions.get('window').height;
 
 // Guideline sizes are based on standard iPhone 14 (approx ~390x844)
 const guidelineBaseWidth = 390;
 const guidelineBaseHeight = 844;
 
-const scale = (size: number) => (width / guidelineBaseWidth) * size;
-const verticalScale = (size: number) => (height / guidelineBaseHeight) * size;
+const scale = (size: number) => {
+  if (Platform.OS === 'web') return size; // Trust CSS/Browser pixel scaling
+  return (getWidth() / guidelineBaseWidth) * size;
+};
 
-/**
- * moderateScale
- * Styles that scale with screen size but settle down on larger screens to avoid scaling too much.
- * Good for padding, font sizes, margins.
- * @param size - The size to scale
- * @param factor - Scaling factor (default 0.5) - 0 = no scale, 1 = linear scale
- */
-const moderateScale = (size: number, factor = 0.5) => size + (scale(size) - size) * factor;
+const verticalScale = (size: number) => {
+  if (Platform.OS === 'web') return size;
+  return (getHeight() / guidelineBaseHeight) * size;
+};
+
+const moderateScale = (size: number, factor = 0.5) => {
+  if (Platform.OS === 'web') return size; // Avoid huge fonts on desktop
+  return size + (scale(size) - size) * factor;
+};
 
 export { scale, verticalScale, moderateScale };

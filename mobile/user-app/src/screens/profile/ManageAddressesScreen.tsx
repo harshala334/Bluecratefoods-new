@@ -53,7 +53,7 @@ export const ManageAddressesScreen = ({ navigation }: any) => {
                     <Text style={styles.guestSubtitle}>Save your home and work addresses for faster checkout.</Text>
                     <TouchableOpacity
                         style={styles.loginButton}
-                        onPress={() => navigation.navigate('Login')}
+                        onPress={() => navigation.navigate('AuthMethod')}
                     >
                         <Text style={styles.loginButtonText}>Login Now</Text>
                     </TouchableOpacity>

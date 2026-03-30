@@ -708,6 +708,21 @@ function RootNavigator() {
 
       {/* Auth Screens (Modal) - Always accessible from root */}
       <Stack.Screen
+        name="AuthMethod"
+        component={AuthMethodScreen}
+        options={{
+          headerShown: false,
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="OTP"
+        component={OTPScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="Login"
         component={LoginScreen}
         options={{

@@ -713,7 +713,11 @@ export default function AdminProducts() {
                                             className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
                                             placeholder="0.00"
                                             value={formData.basePrice}
-                                            onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+                                            onChange={(e) => {
+                                                const newTiers = [...formData.bulkTiers];
+                                                newTiers[0].price = e.target.value;
+                                                setFormData({ ...formData, basePrice: e.target.value, bulkTiers: newTiers });
+                                            }}
                                         />
                                     </div>
                                     <div>
@@ -739,24 +743,72 @@ export default function AdminProducts() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Units per Pack(e.g. 50 units per pack)</label>
-                                        <input
-                                            type="text"
-                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
-                                            placeholder="Unit"
-                                            value={formData.unit}
-                                            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                                        />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Units per Pack(e.g. 50 pcs, 1 pkt)</label>
+                                        <div className="flex bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-primary-500 overflow-hidden text-gray-900 border border-transparent">
+                                            <input
+                                                type="text"
+                                                className="w-2/3 px-4 py-3 bg-transparent border-none focus:ring-0 outline-none"
+                                                placeholder="e.g. 10"
+                                                value={formData.unit.replace(/[^\d.]/g, '')}
+                                                onChange={(e) => {
+                                                    const unitStr = formData.unit.replace(/[\d.\s]/g, '') || 'pcs';
+                                                    const newUnit = e.target.value ? `${e.target.value} ${unitStr}` : '';
+                                                    const newTiers = [...formData.bulkTiers];
+                                                    newTiers[0].quantity = newUnit;
+                                                    setFormData({ ...formData, unit: newUnit, bulkTiers: newTiers });
+                                                }}
+                                            />
+                                            <select
+                                                className="w-1/3 px-2 py-3 bg-gray-100 border-none outline-none focus:ring-0 text-gray-700 font-bold border-l border-gray-200"
+                                                value={formData.unit.replace(/[\d.\s]/g, '') || 'pcs'}
+                                                onChange={(e) => {
+                                                    const val = formData.unit.replace(/[^\d.]/g, '');
+                                                    const newUnit = val ? `${val} ${e.target.value}` : '';
+                                                    const newTiers = [...formData.bulkTiers];
+                                                    newTiers[0].quantity = newUnit;
+                                                    setFormData({ ...formData, unit: newUnit, bulkTiers: newTiers });
+                                                }}
+                                            >
+                                                <option value="pcs">pcs</option>
+                                                <option value="pkt">pkt</option>
+                                                <option value="box">box</option>
+                                                <option value="roll">roll</option>
+                                                <option value="pack">pack</option>
+                                                <option value="bundle">bundle</option>
+                                                <option value="unit">unit</option>
+                                                <option value="slice">slice</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Weight or Volume (e.g. 500g, 1L)</label>
-                                        <input
-                                            type="text"
-                                            className="w-full px-4 py-3 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
-                                            placeholder="Weight"
-                                            value={formData.weight}
-                                            onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                                        />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Weight or Volume (e.g. 500, 1)</label>
+                                        <div className="flex bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-primary-500 overflow-hidden text-gray-900 border border-transparent">
+                                            <input
+                                                type="text"
+                                                className="w-2/3 px-4 py-3 bg-transparent border-none focus:ring-0 outline-none"
+                                                placeholder="e.g. 500"
+                                                value={formData.weight.replace(/[^\d.]/g, '')}
+                                                onChange={(e) => {
+                                                    const unit = formData.weight.replace(/[\d.\s]/g, '') || 'g';
+                                                    setFormData({ ...formData, weight: e.target.value ? `${e.target.value}${unit}` : '' })
+                                                }}
+                                            />
+                                            <select
+                                                className="w-1/3 px-2 py-3 bg-gray-100 border-none outline-none focus:ring-0 text-gray-700 font-bold border-l border-gray-200"
+                                                value={formData.weight.replace(/[\d.\s]/g, '') || 'g'}
+                                                onChange={(e) => {
+                                                    const val = formData.weight.replace(/[^\d.]/g, '');
+                                                    setFormData({ ...formData, weight: val ? `${val}${e.target.value}` : '' })
+                                                }}
+                                            >
+                                                <option value="g">g</option>
+                                                <option value="kg">kg</option>
+                                                <option value="ml">ml</option>
+                                                <option value="L">L</option>
+                                                <option value="pcs">pcs</option>
+                                                <option value="box">box</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1 text-left font-bold text-primary-600">Stock Quantity/Weight (Current)</label>
@@ -840,27 +892,65 @@ export default function AdminProducts() {
                                     <div className="space-y-3">
                                         {[0, 1, 2].map((tierIndex) => (
                                             <div key={tierIndex} className="flex gap-3 items-center">
-                                                <span className="text-xs font-bold text-gray-400 w-12">TIER {tierIndex + 1}</span>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Qty (e.g. '5 kg')"
-                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-                                                    value={formData.bulkTiers[tierIndex].quantity}
-                                                    onChange={(e) => {
-                                                        const newTiers = [...formData.bulkTiers];
-                                                        newTiers[tierIndex].quantity = e.target.value;
-                                                        setFormData({ ...formData, bulkTiers: newTiers });
-                                                    }}
-                                                />
+                                                <span className="text-xs font-bold text-gray-400 w-12 uppercase">Tier {tierIndex + 1}</span>
+                                                <div className="flex-1 flex bg-white border border-gray-200 rounded-lg overflow-hidden h-10">
+                                                    <input
+                                                        type="text"
+                                                        className="w-2/3 px-3 py-2 bg-transparent border-none focus:ring-0 outline-none text-sm"
+                                                        placeholder="Qty"
+                                                        value={formData.bulkTiers[tierIndex].quantity.replace(/[^\d.]/g, '')}
+                                                        onChange={(e) => {
+                                                            const unitPart = formData.bulkTiers[tierIndex].quantity.replace(/[\d.\s]/g, '') || 'pcs';
+                                                            const newQty = e.target.value ? `${e.target.value} ${unitPart}` : '';
+                                                            const newTiers = [...formData.bulkTiers];
+                                                            newTiers[tierIndex].quantity = newQty;
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                bulkTiers: newTiers,
+                                                                ...(tierIndex === 0 && { unit: newQty })
+                                                            }));
+                                                        }}
+                                                    />
+                                                    <select
+                                                        className="w-1/3 px-1 py-1 bg-gray-50 border-none outline-none focus:ring-0 text-[10px] font-bold border-l border-gray-100"
+                                                        value={formData.bulkTiers[tierIndex].quantity.replace(/[\d.\s]/g, '') || 'pcs'}
+                                                        onChange={(e) => {
+                                                            const valPart = formData.bulkTiers[tierIndex].quantity.replace(/[^\d.]/g, '');
+                                                            const newQty = valPart ? `${valPart} ${e.target.value}` : '';
+                                                            const newTiers = [...formData.bulkTiers];
+                                                            newTiers[tierIndex].quantity = newQty;
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                bulkTiers: newTiers,
+                                                                ...(tierIndex === 0 && { unit: newQty })
+                                                            }));
+                                                        }}
+                                                    >
+                                                        <option value="pcs">pcs</option>
+                                                        <option value="pkt">pkt</option>
+                                                        <option value="kg">kg</option>
+                                                        <option value="g">g</option>
+                                                        <option value="ml">ml</option>
+                                                        <option value="L">L</option>
+                                                        <option value="box">box</option>
+                                                        <option value="roll">roll</option>
+                                                        <option value="pack">pack</option>
+                                                        <option value="unit">unit</option>
+                                                    </select>
+                                                </div>
                                                 <input
                                                     type="number"
                                                     placeholder="Price (₹)"
-                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm h-10"
                                                     value={formData.bulkTiers[tierIndex].price}
                                                     onChange={(e) => {
                                                         const newTiers = [...formData.bulkTiers];
                                                         newTiers[tierIndex].price = e.target.value;
-                                                        setFormData({ ...formData, bulkTiers: newTiers });
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            bulkTiers: newTiers,
+                                                            ...(tierIndex === 0 && { basePrice: e.target.value })
+                                                        }));
                                                     }}
                                                 />
                                             </div>

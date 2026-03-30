@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
-import MapView, { Marker, Region } from 'react-native-maps';
+import { MapView, Marker, Region } from '../../components/location/MapWrapper';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { API_CONFIG } from '../../constants/config';
 import { colors } from '../../constants/colors';

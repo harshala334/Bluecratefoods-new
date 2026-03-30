@@ -70,7 +70,7 @@ export const ProfileScreen = ({ navigation }: any) => {
             <Text style={styles.guestSubtitle}>Ready-to-Cook. Ready-to-Love.</Text>
             <TouchableOpacity
               style={styles.signInButton}
-              onPress={() => navigation.navigate('Login')}
+              onPress={() => navigation.navigate('AuthMethod')}
             >
               <Text style={styles.signInButtonText}>Get Started</Text>
             </TouchableOpacity>

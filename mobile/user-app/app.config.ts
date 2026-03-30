@@ -57,7 +57,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         }
     },
     web: {
-        favicon: "./assets/images/app-icon.png"
+        favicon: "./assets/images/app-icon.png",
+        name: "Blue Crate",
+        shortName: "Blue Crate",
+        themeColor: "#28B7B5",
+        backgroundColor: "#ffffff",
+        description: "Your local food and restaurant marketplace.",
+        display: "standalone",
+        startUrl: "/",
+        orientation: "portrait",
+        dir: "auto",
+        lang: "en-US"
     },
     extra: {
         eas: {

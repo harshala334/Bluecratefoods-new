@@ -47,6 +47,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                 unit: String(product.weight || product.unit || ''),
                 image: String(product.image || ''),
                 category: String(product.category || 'general'),
+                bulkTiers: product.bulkTiers
             };
             addItem(ingredient as any, quantity);
             navigation.goBack();
@@ -133,8 +134,8 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                             <View style={styles.bulkSection}>
                                 <Text style={styles.bulkTitle}>Bulk Pricing for Businesses</Text>
                                 <View style={styles.bulkTiersGrid}>
-                                    {product.bulkTiers.map((tier: any, idx: number) => {
-                                        if (!tier) return null;
+                                    {product.bulkTiers.slice(1, 3).map((tier: any, idx: number) => {
+                                        if (!tier || !tier.price || !tier.quantity) return null;
                                         const qtyNum = parseInt(String(tier.quantity)) || 1;
                                         const tierPrice = Number(tier.price) || 0;
                                         const unitPrice = qtyNum > 0 ? Math.round(tierPrice / qtyNum) : 0;

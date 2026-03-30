@@ -5,7 +5,9 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
  * This prevents Metro from crashing when native modules are missing in Expo Go.
  */
 
-const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+import { Platform } from 'react-native';
+
+const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient || Platform.OS === 'web';
 
 let RazorpayCheckout: any;
 let GoogleSignin: any;

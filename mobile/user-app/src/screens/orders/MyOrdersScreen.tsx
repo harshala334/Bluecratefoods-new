@@ -94,7 +94,7 @@ export const MyOrdersScreen = ({ navigation }: any) => {
                     <Text style={styles.guestSubtitle}>Login to see your past orders and track active ones.</Text>
                     <TouchableOpacity
                         style={styles.loginButton}
-                        onPress={() => navigation.navigate('Login')}
+                        onPress={() => navigation.navigate('AuthMethod')}
                     >
                         <Text style={styles.loginButtonText}>Login Now</Text>
                     </TouchableOpacity>

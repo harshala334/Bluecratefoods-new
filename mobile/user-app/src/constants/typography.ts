@@ -4,15 +4,16 @@
  */
 
 import { moderateScale } from '../utils/responsive';
+import { Platform } from 'react-native';
 
 export const typography = {
   // Font Families
   fontFamily: {
-    display: 'PlayfairDisplay-Bold',  // For headings (serif)
-    body: 'Inter-Regular',             // For content (sans-serif)
-    medium: 'Inter-Medium',
-    semibold: 'Inter-SemiBold',
-    bold: 'Inter-Bold',
+    display: Platform.select({ web: '"Playfair Display", serif', default: 'PlayfairDisplay-Bold' }),
+    body: Platform.select({ web: 'Inter, sans-serif', default: 'Inter-Regular' }),
+    medium: Platform.select({ web: 'Inter, sans-serif', default: 'Inter-Medium' }),
+    semibold: Platform.select({ web: 'Inter, sans-serif', default: 'Inter-SemiBold' }),
+    bold: Platform.select({ web: 'Inter, sans-serif', default: 'Inter-Bold' }),
   } as const,
 
   // Font Sizes (Dense Premium Scale)
