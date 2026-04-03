@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Configuration
 PROJECT_ID="bluecratefoods-491614"
@@ -13,7 +14,7 @@ echo "🏗️ Starting BlueCrate Foods PWA Deployment..."
 echo "📦 Building PWA Container using Cloud Build..."
 # Move to the app directory temporarily
 cd mobile/user-app
-gcloud builds submit --tag $IMAGE_NAME --project $PROJECT_ID -f Dockerfile.pwa .
+gcloud builds submit --tag $IMAGE_NAME --project $PROJECT_ID .
 
 # 2. Deploy to Cloud Run
 echo "🚀 Deploying $SERVICE_NAME to Cloud Run..."

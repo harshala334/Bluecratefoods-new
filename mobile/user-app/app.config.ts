@@ -4,6 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config,
     name: "Blue Crate",
     slug: "bluecratefoods",
+    scheme: "bluecrate",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/app-icon.png",
@@ -44,7 +45,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     android: {
         adaptiveIcon: {
             foregroundImage: "./assets/images/adaptive-icon-foreground.png",
-            backgroundColor: "#28B7B5"
+            backgroundColor: "#FFFFFF"
         },
         package: "com.bluecratefoods.app",
         googleServicesFile: "./google-services.json",

@@ -26,22 +26,22 @@ export class Product {
     @Column('int', { default: 0 })
     reviews: number;
 
-    @Column()
+    @Column({ nullable: true })
     time: string;
 
-    @Column()
+    @Column({ nullable: true })
     difficulty: string;
 
-    @Column('int')
+    @Column('int', { nullable: true })
     servings: number;
 
-    @Column('jsonb')
+    @Column('jsonb', { nullable: true })
     ingredients: any[];
 
-    @Column('jsonb')
+    @Column('jsonb', { nullable: true })
     steps: any[];
 
-    @Column('jsonb')
+    @Column('jsonb', { nullable: true })
     nutrition: any;
 
     @Column('jsonb', { nullable: true })

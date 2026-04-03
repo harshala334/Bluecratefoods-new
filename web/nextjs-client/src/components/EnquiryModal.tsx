@@ -29,8 +29,8 @@ export default function EnquiryModal({ isOpen, onClose }: EnquiryModalProps) {
         setLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app/api/api';
-            await axios.post(`${apiUrl}/enquiry`, formData);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app';
+            await axios.post(`${apiUrl}/api/enquiry`, formData);
 
             toast.success('Enquiry sent successfully!');
             fpixel.event('Lead', { content_name: 'Enquiry' });
