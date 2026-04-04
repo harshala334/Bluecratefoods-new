@@ -11,6 +11,7 @@ import {
     FlatList,
     Dimensions,
     ActivityIndicator,
+    Platform,
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
@@ -204,7 +205,7 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
                                     {item.products && item.products.length > 0 && (
                                         <ScrollView
                                             horizontal
-                                            showsHorizontalScrollIndicator={false}
+                                            showsHorizontalScrollIndicator={Platform.OS === 'web'}
                                             nestedScrollEnabled={true}
                                             style={{ marginTop: 4 }}
                                         >
@@ -279,7 +280,7 @@ export const KittyChatSearchBar = ({ navigation, onSearchResults }: KittyChatSea
                     <View style={styles.tagsRow}>
                         <ScrollView
                             horizontal
-                            showsHorizontalScrollIndicator={false}
+                            showsHorizontalScrollIndicator={Platform.OS === 'web'}
                             showsVerticalScrollIndicator={false}
                             keyboardShouldPersistTaps="always"
                             contentContainerStyle={styles.tagsContainer}

@@ -8,6 +8,7 @@ import {
     Image,
     ImageBackground,
     Dimensions,
+    Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -105,7 +106,12 @@ const ProductListScreen = ({ navigation }: any) => {
                                     <Ionicons name="close-circle" size={24} color={colors.gray[400]} />
                                 </TouchableOpacity>
                             </View>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.resultsScroll}>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={Platform.OS === 'web'}
+                                nestedScrollEnabled={true}
+                                style={styles.resultsScroll}
+                            >
                                 {searchResults.map((product) => (
                                     <View key={product.id} style={{ marginRight: 12 }}>
                                         <VerticalProductCard

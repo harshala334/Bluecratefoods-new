@@ -84,11 +84,7 @@ const OTPScreen = ({ navigation, route }: any) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardView}
-            >
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.keyboardView}>
                     <View style={styles.content}>
                         <View style={styles.header}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -113,12 +109,14 @@ const OTPScreen = ({ navigation, route }: any) => {
                                         inputRefs.current[index] = ref;
                                     }}
                                     style={styles.otpInput}
-                                    keyboardType="number-pad"
+                                    keyboardType={Platform.OS === 'web' ? 'phone-pad' : 'number-pad'}
                                     maxLength={1}
                                     value={digit}
-                                    onChangeText={(value) => handleOtpChange(value, index)}
+                                    onChangeText={(value) => handleOtpChange(value.slice(-1), index)}
                                     onKeyPress={(e) => handleKeyPress(e, index)}
-                                    autoFocus={index === 0}
+                                    autoFocus={Platform.OS !== 'web' && index === 0}
+                                    autoComplete="one-time-code"
+                                    textContentType="oneTimeCode"
                                 />
                             ))}
                         </View>
@@ -149,8 +147,7 @@ const OTPScreen = ({ navigation, route }: any) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+                </View>
         </SafeAreaView>
     );
 };

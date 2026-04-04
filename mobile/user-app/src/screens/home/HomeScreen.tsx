@@ -19,6 +19,7 @@ import {
   Easing,
   ActivityIndicator,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { API_CONFIG, CDN_URL } from '../../constants/config';
@@ -369,8 +370,13 @@ export const HomeScreen = ({ navigation }: any) => {
           </View>
           <ScrollView
             horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 0, paddingHorizontal: 0, alignItems: 'flex-start' }}
+            showsHorizontalScrollIndicator={Platform.OS === 'web'}
+            nestedScrollEnabled={true}
+            scrollEnabled={true}
+            decelerationRate="fast"
+            scrollEventThrottle={16}
+            style={{ width: '100%' }}
+            contentContainerStyle={{ paddingBottom: 0, paddingHorizontal: 0, alignItems: 'flex-start', flexDirection: 'row' }}
           >
             {searchResults.map((product) => (
               <View key={product.id} style={{ marginRight: 8 }}>
@@ -404,7 +410,8 @@ export const HomeScreen = ({ navigation }: any) => {
           </View>
           <ScrollView
             horizontal
-            showsHorizontalScrollIndicator={false}
+            showsHorizontalScrollIndicator={Platform.OS === 'web'}
+            nestedScrollEnabled={true}
             contentContainerStyle={[styles.hitsScroll, { paddingHorizontal: 0 }]}
           >
             {unifiedFrequent.length > 0 ? (
@@ -486,7 +493,8 @@ export const HomeScreen = ({ navigation }: any) => {
                   snapToInterval={BENTO_WIDE_WIDTH}
                   snapToAlignment="start"
                   decelerationRate="fast"
-                  showsHorizontalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={Platform.OS === 'web'}
+            nestedScrollEnabled={true}
                   onScroll={onScroll}
                   scrollEventThrottle={16}
                   style={styles.promoScroll}
@@ -599,7 +607,8 @@ export const HomeScreen = ({ navigation }: any) => {
           </View>
           <ScrollView
             horizontal
-            showsHorizontalScrollIndicator={false}
+            showsHorizontalScrollIndicator={Platform.OS === 'web'}
+            nestedScrollEnabled={true}
             contentContainerStyle={[styles.hitsScroll, { paddingHorizontal: 0 }]}
           >
             {CUISINES.map((cuisine) => (
@@ -630,8 +639,13 @@ export const HomeScreen = ({ navigation }: any) => {
             </View>
             <ScrollView
               horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={[styles.bestsellerHorizContent, { paddingLeft: 0, paddingRight: 0 }]}
+              showsHorizontalScrollIndicator={Platform.OS === 'web'}
+              nestedScrollEnabled={true}
+              scrollEnabled={true}
+              decelerationRate="fast"
+              scrollEventThrottle={16}
+              style={{ width: '100%' }}
+              contentContainerStyle={[styles.bestsellerHorizContent, { paddingLeft: 0, paddingRight: 0, flexDirection: 'row' }]}
             >
               {Array.from({ length: Math.ceil(bestsellers.length / 2) }, (_, i) => (
                 <View key={i} style={styles.bestsellerColumn}>
@@ -710,8 +724,13 @@ export const HomeScreen = ({ navigation }: any) => {
                 </View>
                 <ScrollView
                   horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={[styles.discoveryScroll, { paddingLeft: 0, paddingRight: 0 }]}
+                  showsHorizontalScrollIndicator={Platform.OS === 'web'}
+                  nestedScrollEnabled={true}
+                  scrollEnabled={true}
+                  decelerationRate="fast"
+                  scrollEventThrottle={16}
+                  contentContainerStyle={[styles.discoveryScroll, { flexDirection: 'row', paddingLeft: 0, paddingRight: 0 }]}
+                  style={{ width: '100%' }}
                 >
                   {products.map((product) => {
                     const isMeal = ['5min', '10min', '15min'].includes(category.id);
@@ -759,7 +778,8 @@ export const HomeScreen = ({ navigation }: any) => {
 
           <ScrollView
             horizontal
-            showsHorizontalScrollIndicator={false}
+            showsHorizontalScrollIndicator={Platform.OS === 'web'}
+            nestedScrollEnabled={true}
             snapToInterval={screenWidth * 0.7 + spacing.md}
             decelerationRate="fast"
             contentContainerStyle={[styles.cuisineScroll, { paddingLeft: 0, paddingRight: 0 }]}

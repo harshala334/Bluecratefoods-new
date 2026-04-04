@@ -163,7 +163,7 @@ export const ChatScreen = () => {
                     {!isUser && item.products && item.products.length > 0 && (
                         <ScrollView
                             horizontal
-                            showsHorizontalScrollIndicator={false}
+                            showsHorizontalScrollIndicator={Platform.OS === 'web'}
                             contentContainerStyle={styles.recipeListContainer}
                         >
                             {item.products.map((product) => (

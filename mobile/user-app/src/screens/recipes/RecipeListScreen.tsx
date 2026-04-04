@@ -9,6 +9,7 @@ import {
   Image,
   FlatList,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
@@ -155,7 +156,11 @@ export const RecipeListScreen = ({ route, navigation }: any) => {
 
       {/* Filters */}
       <View style={styles.filtersContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={Platform.OS === 'web'}
+          nestedScrollEnabled={true}
+        >
           <View style={styles.filtersRow}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: spacing.xs }}>
               <Feather name="clock" size={14} color={colors.gray[700]} style={{ marginRight: 4 }} />
@@ -183,7 +188,12 @@ export const RecipeListScreen = ({ route, navigation }: any) => {
           </View>
         </ScrollView>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.difficultyScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={Platform.OS === 'web'}
+          nestedScrollEnabled={true}
+          style={styles.difficultyScroll}
+        >
           <View style={styles.filtersRow}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: spacing.xs }}>
               <Feather name="bar-chart-2" size={14} color={colors.gray[700]} style={{ marginRight: 4 }} />

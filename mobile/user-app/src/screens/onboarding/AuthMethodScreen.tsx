@@ -87,11 +87,7 @@ const AuthMethodScreen = ({ navigation }: any) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardView}
-            >
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.keyboardView}>
                     <View style={styles.content}>
                         <View style={styles.header}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
@@ -116,10 +112,12 @@ const AuthMethodScreen = ({ navigation }: any) => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="9999999999"
-                                keyboardType="phone-pad"
+                                keyboardType="number-pad"
                                 value={phone}
                                 onChangeText={setPhone}
-                                autoFocus
+                                autoFocus={Platform.OS !== 'web'}
+                                pointerEvents="auto"
+                                editable={true}
                             />
                         </View>
 
@@ -182,8 +180,7 @@ const AuthMethodScreen = ({ navigation }: any) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+                </View>
         </SafeAreaView>
     );
 };
