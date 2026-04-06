@@ -13,6 +13,11 @@ export class ProductsController {
         return this.productsService.findAll(query, (req as any).user);
     }
 
+    @Get('last-updated')
+    getLastUpdated(): Promise<{ lastUpdated: Date }> {
+        return this.productsService.getLastUpdated();
+    }
+
     @Get('template/download')
     downloadTemplate(@Res() res: Response) {
         const headers = 'Name,Storage,Category,Sub-Category,Tags,Size,Weight,UnitPrice,UnitPack,PackPricing\n';

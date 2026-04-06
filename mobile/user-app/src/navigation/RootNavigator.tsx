@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, Animated, Dimensions, ActivityIndicator } from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../constants/colors';
 import { Feather } from '@expo/vector-icons';
@@ -51,7 +51,7 @@ import { useLocationStore } from '../stores/locationStore';
 import useCartStore from '../stores/cartStore';
 
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const { width: windowWidth } = Dimensions.get('window');
 
@@ -65,9 +65,6 @@ function HomeStack() {
       screenOptions={{
         headerStyle: {
           backgroundColor: colors.primary[600],
-          elevation: 0,
-          shadowOpacity: 0,
-          borderBottomWidth: 0,
         },
         headerShadowVisible: false,
         headerTintColor: '#fff',
@@ -426,6 +423,12 @@ function MainTabs() {
   const { location } = useLocationStore();
   const isServiceable = location?.toLowerCase().includes('kolkata');
 
+  // Memoize Tab items to prevent unnecessary re-renders of the entire tab bar
+  const HomeIcon = React.useCallback(({ color }: any) => <Feather name="home" size={24} color={color} />, []);
+  const ProductsIcon = React.useCallback(({ color }: any) => <Feather name="package" size={24} color={color} />, []);
+  const CartIcon = React.useCallback(({ color }: any) => <Feather name="shopping-cart" size={24} color={color} />, []);
+  const OffersIcon = React.useCallback(() => <MaterialCommunityIcons name="label-percent" size={32} color={colors.white} />, []);
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -458,7 +461,7 @@ function MainTabs() {
         component={HomeStack}
         options={{
           tabBarLabel: 'Home',
-          tabBarIcon: ({ color }) => <Feather name="home" size={24} color={color} />,
+          tabBarIcon: HomeIcon,
           headerShown: false,
           tabBarItemStyle: {
             paddingVertical: 10,
@@ -471,7 +474,7 @@ function MainTabs() {
         component={ProductStack}
         options={{
           tabBarLabel: 'Products',
-          tabBarIcon: ({ color }) => <Feather name="package" size={24} color={color} />,
+          tabBarIcon: ProductsIcon,
           headerShown: false,
           tabBarItemStyle: {
             paddingVertical: 10,
@@ -485,9 +488,7 @@ function MainTabs() {
         component={OffersScreen}
         options={{
           tabBarLabel: 'Offers',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="label-percent" size={32} color={colors.white} />
-          ),
+          tabBarIcon: OffersIcon,
           tabBarButton: (props) => <CentralTabButton {...props} />,
           headerShown: false,
         }}
@@ -498,7 +499,7 @@ function MainTabs() {
         component={CartStack}
         options={{
           tabBarLabel: 'Cart',
-          tabBarIcon: ({ color }) => <Feather name="shopping-cart" size={24} color={color} />,
+          tabBarIcon: CartIcon,
           tabBarBadge: totalItems > 0 ? totalItems : undefined,
           tabBarBadgeStyle: {
             backgroundColor: colors.primary[500],

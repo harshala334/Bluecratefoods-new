@@ -12,6 +12,7 @@ import {
   Share,
   ActivityIndicator,
 } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import Slider from '@react-native-community/slider';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -84,24 +85,19 @@ const RecipeDetailScreen = ({ route, navigation }: any) => {
   const { location } = useLocationStore();
   const isServiceable = location?.toLowerCase().includes('kolkata');
 
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchRecipe = async () => {
+  // Fetch recipe using React Query
+  const { data: recipe, isLoading: loading } = useQuery({
+    queryKey: ['products', 'detail', recipeId],
+    queryFn: async () => {
       try {
-        setLoading(true);
         const data = await recipeService.getRecipeById(recipeId);
         if (!data) throw new Error('Recipe not found');
-        setRecipe(data);
+        return data;
       } catch (error) {
         console.error('Failed to load recipe', error);
-        // Alert.alert('Error', 'Failed to load recipe details');
-        // navigation.goBack();
-
-        // Hardcoded fallback as requested by user to guarantee display
-        const hardcodedRecipe: Recipe = {
-          id: 999,
+        // Fallback to hardcoded for demo consistency if needed
+        return {
+          id: recipeId,
           name: 'Emergency Mock Tacos',
           image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800',
           time: '20 min',
@@ -125,17 +121,11 @@ const RecipeDetailScreen = ({ route, navigation }: any) => {
           utensils: [
             { id: 1, name: 'Frying Pan', image: 'https://images.unsplash.com/photo-1585515320310-25981483a219?w=200' }
           ]
-        };
-        console.log('Using HARDCODED recipe fallback');
-        setRecipe(hardcodedRecipe);
-      } finally {
-        setLoading(false);
+        } as Recipe;
       }
-    };
-    if (recipeId) {
-      fetchRecipe();
-    }
-  }, [recipeId]);
+    },
+    enabled: !!recipeId,
+  });
 
   // Loading State
   if (loading || !recipe) {

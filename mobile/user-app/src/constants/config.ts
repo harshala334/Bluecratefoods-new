@@ -41,6 +41,7 @@ export const API_CONFIG = {
     APPROVE_RECIPE: (id: string) => `${baseUrl}/products/${id}/approve`,
     REJECT_RECIPE: (id: string) => `${baseUrl}/products/${id}/reject`,
     REJECT_BY_AUTHOR: (authorId: string) => `${baseUrl}/products/reject-by-author/${authorId}`,
+    RECIPE_LAST_UPDATED: `${baseUrl}/products/last-updated`,
 
     // Cart - Use Prod
     CART: `${baseUrl}/cart`,
@@ -77,6 +78,8 @@ export const STORAGE_KEYS = {
   RECENT_SEARCHES: '@bluecrate:recent_searches',
   ONBOARDING_COMPLETE: '@bluecrate:onboarding_complete',
   IS_GUEST: '@bluecrate:is_guest',
+  SYNC_LAST_UPDATED: '@bluecrate:sync_last_updated',
+  SYNC_PRODUCTS_CACHE: '@bluecrate:sync_products_cache',
 };
 
 // App Configuration

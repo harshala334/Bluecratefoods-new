@@ -93,4 +93,12 @@ export class ProductsService {
     async remove(id: number): Promise<void> {
         await this.productsRepository.delete(id);
     }
+
+    async getLastUpdated(): Promise<{ lastUpdated: Date }> {
+        const result = await this.productsRepository
+            .createQueryBuilder('product')
+            .select('MAX(product.updatedAt)', 'lastUpdated')
+            .getRawOne();
+        return { lastUpdated: result.lastUpdated || new Date(0) };
+    }
 }

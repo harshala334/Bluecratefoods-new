@@ -21,6 +21,7 @@ import {
   useWindowDimensions,
   Platform,
 } from 'react-native';
+import { useHomeProducts } from '../../hooks/useHomeProducts';
 import { LinearGradient } from 'expo-linear-gradient';
 import { API_CONFIG, CDN_URL } from '../../constants/config';
 import { colors } from '../../constants/colors';
@@ -121,44 +122,25 @@ export const HomeScreen = ({ navigation }: any) => {
     }
   };
 
-  const [bestsellers, setBestsellers] = useState<any[]>([]);
+  const { homeData, loadingLive } = useHomeProducts();
 
-  const [liveProducts, setLiveProducts] = useState<Record<string, any[]>>({});
-  const [loadingLive, setLoadingLive] = useState(true);
-
-  useEffect(() => {
-    const fetchHomeProducts = async () => {
-      setLoadingLive(true);
-      const featuredCategories = categories.filter(c => c.row <= 3).map(c => c.id);
-      const productMap: Record<string, any[]> = {};
-
-      try {
-        // Fetch category products
-        await Promise.all(featuredCategories.map(async (catId) => {
-          const { recipes } = await recipeService.getRecipes({ category: catId, limit: 5 });
-          if (recipes && recipes.length > 0) {
-            productMap[catId] = recipes;
-          }
-        }));
-        setLiveProducts(productMap);
-
-        // Fetch bestsellers (recent items for now)
-        const { recipes: recentProducts } = await recipeService.getRecipes({ limit: 10 });
-        setBestsellers(recentProducts);
-      } catch (error) {
-        console.warn("Failed to fetch home products:", error);
-      } finally {
-        setLoadingLive(false);
-      }
-    };
-    fetchHomeProducts();
-  }, []);
+  const bestsellers = homeData?.bestsellers || [];
+  const liveProducts = homeData?.productMap || {};
 
 
 
 
 
-  const categories = [
+  interface CategoryItem {
+    id: string;
+    title: string;
+    subtitle: string;
+    image: any;
+    filter: string;
+    row: number;
+  }
+
+  const categories: CategoryItem[] = [
     // Row 1: Vertical/Bento (Next to Promo)
     { id: 'frozen', title: 'Frozen : Ready-to-Cook', subtitle: '120+ Items • Quick & delicious', image: require('../../../assets/images/frozen.jpg'), filter: 'frozen', row: 1 },
 
@@ -378,7 +360,7 @@ export const HomeScreen = ({ navigation }: any) => {
             style={{ width: '100%' }}
             contentContainerStyle={{ paddingBottom: 0, paddingHorizontal: 0, alignItems: 'flex-start', flexDirection: 'row' }}
           >
-            {searchResults.map((product) => (
+            {searchResults.map((product: Recipe) => (
               <View key={product.id} style={{ marginRight: 8 }}>
                 <VerticalProductCard
                   product={product}
@@ -628,7 +610,7 @@ export const HomeScreen = ({ navigation }: any) => {
             >
               {Array.from({ length: Math.ceil(bestsellers.length / 2) }, (_, i) => (
                 <View key={i} style={styles.bestsellerColumn}>
-                  {bestsellers.slice(i * 2, i * 2 + 2).map((product) => (
+                  {bestsellers.slice(i * 2, i * 2 + 2).map((product: Recipe) => (
                     <CompactProductCard
                       key={product.id}
                       recipe={product}
@@ -691,7 +673,7 @@ export const HomeScreen = ({ navigation }: any) => {
           </View>
         </View>
       ) : (
-        categories.filter(c => c.row <= 3).map((category) => {
+        categories.filter((c: CategoryItem) => c.row <= 3).map((category: CategoryItem) => {
           const products = liveProducts[category.id];
           if (!products || products.length === 0) return null; // Don't show empty categories
           return (
@@ -711,7 +693,7 @@ export const HomeScreen = ({ navigation }: any) => {
                   contentContainerStyle={[styles.discoveryScroll, { flexDirection: 'row', paddingLeft: 0, paddingRight: 0 }]}
                   style={{ width: '100%' }}
                 >
-                  {products.map((product) => {
+                  {products.map((product: Recipe) => {
                     const isMeal = ['5min', '10min', '15min'].includes(category.id);
                     return (
                       <VerticalProductCard

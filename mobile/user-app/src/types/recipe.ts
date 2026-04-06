@@ -62,6 +62,7 @@ export interface Recipe {
   steps: Step[];
   nutrition: Nutrition;
   category: string;
+  subcategory?: string;
   basePrice: number;
   price?: number; // Added price
   utensils?: Utensil[];

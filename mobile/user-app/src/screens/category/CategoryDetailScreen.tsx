@@ -12,6 +12,7 @@ import {
     ScrollView,
     ActivityIndicator,
 } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
@@ -106,24 +107,16 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
 
     const { items, addItem, updateQuantityByIngredientId, totalItems, totalPrice } = useCartStore();
     const { addFrequentItem } = useRecipeStore();
-    const [products, setProducts] = React.useState<any[]>([]);
-    const [loading, setLoading] = React.useState(true);
+    // Fetch products for category using React Query
+    const { data: productsData, isLoading: loading } = useQuery({
+        queryKey: ['products', { category: categoryId }],
+        queryFn: async () => {
+            const { recipes } = await recipeService.getRecipes({ category: categoryId });
+            return recipes;
+        },
+    });
 
-    React.useEffect(() => {
-        const fetchProducts = async () => {
-            setLoading(true);
-            try {
-                // Use getRecipes with category filter instead of searchRecipes
-                const { recipes: results } = await recipeService.getRecipes({ category: categoryId });
-                setProducts(results);
-            } catch (error) {
-                console.warn("Failed to fetch products for category:", categoryId, error);
-                // setProducts(PRODUCTS); // Fallback to local mock if service fails
-            }
-            setLoading(false);
-        };
-        fetchProducts();
-    }, [categoryId]);
+    const products = productsData || [];
 
     const subcategories = SUBCATEGORIES[categoryId] || DEFAULT_SUBCATEGORIES;
 
@@ -287,7 +280,7 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
                         <FlatList
                             data={sortedProducts}
                             numColumns={2}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item.id.toString()}
                             renderItem={renderProduct}
                             contentContainerStyle={styles.gridContent}
                             showsVerticalScrollIndicator={false}
