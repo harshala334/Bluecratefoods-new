@@ -146,6 +146,10 @@ export class AuthService implements OnModuleInit {
     };
   }
 
+  async logout() {
+    return { success: true, message: 'Logged out successfully' };
+  }
+
   async updateProfile(userId: string, updateData: Partial<User>) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {

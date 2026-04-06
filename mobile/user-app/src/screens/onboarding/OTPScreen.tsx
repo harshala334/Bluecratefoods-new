@@ -22,6 +22,7 @@ const OTPScreen = ({ navigation, route }: any) => {
     const { phone } = route.params || { phone: 'your phone' };
     const [otp, setOtp] = useState(['', '', '', '']); 
     const [timer, setTimer] = useState(30);
+    const [attempts, setAttempts] = useState(0);
     const inputRefs = useRef<Array<TextInput | null>>([]);
 
     const otpLogin = useAuthStore((state) => state.otpLogin);
@@ -52,6 +53,11 @@ const OTPScreen = ({ navigation, route }: any) => {
     };
 
     const handleVerify = async (code: string) => {
+        if (attempts >= 5) {
+            Alert.alert('Too Many Attempts', 'You have entered the wrong OTP too many times. Please request a new one.');
+            return;
+        }
+
         if (!code || code.length < 4) {
             Alert.alert('Error', 'Please enter a valid 4-digit OTP');
             return;
@@ -64,8 +70,21 @@ const OTPScreen = ({ navigation, route }: any) => {
                 navigation.navigate(route.params.redirectTo);
             }
         } catch (error: any) {
-            console.error('OTP confirmation error:', error);
-            Alert.alert('Error', error.message || 'Invalid or expired OTP. Use 1234 for mock.');
+            const newAttempts = attempts + 1;
+            setAttempts(newAttempts);
+            
+            // Clear OTP fields for retry
+            setOtp(['', '', '', '']);
+            inputRefs.current[0]?.focus();
+
+            if (newAttempts >= 5) {
+                Alert.alert('Incorrect OTP', 'Too many failed attempts. Please go back and try again later or register a new number.');
+            } else {
+                Alert.alert(
+                    'Incorrect OTP', 
+                    `The code you entered is incorrect. You have ${5 - newAttempts} attempts left.`
+                );
+            }
         }
     };
 

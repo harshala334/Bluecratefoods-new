@@ -577,12 +577,25 @@ function OnboardingStack() {
 }
 
 function RootNavigator() {
-  const { hasCompletedOnboarding, isAuthenticated, isGuest, isLoading } = useAuthStore();
+  const { hasCompletedOnboarding, isAuthenticated, isGuest, token, user, isLoading } = useAuthStore();
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  if (isLoading) {
+  // We only want to show the full-screen loader on the very first "Check Token" phase
+  React.useEffect(() => {
+    const checkInitialState = async () => {
+      // Small delay to ensure store has loaded from storage
+      setTimeout(() => {
+        setIsInitialLoading(false);
+      }, 500);
+    };
+    checkInitialState();
+  }, []);
+
+  if (isInitialLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
         <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text style={{ marginTop: 16, color: colors.gray[500], fontWeight: '600' }}>Loading Blue Crate...</Text>
       </View>
     );
   }

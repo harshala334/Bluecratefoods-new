@@ -2,7 +2,7 @@
 
 ```bash
 cd /home/harshala/BlueCrateFoods/mobile/user-app
-npx expo start --tunnel --clear
+
 ```
 
 Then press:

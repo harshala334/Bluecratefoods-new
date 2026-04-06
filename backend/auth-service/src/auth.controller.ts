@@ -21,6 +21,11 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @Post('logout')
+  async logout() {
+    return this.authService.logout();
+  }
+
   @Get('profile')
   async getProfile(@Headers('authorization') authHeader: string) {
     return this.authService.getProfile(authHeader);

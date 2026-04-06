@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 // API Configuration
 // API Configuration
-export const PROD_URL = 'https://api-gateway-920625255147.us-central1.run.app/api';
+export const PROD_URL = 'https://api-gateway-e7zjf3b6pq-uc.a.run.app/api';
 // Use LAN IP for Android to support both Emulator and Real Device (via Expo Tunnel)
 // NOTE: 10.0.2.2 is used for Android Emulator to access host machine localhost
 export const LOCAL_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000/api' : 'http://localhost:8000/api';

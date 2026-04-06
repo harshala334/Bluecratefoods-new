@@ -70,6 +70,7 @@ export interface Recipe {
   authorName?: string; // Added for User Profile tag
   authorId?: string;
   tags?: string[];
+  secondaryCategories?: string[];
   spiceLevel?: number; // 0-5
   isApproved?: boolean;
   status?: 'pending' | 'approved' | 'rejected';

@@ -80,52 +80,16 @@ export const authService = {
 
   // OTP Login
   async sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
-    console.log('[MOCK] Sending OTP to:', phone);
-    // Mock success
-    return { success: true, message: 'OTP sent successfully (MOCK)' };
-    // return api.post<{ success: boolean; message: string }>(`${API_CONFIG.BASE_URL}/auth/send-otp`, { phone });
+    return api.post<{ success: boolean; message: string }>(`${API_CONFIG.BASE_URL}/auth/send-otp`, { phone });
   },
 
   async verifyOtp(phone: string, code: string): Promise<AuthResponse> {
-    console.log('[MOCK] Verifying OTP:', code, 'for phone:', phone);
-    
-    // Mock user response
-    const now = new Date().toISOString();
-    if (code === '1234' || code === '0000') {
-      return {
-        token: 'mock-jwt-token-' + Date.now(),
-        user: { 
-          id: 'mock-user-' + phone, 
-          name: 'Verified User', 
-          email: `${phone}@example.com`,
-          phone: phone,
-          userType: 'customer', 
-          createdAt: now, 
-          updatedAt: now 
-        }
-      };
-    }
-    
-    // If we want to hit real API later:
-    // return api.post<AuthResponse>(`${API_CONFIG.BASE_URL}/auth/verify-otp`, { phone, code });
-    throw new Error('Invalid OTP. Please use 1234 or 0000 for mock login.');
+    return api.post<AuthResponse>(`${API_CONFIG.BASE_URL}/auth/verify-otp`, { phone, code });
   },
 
   // Google Login
   async googleLogin(token: string): Promise<AuthResponse> {
-    console.log('[MOCK] Performing Google Login with token:', token);
-    const now = new Date().toISOString();
-    return {
-      token: 'mock-google-jwt-token-' + Date.now(),
-      user: { 
-        id: 'mock-google-id', 
-        name: 'Google User', 
-        email: 'google.user@example.com', 
-        userType: 'customer', 
-        createdAt: now, 
-        updatedAt: now 
-      }
-    };
+    return api.post<AuthResponse>(`${API_CONFIG.BASE_URL}/auth/google-login`, { token });
   },
 };
 

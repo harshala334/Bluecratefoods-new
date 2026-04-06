@@ -111,7 +111,9 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
     const { data: productsData, isLoading: loading } = useQuery({
         queryKey: ['products', { category: categoryId }],
         queryFn: async () => {
-            const { recipes } = await recipeService.getRecipes({ category: categoryId });
+            const { recipes } = await recipeService.getRecipes({ 
+                category: categoryId === 'all' ? undefined : categoryId 
+            });
             return recipes;
         },
     });
@@ -152,6 +154,72 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
         }
     };
 
+    /**
+     * Interleaves products from different subcategories in a round-robin fashion.
+     * Picks up to 'count' products from each subcategory per round.
+     */
+    const interleaveProducts = (availableProducts: any[], subcatList: any[], count: number = 2) => {
+        const result: any[] = [];
+        const groups: Record<string, any[]> = {};
+        const others: any[] = [];
+
+        // Group products by subcategory
+        availableProducts.forEach(p => {
+            const subId = p.subcategory || (Array.isArray(p.tags) && p.tags[0]) || 'other';
+            if (subId === 'other') {
+                others.push(p);
+            } else {
+                if (!groups[subId]) groups[subId] = [];
+                groups[subId].push(p);
+            }
+        });
+
+        // Combine subcategories from the list and from the actual data found
+        const subIdsFromList = subcatList.map(s => s.id).filter(id => id !== 'all');
+        const subIdsFromGroups = Object.keys(groups);
+        
+        // Ensure we maintain the order of the provided list, but add any extra categories found in groups
+        const allSubIds = Array.from(new Set([...subIdsFromList, ...subIdsFromGroups]));
+        const activeSubIds = allSubIds.filter(id => groups[id] && groups[id].length > 0);
+
+        // Keep track of how many we've taken from each group
+        const groupPointers: Record<string, number> = {};
+        activeSubIds.forEach(id => groupPointers[id] = 0);
+        let othersPointer = 0;
+
+        let addedInRound = true;
+        while (addedInRound) {
+            addedInRound = false;
+
+            // Round-robin through subcategories
+            for (const id of activeSubIds) {
+                const group = groups[id];
+                const start = groupPointers[id];
+                const toTake = Math.min(count, group.length - start);
+
+                if (toTake > 0) {
+                    for (let i = 0; i < toTake; i++) {
+                        result.push(group[start + i]);
+                    }
+                    groupPointers[id] += toTake;
+                    addedInRound = true;
+                }
+            }
+
+            // Add some "others" if any
+            if (othersPointer < others.length) {
+                const toTake = Math.min(count, others.length - othersPointer);
+                for (let i = 0; i < toTake; i++) {
+                    result.push(others[othersPointer + i]);
+                }
+                othersPointer += toTake;
+                addedInRound = true;
+            }
+        }
+
+        return result;
+    };
+
     const getSortedProducts = () => {
         let items = [...products]; // Use the products state, not the hardcoded PRODUCTS
 
@@ -165,7 +233,8 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
             items = items.filter(p =>
                 p.subcategory === selectedSub ||
                 p.category === selectedSub ||
-                (Array.isArray(p.tags) && p.tags.includes(selectedSub))
+                (Array.isArray(p.tags) && p.tags.includes(selectedSub)) ||
+                (Array.isArray(p.secondaryCategories) && p.secondaryCategories.includes(selectedSub))
             );
         }
 
@@ -178,7 +247,11 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
             case 'nameAZ':
                 return items.sort((a, b) => a.name.localeCompare(b.name));
             default:
-                return items; // 'popular' or default (mock order)
+                // Special interleaving logic for 'All Items' when sorted by popularity
+                if (selectedSub === 'all') {
+                    return interleaveProducts(items, subcategories);
+                }
+                return items; // Default for specific subcategory or other cases
         }
     };
 
@@ -258,17 +331,26 @@ const CategoryDetailScreen = ({ route, navigation }: any) => {
                 {/* Product Grid */}
                 <View style={styles.productContent}>
                     <View style={styles.listHeader}>
-                        <View style={styles.headerTitleGroup}>
-                            {/* Title removed as requested - context is in sidebar */}
+                        <View style={styles.headerSearchContainer}>
+                            <Feather name="search" size={16} color={colors.gray[400]} style={styles.searchIcon} />
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Search in category..."
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                                placeholderTextColor={colors.gray[400]}
+                            />
+                            {searchQuery.length > 0 && (
+                                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                                    <Feather name="x" size={16} color={colors.gray[400]} />
+                                </TouchableOpacity>
+                            )}
                         </View>
                         <TouchableOpacity
                             style={styles.filterButton}
                             onPress={() => setShowSortModal(true)}
                         >
-                            <Text style={styles.filterText}>
-                                {sortOptions.find(o => o.id === sortBy)?.label || 'Sort'}
-                            </Text>
-                            <Ionicons name="options-outline" size={16} color={colors.primary[500]} />
+                            <Ionicons name="options-outline" size={18} color={colors.primary[500]} />
                         </TouchableOpacity>
                     </View>
                     {loading ? (
@@ -477,21 +559,38 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     filterButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
+        width: 40,
+        height: 40,
         backgroundColor: colors.white,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: borderRadius.lg,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
         ...shadow.soft,
         borderWidth: 1,
         borderColor: colors.gray[100],
     },
-    filterText: {
-        fontSize: 12,
-        color: colors.gray[600],
-        fontWeight: '600',
+    headerSearchContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.white,
+        marginRight: spacing.sm,
+        paddingHorizontal: spacing.sm,
+        height: 40,
+        borderRadius: 12,
+        ...shadow.soft,
+        borderWidth: 1,
+        borderColor: colors.gray[100],
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+        fontFamily: typography.fontFamily.medium,
+        color: colors.text.primary,
+        padding: 0,
     },
     gridContent: {
         paddingBottom: 120, // Increased to avoid overlap with floating cart bar

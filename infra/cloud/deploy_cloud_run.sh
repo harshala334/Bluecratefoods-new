@@ -63,11 +63,11 @@ for service in "${services[@]}"; do
     EXTRA_ENV=""
     if [ "$service" == "api-gateway" ]; then
         MAPS_KEY="${GOOGLE_MAPS_API_KEY}"
-        EXTRA_ENV=",GOOGLE_MAPS_API_KEY=$MAPS_KEY,AUTH_SERVICE_URL=https://auth-service-e7zjf3b6pq-uc.a.run.app,ORDER_SERVICE_URL=https://order-service-e7zjf3b6pq-uc.a.run.app,USER_SERVICE_URL=https://user-service-e7zjf3b6pq-uc.a.run.app,STORE_SERVICE_URL=https://store-service-e7zjf3b6pq-uc.a.run.app"
+        EXTRA_ENV=",GOOGLE_MAPS_API_KEY=$MAPS_KEY,AUTH_SERVICE_URL=https://auth-service-920625255147.us-central1.run.app,ORDER_SERVICE_URL=https://order-service-e7zjf3b6pq-uc.a.run.app,USER_SERVICE_URL=https://user-service-e7zjf3b6pq-uc.a.run.app,STORE_SERVICE_URL=https://store-service-e7zjf3b6pq-uc.a.run.app"
     fi
 
     if [ "$service" == "auth-service" ]; then
-        EXTRA_ENV=",JWT_SECRET=change_me,ADMIN_EMAIL=admin@gmail.com,ADMIN_PASSWORD=Bluecratefoods@2025"
+        EXTRA_ENV=",JWT_SECRET=change_me,ADMIN_EMAIL=admin@gmail.com,ADMIN_PASSWORD=Bluecratefoods@2025,MSG91_AUTH_KEY=${MSG91_AUTH_KEY},MSG91_OTP_TEMPLATE_ID=${MSG91_OTP_TEMPLATE_ID}"
     fi
     
     # Deploy to Cloud Run
