@@ -402,11 +402,6 @@ export const HomeScreen = ({ navigation }: any) => {
               <Text style={styles.hitsTitle}>Recommended for You</Text>
               <Ionicons name="sparkles" size={14} color={colors.primary[500]} />
             </View>
-            {unifiedFrequent.length > 0 && (
-              <TouchableOpacity onPress={() => clearSearchHistory()}>
-                <Text style={{ fontSize: 13, color: colors.primary[600], fontWeight: '700' }}>Clear</Text>
-              </TouchableOpacity>
-            )}
           </View>
           <ScrollView
             horizontal
@@ -414,68 +409,52 @@ export const HomeScreen = ({ navigation }: any) => {
             nestedScrollEnabled={true}
             contentContainerStyle={[styles.hitsScroll, { paddingHorizontal: 0 }]}
           >
-            {unifiedFrequent.length > 0 ? (
-              unifiedFrequent.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.gemContainer}
-                  onPress={() => {
-                    // Re-implement search logic if needed, or just navigate
-                    if (item.type === 'search') {
-                      // Logic for search
-                    } else {
-                      navigation.navigate('ProductsTab', {
-                        screen: 'ProductDetail',
-                        params: { product: item.product }
-                      })
-                    }
-                  }}
-                >
-                  <View style={[
-                    styles.gemCircle,
-                    item.type === 'search'
-                      ? { backgroundColor: colors.primary[50], borderStyle: 'dashed', borderWidth: 1, borderColor: colors.primary[200] }
-                      : { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }
-                  ]}>
-                    {item.type === 'search' ? (
-                      <Feather name="search" size={24} color={colors.primary[400]} />
-                    ) : (
-                      <Image source={{ uri: item.image }} style={{ width: '100%', height: '100%', borderRadius: 100 }} />
-                    )}
-                  </View>
-                  <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
-                    {item.title}
-                  </Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              // Initial placeholders - Product Wise
-              [
-                { id: 'reco-onion', title: 'Onion', image: require('../../../assets/images/onion_reco.jpg'), query: 'Onion' },
-                { id: 'reco-coriander', title: 'Coriander', image: require('../../../assets/images/coriander_reco.jpg'), query: 'Coriander' },
-                { id: 'reco-fishfry', title: 'Fish Fry', image: require('../../../assets/images/fish_fry_reco.jpg'), query: 'Fish Fry' },
-                { id: 'reco-momos', title: 'Momos', image: require('../../../assets/images/chickenmomos_reco.jpg'), query: 'Chicken Momos' },
-                { id: 'reco-thigh', title: 'Chicken Thigh', image: require('../../../assets/images/chicken_thigh_reco.jpg'), query: 'Chicken Thigh' },
-                { id: 'reco-boneless', title: 'Boneless Chicken', image: require('../../../assets/images/boneless_chicken_reco.jpg'), query: 'Boneless Chicken' },
-              ].map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.gemContainer}
-                  onPress={() => handleProductRecoPress(item.query)}
-                >
-                  <View style={[styles.gemCircle, { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }]}>
+            {[
+              ...unifiedFrequent,
+              // Fallback items - Always persistent
+              { id: 'reco-onion', title: 'Onion', image: require('../../../assets/images/onion_reco.jpg'), query: 'Onion', type: 'fallback' },
+              { id: 'reco-coriander', title: 'Coriander', image: require('../../../assets/images/coriander_reco.jpg'), query: 'Coriander', type: 'fallback' },
+              { id: 'reco-fishfry', title: 'Fish Fry', image: require('../../../assets/images/fish_fry_reco.jpg'), query: 'Fish Fry', type: 'fallback' },
+              { id: 'reco-momos', title: 'Momos', image: require('../../../assets/images/chickenmomos_reco.jpg'), query: 'Chicken Momos', type: 'fallback' },
+              { id: 'reco-thigh', title: 'Chicken Thigh', image: require('../../../assets/images/chicken_thigh_reco.jpg'), query: 'Chicken Thigh', type: 'fallback' },
+              { id: 'reco-boneless', title: 'Boneless Chicken', image: require('../../../assets/images/boneless_chicken_reco.jpg'), query: 'Boneless Chicken', type: 'fallback' },
+            ].map((item: any) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.gemContainer}
+                onPress={() => {
+                  if (item.type === 'search') {
+                    handleProductRecoPress(item.title);
+                  } else if (item.type === 'fallback') {
+                    handleProductRecoPress(item.query);
+                  } else {
+                    navigation.navigate('ProductsTab', {
+                      screen: 'ProductDetail',
+                      params: { product: item.product }
+                    })
+                  }
+                }}
+              >
+                <View style={[
+                  styles.gemCircle,
+                  item.type === 'search'
+                    ? { backgroundColor: colors.primary[50], borderStyle: 'dashed', borderWidth: 1, borderColor: colors.primary[200] }
+                    : { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[100] }
+                ]}>
+                  {item.type === 'search' ? (
+                    <Feather name="search" size={24} color={colors.primary[400]} />
+                  ) : (
                     <Image
                       source={typeof item.image === 'string' ? { uri: item.image } : item.image}
                       style={{ width: '100%', height: '100%', borderRadius: 100 }}
-                      resizeMode="cover"
                     />
-                  </View>
-                  <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
-                    {item.title}
-                  </Text>
-                </TouchableOpacity>
-              ))
-            )}
+                  )}
+                </View>
+                <Text numberOfLines={1} style={{ fontSize: 11, color: colors.gray[600], marginTop: 6, fontWeight: '600', width: 70, textAlign: 'center' }}>
+                  {item.title}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
       </View>

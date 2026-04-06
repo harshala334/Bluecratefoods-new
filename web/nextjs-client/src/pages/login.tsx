@@ -22,6 +22,12 @@ export default function Login() {
     e.preventDefault()
     setIsLoading(true)
 
+    if (activeTab === 'signup' && formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match!')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-e7zjf3b6pq-uc.a.run.app'
       const endpoint = activeTab === 'login' ? '/api/auth/login' : '/api/auth/signup'
@@ -194,8 +200,9 @@ export default function Login() {
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       required
+                      minLength={6}
                       className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="Enter your password"
+                      placeholder="Enter your password (min 6 chars)"
                     />
                   </div>
                 </div>
@@ -210,6 +217,7 @@ export default function Login() {
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         required
+                        minLength={6}
                         className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="Confirm your password"
                       />

@@ -108,8 +108,8 @@ const styles = StyleSheet.create({
     },
     kittyWrapper: {
         position: 'absolute',
-        bottom: 10,        // Significantly pulled down for solid overlap so she doesn't float
-        left: -12,         // Added a bit more left offset for a natural look
+        bottom: 9,         // Reduced even more to eliminate the gap
+        left: -12,
         zIndex: 10,
         elevation: 10,
     },
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
     footer: {
-        marginBottom: 20,
+        marginBottom: 80, // Moved entire footer block upwards
     },
     button: {
         backgroundColor: colors.primary[500],
@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
     },
     loginLink: {
         marginTop: 20,
+        paddingVertical: 10, // Increased touch target
         alignItems: 'center',
     },
     loginText: {
@@ -178,6 +179,7 @@ const styles = StyleSheet.create({
     loginAccent: {
         color: 'white',
         fontWeight: '600',
+        textDecorationLine: 'underline',
     },
 });
 
